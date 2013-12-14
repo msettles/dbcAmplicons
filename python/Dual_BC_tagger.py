@@ -22,11 +22,6 @@ R2_File ='Amplicon_Raw_fastq/20130910DBCAmpliconWesleyForney/AllReads_NoIndex_L0
 R3_File ='Amplicon_Raw_fastq/20130910DBCAmpliconWesleyForney/AllReads_NoIndex_L001_R3_001.fastq.gz'
 R4_File ='Amplicon_Raw_fastq/20130910DBCAmpliconWesleyForney/AllReads_NoIndex_L001_R4_001.fastq.gz'
 
-#R1_File = 'Amplicon_Raw_fastq/test40k_R1_001.fastq.gz'
-#R2_File = 'Amplicon_Raw_fastq/test40k_R2_001.fastq.gz'
-#R3_File = 'Amplicon_Raw_fastq/test40k_R3_001.fastq.gz'
-#R4_File = 'Amplicon_Raw_fastq/test40k_R4_001.fastq.gz'
-
 Output_prefix = 'DBCWesleyForney'
 
 # ------- read in barcodes and make a dictionary for lookup ----------------
