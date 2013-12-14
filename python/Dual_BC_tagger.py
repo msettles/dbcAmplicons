@@ -16,18 +16,18 @@ from optparse import OptionParser  # http://docs.python.org/library/optparse.htm
 # ---------------- Set up option parser and input ----------------
 usage = "usage: %prog [options] input_prefix"
 parser = OptionParser(usage=usage)
-parser.add_option('-b', '--barcodediff', help="max hamming dist from barcode",
+parser.add_option('-b', '--barcodediff', help="max hamming dist from barcode [default: %default]",
                   type="int", dest="barcodediff", default=1)
-parser.add_option('-p', '--primerdiff', help="max hamming dist from primer",
+parser.add_option('-p', '--primerdiff', help="max hamming dist from primer [default: %default]",
                   type="int", dest="primerdiff", default=4)
-parser.add_option('-e', '--primerend', help="required number of matching bases at end of primer",
+parser.add_option('-e', '--primerend', help="required number of matching bases at end of primer [default: %default]",
                   type="int", dest="primerend", default=1)
-parser.add_option('-u', '--uncompressed', help="leave output files uncompressed",
+parser.add_option('-u', '--uncompressed', help="leave output files uncompressed [default: %default]",
                   action="store_true", dest="uncompressed", default=False)
 parser.add_option('-o', '--output_prefix', help="output file basename",
                   action="store", type="str", dest="output_base",default=None)
-parser.add_option('-v', '--verbose', help="verbose output",
-                  action="store_false", dest="verbose", default=True)
+parser.add_option('-v', '--verbose', help="verbose output [default: %default]",
+                  action="store_true", dest="verbose", default=False)
 
 (options,  args) = parser.parse_args()  # uncomment this line for command line support
 
