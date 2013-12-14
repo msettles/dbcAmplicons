@@ -16,6 +16,12 @@ from optparse import OptionParser  # http://docs.python.org/library/optparse.htm
 # ---------------- Set up option parser and input ----------------
 usage = "usage: %prog [options] input_prefix"
 parser = OptionParser(usage=usage)
+parser.add_option('-b', '--barcodediff', help="max hamming dist from barcode",
+                  type="int", dest="barcodediff", default=1)
+parser.add_option('-p', '--primerdiff', help="max hamming dist from primer",
+                  type="int", dest="primerdiff", default=4)
+parser.add_option('-e', '--primerend', help="required number of matching bases at end of primer",
+                  type="int", dest="primerend", default=1)
 parser.add_option('-u', '--uncompressed', help="leave output files uncompressed",
                   action="store_true", dest="uncompressed")
 parser.add_option('-o', '--output_prefix', help="output file basename",
@@ -25,37 +31,74 @@ parser.add_option('-v', '--verbose', help="verbose output",
 
 (options,  args) = parser.parse_args()  # uncomment this line for command line support
 
+barcodeFile = "MetaData/barcodeLookupTable.txt"
+primerForward = "MetaData/fwd_primer.fasta"
+primerReverse = "MetaData/rev_primer.fasta"
+
 if len(args) == 1:
     R1_File = args[0] + '_R1_001.fastq.gz'
     R2_File = args[0] + '_R2_001.fastq.gz'
     R3_File = args[0] + '_R3_001.fastq.gz'
     R4_File = args[0] + '_R4_001.fastq.gz'
-    #Start opening input/output files:
+    #Check input/output files:
     if not os.path.exists(R1_File):
         print "Error, can't find input file %s" % R1_File
         sys.exit()
-#  
-#    if infile.split(".")[-1] == "gz":
-#        insam = gzip.open(infile, 'rb')
-#    else:
-#        insam = open(infile, 'r')
+    if not os.path.exists(R2_File):
+        print "Error, can't find input file %s" % R2_File
+        sys.exit()
+    if not os.path.exists(R3_File):
+        print "Error, can't find input file %s" % R3_File
+        sys.exit()
+    if not os.path.exists(R4_File):
+        print "Error, can't find input file %s" % R4_File
+        sys.exit()
 else:
     print "Input file not specified on command line"
     sys.exit()
 
+# ----------------------- check output files -----------------------
 if options.output_base is None:
     Output_prefix = args[0]
 else:
     Output_prefix = options.output_base
 
-barcodeMaxDiff = 1
-primerMaxDiff = 4
+# ----------------------- open input files -----------------------
+if R1_File.split(".")[-1] == "gz":
+    R1 = SeqIO.parse(gzip.open(R1_File, 'rb'), 'fastq')
+else:
+    R1 = SeqIO.parse(open(R1_File, 'r'), 'fastq')
 
-barcodeFile = "MetaData/barcodeLookupTable.txt"
-primerForward = "MetaData/fwd_primer.fasta"
-primerReverse = "MetaData/rev_primer.fasta"
+if R2_File.split(".")[-1] == "gz":
+    R2 = SeqIO.parse(gzip.open(R2_File, 'rb'), 'fastq')
+else:
+    R2 = SeqIO.parse(open(R2_File, 'r'), 'fastq')
 
-# ------- read in barcodes and make a dictionary for lookup ----------------
+if R3_File.split(".")[-1] == "gz":
+    R3 = SeqIO.parse(gzip.open(R3_File, 'rb'), 'fastq')
+else:
+    R3 = SeqIO.parse(open(R3_File, 'r'), 'fastq')
+
+if R4_File.split(".")[-1] == "gz":
+    R4 = SeqIO.parse(gzip.open(R4_File, 'rb'), 'fastq')
+else:
+    R4 = SeqIO.parse(open(R4_File, 'r'), 'fastq')
+
+# ----------------------- open output files ------------
+if options.uncompressed is True:
+    outf = {'identified':[open(Output_prefix + '_R1.fastq.gz', 'w'), open(Output_prefix + '_R2.fastq.gz', 'w')], 'unidentified':[open(Output_prefix + '_Unidentified_R1.fastq.gz', 'w'), open(Output_prefix + '_Unidentified_R2.fastq.gz', 'w')]}
+else:
+    outf = {'identified':[gzip.open(Output_prefix + '_R1.fastq.gz', 'wb'), gzip.open(Output_prefix + '_R2.fastq.gz', 'wb')], 'unidentified':[gzip.open(Output_prefix + '_Unidentified_R1.fastq.gz', 'wb'), gzip.open(Output_prefix + '_Unidentified_R2.fastq.gz', 'wb')]}
+
+barcodesFile = open(Output_prefix + '_report.txt', 'w')
+uniquesFile = open(Output_prefix + '_uniques.txt', 'w')
+
+# ----------------------- barcode/primer files ------------
+barcodeMaxDiff = options.barcodediff
+primerMaxDiff = options.primerdiff
+primerEndMatch = options.primerend
+
+# ---------------- read in barcodes and make a dictionary for lookup ----------------
 barcodes = {}
 P5 = []
 P7 = []
@@ -84,19 +127,6 @@ for seq in SeqIO.parse(open(primerForward, 'r'), 'fasta'):
 for seq in SeqIO.parse(open(primerReverse, 'r'), 'fasta'):
     primersP7[seq.seq.tostring()] = seq.id
 
-
-# ---------- input files -----------------------
-R1 = SeqIO.parse(gzip.open(R1_File, 'rb'), 'fastq')
-R2 = SeqIO.parse(gzip.open(R2_File, 'rb'), 'fastq')
-R3 = SeqIO.parse(gzip.open(R3_File, 'rb'), 'fastq')
-R4 = SeqIO.parse(gzip.open(R4_File, 'rb'), 'fastq')
-
-# ------- setup output files ------------
-outf = {'identified':[gzip.open(Output_prefix + '_R1.fastq.gz', 'wb'), gzip.open(Output_prefix + '_R2.fastq.gz', 'wb')], 'unidentified':[gzip.open(Output_prefix + '_Unidentified_R1.fastq.gz', 'wb'), gzip.open(Output_prefix + '_Unidentified_R2.fastq.gz', 'wb')]}
-
-barcodesFile = open(Output_prefix + '_report.txt', 'w')
-uniquesFile = open(Output_prefix + '_uniques.txt', 'w')
-
 # ------- make some counters for reporting ------------
 counters = {}
 for bc in barcodes:
@@ -109,6 +139,7 @@ lasttime = time.time()
 
 # ---------- Unique Dictionary ------------- #
 uniqueDict = {}
+
 #------------------- functions ------------------------------
 def barcodeDist(b_1, b_2):
     'counts mismatches between two equal-length strings'
@@ -253,8 +284,8 @@ finally:
 
     print"-------------------"
     print "%s reads processed in %s hours" % (reads,(time.time()-lasttime)/(60*60))
-    for k in IDS:
-        print "%s:\tidentified:%s,\tmismatch bc1:%s,\tmismatch bc2:%s" % (k, counters[k][0], counters[k][1], counters[k][2])
+#    for k in IDS:
+#        print "%s:\tidentified:%s,\tmismatch bc1:%s,\tmismatch bc2:%s" % (k, counters[k][0], counters[k][1], counters[k][2])
     print "good reads: %s" % goodReadsCounter
     print "other: %s" % otherCounter
     print "uniques: %s" % uniqueCounter
