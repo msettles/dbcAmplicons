@@ -23,7 +23,7 @@ parser.add_option('-p', '--primerdiff', help="max hamming dist from primer",
 parser.add_option('-e', '--primerend', help="required number of matching bases at end of primer",
                   type="int", dest="primerend", default=1)
 parser.add_option('-u', '--uncompressed', help="leave output files uncompressed",
-                  action="store_true", dest="uncompressed")
+                  action="store_true", dest="uncompressed", default=False)
 parser.add_option('-o', '--output_prefix', help="output file basename",
                   action="store", type="str", dest="output_base",default=None)
 parser.add_option('-v', '--verbose', help="verbose output",
