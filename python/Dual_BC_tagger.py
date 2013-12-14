@@ -3,12 +3,50 @@
 Tag reads from dual barcoded experiments
 """
 
-from Bio import SeqIO
+import os
 import sys
 import gzip
 import time
 #import re
 from collections import Counter
+from Bio import SeqIO
+
+from optparse import OptionParser  # http://docs.python.org/library/optparse.html
+
+# ---------------- Set up option parser and input ----------------
+usage = "usage: %prog [options] input_prefix"
+parser = OptionParser(usage=usage)
+parser.add_option('-u', '--uncompressed', help="leave output files uncompressed",
+                  action="store_true", dest="uncompressed")
+parser.add_option('-o', '--output_prefix', help="output file basename",
+                  action="store", type="str", dest="output_base",default=None)
+parser.add_option('-v', '--verbose', help="verbose output",
+                  action="store_false", dest="verbose", default=True)
+
+(options,  args) = parser.parse_args()  # uncomment this line for command line support
+
+if len(args) == 1:
+    R1_File = args[0] + '_R1_001.fastq.gz'
+    R2_File = args[0] + '_R2_001.fastq.gz'
+    R3_File = args[0] + '_R3_001.fastq.gz'
+    R4_File = args[0] + '_R4_001.fastq.gz'
+    #Start opening input/output files:
+    if not os.path.exists(R1_File):
+        print "Error, can't find input file %s" % R1_File
+        sys.exit()
+#  
+#    if infile.split(".")[-1] == "gz":
+#        insam = gzip.open(infile, 'rb')
+#    else:
+#        insam = open(infile, 'r')
+else:
+    print "Input file not specified on command line"
+    sys.exit()
+
+if options.output_base is None:
+    Output_prefix = args[0]
+else:
+    Output_prefix = options.output_base
 
 barcodeMaxDiff = 1
 primerMaxDiff = 4
@@ -16,13 +54,6 @@ primerMaxDiff = 4
 barcodeFile = "MetaData/barcodeLookupTable.txt"
 primerForward = "MetaData/fwd_primer.fasta"
 primerReverse = "MetaData/rev_primer.fasta"
-
-R1_File ='Amplicon_Raw_fastq/test40k_R1_001.fastq.gz'
-R2_File ='Amplicon_Raw_fastq/test40k_R2_001.fastq.gz'
-R3_File ='Amplicon_Raw_fastq/test40k_R3_001.fastq.gz'
-R4_File ='Amplicon_Raw_fastq/test40k_R4_001.fastq.gz'
-
-Output_prefix = 'DBCWesleyForney'
 
 # ------- read in barcodes and make a dictionary for lookup ----------------
 barcodes = {}
