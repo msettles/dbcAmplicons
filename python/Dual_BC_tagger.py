@@ -86,7 +86,7 @@ else:
 
 # ----------------------- open output files ------------
 if options.uncompressed is True:
-    outf = {'identified':[open(Output_prefix + '_R1.fastq.gz', 'w'), open(Output_prefix + '_R2.fastq.gz', 'w')], 'unidentified':[open(Output_prefix + '_Unidentified_R1.fastq.gz', 'w'), open(Output_prefix + '_Unidentified_R2.fastq.gz', 'w')]}
+    outf = {'identified':[open(Output_prefix + '_R1.fastq', 'w'), open(Output_prefix + '_R2.fastq', 'w')], 'unidentified':[open(Output_prefix + '_Unidentified_R1.fastq', 'w'), open(Output_prefix + '_Unidentified_R2.fastq', 'w')]}
 else:
     outf = {'identified':[gzip.open(Output_prefix + '_R1.fastq.gz', 'wb'), gzip.open(Output_prefix + '_R2.fastq.gz', 'wb')], 'unidentified':[gzip.open(Output_prefix + '_Unidentified_R1.fastq.gz', 'wb'), gzip.open(Output_prefix + '_Unidentified_R2.fastq.gz', 'wb')]}
 
