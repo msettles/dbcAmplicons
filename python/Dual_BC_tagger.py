@@ -28,8 +28,6 @@ R4_File ='Amplicon_Raw_fastq/20130910DBCAmpliconWesleyForney/AllReads_NoIndex_L0
 #R4_File = 'Amplicon_Raw_fastq/test40k_R4_001.fastq.gz'
 
 Output_prefix = 'DBCWesleyForney'
-Output_report = 'DBCWesleyForney_report.txt'
-Output_unique = 'DBCWesleyForney_uniques.txt'
 
 # ------- read in barcodes and make a dictionary for lookup ----------------
 barcodes = {}
@@ -37,7 +35,7 @@ P5 = []
 P7 = []
 IDS = []
 bcfile = open(barcodeFile,'rb')
-f = bcfile.readlines()[1:]
+f = bcfile.readlines()[1:] # skip the first header line
 for row in f:
     row = row.rstrip()
     ID, P5Name, P5BC, P7Name, P7BC = row.split('\t')
@@ -70,8 +68,8 @@ R4 = SeqIO.parse(gzip.open(R4_File, 'rb'), 'fastq')
 # ------- setup output files ------------
 outf = {'identified':[gzip.open(Output_prefix + '_R1.fastq.gz', 'wb'), gzip.open(Output_prefix + '_R2.fastq.gz', 'wb')], 'unidentified':[gzip.open(Output_prefix + '_Unidentified_R1.fastq.gz', 'wb'), gzip.open(Output_prefix + '_Unidentified_R2.fastq.gz', 'wb')]}
 
-barcodesFile = open(Output_report, 'w')
-uniquesFile = open(Output_unique, 'w')
+barcodesFile = open(Output_prefix + '_report.txt', 'w')
+uniquesFile = open(Output_prefix + '_uniques.txt', 'w')
 
 # ------- make some counters for reporting ------------
 counters = {}
@@ -111,7 +109,7 @@ try:
         read4 = R4.next()
         reads += 1
 
-        ### Barcode Matching ###
+        ### Barcode One Matching ###
         bc1 = None
         bc1Mismatch = False
         if read2.seq.tostring() in P7:
@@ -123,6 +121,7 @@ try:
                     bc1 = key
                     bc1Mismatch = True
 
+        ### Barcode Two Matching ###
         bc2 = None
         bc2Mismatch = False
         if read3.seq.tostring() in P5:
@@ -134,6 +133,7 @@ try:
                     bc2 = key
                     bc2Mismatch = True
 
+        ### Barcode Pair Matching ###
         combined_bc = None
         if "%s %s" % (bc1, bc2) in barcodes:
             combined_bc = barcodes["%s %s" % (bc1, bc2)]
