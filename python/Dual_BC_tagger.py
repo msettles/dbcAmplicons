@@ -141,7 +141,7 @@ for seq in SeqIO.parse(open(primerReverse, 'r'), 'fasta'):
 # ------- make some counters for reporting ------------
 counters = {}
 for bc in bcTable.barcodes:
-    counters[bcTable.barcodes[bc]] = [0, 0, 0]  # first value is perfect matches, second is 1bp mismatch in bc1, third is 1bp mismatch in bc2
+    counters[bcTable.barcodes[bc][0]] = [0, 0, 0]  # first value is perfect matches, second is 1bp mismatch in bc1, third is 1bp mismatch in bc2
 goodReadsCounter = 0
 otherCounter = 0
 uniqueCounter = 0
@@ -245,7 +245,7 @@ try:
         ### Barcode Pair Matching ###
         combined_bc = None
         if "%s %s" % (bc1, bc2) in bcTable.barcodes:
-            combined_bc = bcTable.barcodes["%s %s" % (bc1, bc2)]
+            combined_bc = bcTable.barcodes["%s %s" % (bc1, bc2)][0]
             counters[combined_bc][0] += 1
             if bc1Mismatch:
                 counters[combined_bc][1] += 1
