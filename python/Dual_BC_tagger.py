@@ -21,7 +21,7 @@ parser.add_option('-b', '--barcodediff', help="max hamming dist from barcode [de
 parser.add_option('-p', '--primerdiff', help="max hamming dist from primer [default: %default]",
                   type="int", dest="primerdiff", default=4)
 parser.add_option('-e', '--primerend', help="required number of matching bases at end of primer [default: %default]",
-                  type="int", dest="primerend", default=1)
+                  type="int", dest="primerend", default=4)
 parser.add_option('-u', '--uncompressed', help="leave output files uncompressed [default: %default]",
                   action="store_true", dest="uncompressed", default=False)
 parser.add_option('-o', '--output_prefix', help="output file basename",
@@ -99,6 +99,14 @@ primerMaxDiff = options.primerdiff
 primerEndMatch = options.primerend
 
 # ---------------- read in barcodes and make a dictionary for lookup ----------------
+class barcodeTable():
+    """ class to hold barcode information """
+    def __init__(self, P5, P7, IDS, barcodes):
+        self.P5 = P5
+        self.P7 = P7
+        self.IDS = IDS
+        self.barcodes = barcodes
+
 barcodes = {}
 P5 = []
 P7 = []
@@ -117,6 +125,9 @@ for row in f:
 
 bcfile.close()
 
+bcTable = barcodeTable(P5=P5,P7=P7,IDS=IDS,barcodes=barcodes)
+del P5,P7,IDS,barcodes
+
 # ------- build primer dictionary --------
 primersP5 = {}
 primersP7 = {}
@@ -129,8 +140,8 @@ for seq in SeqIO.parse(open(primerReverse, 'r'), 'fasta'):
 
 # ------- make some counters for reporting ------------
 counters = {}
-for bc in barcodes:
-    counters[barcodes[bc]] = [0, 0, 0]  # first value is perfect matches, second is 1bp mismatch in bc1, third is 1bp mismatch in bc2
+for bc in bcTable.barcodes:
+    counters[bcTable.barcodes[bc]] = [0, 0, 0]  # first value is perfect matches, second is 1bp mismatch in bc1, third is 1bp mismatch in bc2
 goodReadsCounter = 0
 otherCounter = 0
 uniqueCounter = 0
@@ -144,18 +155,21 @@ uniqueDict = {}
 def barcodeDist(b_1, b_2):
     'counts mismatches between two equal-length strings'
     if len(b_1) == len(b_2) and len(b_1) > 0:
-        return sum(map(lambda x: x[0] != x[1], zip(b_1, b_2) )) # python is bad-ass
+        return sum(map(lambda x: x[0] != x[1], zip(b_1, b_2) ))
     else:
         print "ERROR lengths of barcodes and index read do not match!"
         print "Target", b_1
         print "Index read:", b_2
         sys.exit()
 
+def getBarcode(b_1, b_2):
+    'given barcode 1 and barcode 2, return the paired ID'
+
 #------------------- functions ------------------------------
 def primerDist(read, primer):
     'counts mismatches between primer and sequence'
     read = read[0:(len(primer)-1)]
-    return sum(map(lambda x: x[0] != x[1], zip(read, primer) )) # python is bad-ass
+    return sum(map(lambda x: x[0] != x[1], zip(read, primer) ))
 
 # ------- work horse function ---------------
 try:
@@ -169,10 +183,10 @@ try:
         ### Barcode One Matching ###
         bc1 = None
         bc1Mismatch = False
-        if read2.seq.tostring() in P7:
+        if read2.seq.tostring() in bcTable.P7:
             bc1 = read2.seq.tostring()
         else:
-            for key in P7:
+            for key in bcTable.P7:
                 bcdist = barcodeDist(key, read2.seq.tostring())
                 if bcdist <= barcodeMaxDiff:
                     bc1 = key
@@ -181,10 +195,10 @@ try:
         ### Barcode Two Matching ###
         bc2 = None
         bc2Mismatch = False
-        if read3.seq.tostring() in P5:
+        if read3.seq.tostring() in bcTable.P5:
             bc2 = read3.seq.tostring()
         else:
-            for key in P5:
+            for key in bcTable.P5:
                 bcdist = barcodeDist(key, read3.seq.tostring())
                 if bcdist <= barcodeMaxDiff:
                     bc2 = key
@@ -192,8 +206,8 @@ try:
 
         ### Barcode Pair Matching ###
         combined_bc = None
-        if "%s %s" % (bc1, bc2) in barcodes:
-            combined_bc = barcodes["%s %s" % (bc1, bc2)]
+        if "%s %s" % (bc1, bc2) in bcTable.barcodes:
+            combined_bc = bcTable.barcodes["%s %s" % (bc1, bc2)]
             counters[combined_bc][0] += 1
             if bc1Mismatch:
                 counters[combined_bc][1] += 1
@@ -291,13 +305,13 @@ finally:
     print "uniques: %s" % uniqueCounter
     print"-------------------"
     txt = '\t'.join(["read1" ,"read2" ,"primer_id"])
-    for bc in IDS:
+    for bc in bcTable.IDS:
         txt = '\t'.join([txt, bc])
     txt = txt  + '\n'
     uniquesFile.write(txt)
     for k in uniqueDict:
         txt = '\t'.join([uniqueDict[k]['read1'], uniqueDict[k]['read2'], uniqueDict[k]['primer_id']])
-        for bc in IDS:
+        for bc in bcTable.IDS:
             txt = '\t'.join([txt, str(uniqueDict[k]['bc_counts'][bc])])
         txt = txt  + '\n'
         uniquesFile.write(txt)
