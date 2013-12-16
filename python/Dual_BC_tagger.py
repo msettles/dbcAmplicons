@@ -107,26 +107,26 @@ class barcodeTable():
         self.IDS = IDS
         self.barcodes = barcodes
 
-barcodes = {}
-P5 = []
-P7 = []
-IDS = []
-bcfile = open(barcodeFile,'rb')
-f = bcfile.readlines()[1:] # skip the first header line
-for row in f:
-    row = row.rstrip()
-    ID, P5Name, P5BC, P7Name, P7BC = row.split('\t')
-    if P5BC not in P5:
-        P5.extend([P5BC])
-    if P7BC not in P7:
-        P7.extend([P7BC])
-    IDS.extend([ID])
-    barcodes["%s %s" % (P7BC, P5BC)] = ID
+def parseBarcodes(bfile):
+    barcodes = {}
+    P5 = []
+    P7 = []
+    IDS = []
+    bcfile = open(bfile,'rb')
+    f = bcfile.readlines()[1:] # skip the first header line
+    for row in f:
+        row = row.rstrip()
+        ID, P5Name, P5BC, P7Name, P7BC = row.split('\t')
+        if P5BC not in P5:
+            P5.extend([P5BC])
+        if P7BC not in P7:
+            P7.extend([P7BC])
+        IDS.extend([ID])
+        barcodes["%s %s" % (P7BC, P5BC)] = [ID,0,0]
+    bcfile.close()
+    return barcodeTable(P5, P7, IDS, barcodes)
 
-bcfile.close()
-
-bcTable = barcodeTable(P5=P5,P7=P7,IDS=IDS,barcodes=barcodes)
-del P5,P7,IDS,barcodes
+bcTable = parseBarcodes(barcodeFile)
 
 # ------- build primer dictionary --------
 primersP5 = {}
@@ -164,6 +164,44 @@ def barcodeDist(b_1, b_2):
 
 def getBarcode(b_1, b_2):
     'given barcode 1 and barcode 2, return the paired ID'
+    bc_pair = "%s %s" % (b_1, b_2)
+    if bc_pair in bcTable.barcodes:
+        return bcTable.barcodes[bc_pair]
+    else:
+        ### Barcode One Matching ###
+        bc1 = None
+        bc1Mismatch = False
+        if read2.seq.tostring() in bcTable.P7:
+            bc1 = read2.seq.tostring()
+        else:
+            for key in bcTable.P7:
+                bcdist = barcodeDist(key, read2.seq.tostring())
+                if bcdist <= barcodeMaxDiff:
+                    bc1 = key
+                    bc1Mismatch = True
+
+        ### Barcode Two Matching ###
+        bc2 = None
+        bc2Mismatch = False
+        if read3.seq.tostring() in bcTable.P5:
+            bc2 = read3.seq.tostring()
+        else:
+            for key in bcTable.P5:
+                bcdist = barcodeDist(key, read3.seq.tostring())
+                if bcdist <= barcodeMaxDiff:
+                    bc2 = key
+                    bc2Mismatch = True
+
+        ### Barcode Pair Matching ###
+        combined_bc = None
+        if "%s %s" % (bc1, bc2) in bcTable.barcodes:
+            combined_bc = bcTable.barcodes["%s %s" % (bc1, bc2)][0]
+            counters[combined_bc][0] += 1
+            if bc1Mismatch:
+                counters[combined_bc][1] += 1
+            if bc2Mismatch:
+                counters[combined_bc][2] += 1
+
 
 #------------------- functions ------------------------------
 def primerDist(read, primer):
