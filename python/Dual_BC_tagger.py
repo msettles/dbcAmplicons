@@ -187,17 +187,17 @@ def getBarcode(b_1, b_2,max_diff):
         if b_2 in bcTable.P5:
             bc2 = b_2
         else:
-            bc1Mismatch = len(b_2)
+            bc2Mismatch = len(b_2)
             for key in bcTable.P5:
                 bcdist = barcodeDist(key, b_2)
-                if bcdist <= bc1Mismatch:
+                if bcdist <= bc2Mismatch:
                     bc2 = key
                     bc2Mismatch = bcdist
         ### Barcode Pair Matching ###
         combined_bc = [None,8,8]
         if "%s %s" % (bc1, bc2) in bcTable.barcodes and bc1Mismatch <= max_diff and bc2Mismatch <= max_diff:
             combined_bc = [bcTable.barcodes["%s %s" % (bc1, bc2)][0],bc1Mismatch,bc2Mismatch]
-            bcTable.barcodes[bc_pair] = combined_bc
+        bcTable.barcodes[bc_pair] = combined_bc
         return combined_bc
 
 #------------------- functions ------------------------------
@@ -255,8 +255,9 @@ try:
                 counters[bc[0]][1] += 1
             if bc[2] > 0:
                 counters[bc[0]][2] += 1
+
         combined_bc = bc[0]
-        
+
         ### Primer Matching ###
         primer1 = None
         primer1Mismatch = 10
