@@ -141,7 +141,7 @@ for seq in SeqIO.parse(open(primerReverse, 'r'), 'fasta'):
 # ------- make some counters for reporting ------------
 counters = {}
 for bc in bcTable.barcodes:
-    counters[bcTable.barcodes[bc][0]] = [0, 0, 0]  # first value is perfect matches, second is 1bp mismatch in bc1, third is 1bp mismatch in bc2
+    counters[bcTable.barcodes[bc][0]] = [0, 0]  # first value is perfect matches, second is 1bp mismatch in bc1, third is 1bp mismatch in bc2
 goodReadsCounter = 0
 otherCounter = 0
 uniqueCounter = 0
@@ -215,48 +215,14 @@ try:
         read4 = R4.next()
         reads += 1
 
-        # ### Barcode One Matching ###
-        bc1 = None
-        bc1Mismatch = False
-        if read2.seq.tostring() in bcTable.P7:
-            bc1 = read2.seq.tostring()
-        else:
-            for key in bcTable.P7:
-                bcdist = barcodeDist(key, read2.seq.tostring())
-                if bcdist <= barcodeMaxDiff:
-                    bc1 = key
-                    bc1Mismatch = True
+        # ### Barcode Matching ###
+        bc = getBarcode(read2.seq.tostring(), read3.seq.tostring(),barcodeMaxDiff)
+        if (bc[0] != None):
+            counters[bc[0]][0] += 1
+            if bc[1] > 0 or bc[2] > 0:
+                counters[bc[0]][1] += 1
 
-        ### Barcode Two Matching ###
-        bc2 = None
-        bc2Mismatch = False
-        if read3.seq.tostring() in bcTable.P5:
-            bc2 = read3.seq.tostring()
-        else:
-            for key in bcTable.P5:
-                bcdist = barcodeDist(key, read3.seq.tostring())
-                if bcdist <= barcodeMaxDiff:
-                    bc2 = key
-                    bc2Mismatch = True
-
-        ### Barcode Pair Matching ###
-        combined_bc = None
-        if "%s %s" % (bc1, bc2) in bcTable.barcodes:
-            combined_bc = bcTable.barcodes["%s %s" % (bc1, bc2)][0]
-            counters[combined_bc][0] += 1
-            if bc1Mismatch:
-                counters[combined_bc][1] += 1
-            if bc2Mismatch:
-                counters[combined_bc][2] += 1
-        # bc = getBarcode(read2.seq.tostring(), read3.seq.tostring(),barcodeMaxDiff)
-        # if (bc[0] != None):
-        #     counters[bc[0]][0] += 1
-        #     if bc[1] > 0:
-        #         counters[bc[0]][1] += 1
-        #     if bc[2] > 0:
-        #         counters[bc[0]][2] += 1
-
-        # combined_bc = bc[0]
+        combined_bc = bc[0]
 
         ### Primer Matching ###
         primer1 = None
@@ -324,12 +290,11 @@ try:
         if reads % 10000 == 0:
             print"-------------------"
             print "%s reads processed.Reads/second %s" % (reads, reads/(time.time() - lasttime))
-            countersums = [0, 0, 0]
+            countersums = [0, 0]
             for k in counters:
                 countersums[0] += counters[k][0]
                 countersums[1] += counters[k][1]
-                countersums[2] += counters[k][2]
-            print "identified:%s,\tmismatch bc1:%s,\tmismatch bc2:%s" % (countersums[0], countersums[1], countersums[2])
+            print "barcodes identified:%s,\twith mismatch:%s" % (countersums[0], countersums[1])
             print "good reads: %s" % goodReadsCounter
             print "other: %s" % otherCounter
             print "uniques: %s" % uniqueCounter
@@ -342,7 +307,7 @@ finally:
     print"-------------------"
     print "%s reads processed in %s hours" % (reads,(time.time()-lasttime)/(60*60))
 #    for k in IDS:
-#        print "%s:\tidentified:%s,\tmismatch bc1:%s,\tmismatch bc2:%s" % (k, counters[k][0], counters[k][1], counters[k][2])
+#        print "%s:\tidentified:%s,\tmismatch bc1:%s,\tmismatch bc2:%s" % (k, counters[k][0], counters[k][1])
     print "good reads: %s" % goodReadsCounter
     print "other: %s" % otherCounter
     print "uniques: %s" % uniqueCounter
