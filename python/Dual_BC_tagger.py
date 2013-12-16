@@ -250,11 +250,11 @@ try:
         #         counters[combined_bc][2] += 1
         combined_bc = getBarcode(read2.seq.tostring(), read3.seq.tostring(),barcodeMaxDiff)
         if (combined_bc[0] != None):
-            counters[combined_bc][0] += 1
+            counters[combined_bc[0]][0] += 1
             if combined_bc[1] > 0:
-                counters[combined_bc][1] += 1
+                counters[combined_bc[0]][1] += 1
             if combined_bc[2] > 0:
-                counters[combined_bc][2] += 1
+                counters[combined_bc[0]][2] += 1
 
         ### Primer Matching ###
         primer1 = None
