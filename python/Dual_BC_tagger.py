@@ -170,38 +170,35 @@ def getBarcode(b_1, b_2):
     else:
         ### Barcode One Matching ###
         bc1 = None
-        bc1Mismatch = False
-        if read2.seq.tostring() in bcTable.P7:
-            bc1 = read2.seq.tostring()
+        bc1Mismatch = 0
+        if b_1 in bcTable.P7:
+            bc1 = b_1
         else:
+            bc1Mismatch = len(b_1)
             for key in bcTable.P7:
-                bcdist = barcodeDist(key, read2.seq.tostring())
-                if bcdist <= barcodeMaxDiff:
+                bcdist = barcodeDist(key, b_1)
+                if bcdist < bc1Mismatch:
                     bc1 = key
-                    bc1Mismatch = True
+                    bc1Mismatch = bcdist
 
         ### Barcode Two Matching ###
         bc2 = None
-        bc2Mismatch = False
-        if read3.seq.tostring() in bcTable.P5:
-            bc2 = read3.seq.tostring()
+        bc2Mismatch = 0
+        if b_2 in bcTable.P5:
+            bc2 = b_2
         else:
+            bc1Mismatch = len(b_2)
             for key in bcTable.P5:
-                bcdist = barcodeDist(key, read3.seq.tostring())
-                if bcdist <= barcodeMaxDiff:
+                bcdist = barcodeDist(key, b_2)
+                if bcdist <= bc1Mismatch:
                     bc2 = key
-                    bc2Mismatch = True
-
+                    bc2Mismatch = bcdist
         ### Barcode Pair Matching ###
-        combined_bc = None
-        if "%s %s" % (bc1, bc2) in bcTable.barcodes:
-            combined_bc = bcTable.barcodes["%s %s" % (bc1, bc2)][0]
-            counters[combined_bc][0] += 1
-            if bc1Mismatch:
-                counters[combined_bc][1] += 1
-            if bc2Mismatch:
-                counters[combined_bc][2] += 1
-
+        combined_bc = [None,8,8]
+        if "%s %s" % (bc1, bc2) in bcTable.barcodes and bc1Mismatch <= barcodeMaxDiff and bc2Mismatch <= barcodeMaxDiff:
+            combined_bc = [bcTable.barcodes["%s %s" % (bc1, bc2)][0],bc1Mismatch,bc2Mismatch]
+            bcTable.barcodes[bc_pair] = combined_bc
+        return combined_bc
 
 #------------------- functions ------------------------------
 def primerDist(read, primer):
