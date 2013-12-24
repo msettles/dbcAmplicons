@@ -98,6 +98,10 @@ barcodeMaxDiff = options.barcodediff
 primerMaxDiff = options.primerdiff
 primerEndMatch = options.primerend
 
+# ---------------- Class for 4 read sequence double barcode set ----------------
+class SequenceReadSet():
+    """ class to hold four read sequencing set, 1 read set """
+
 # ---------------- read in barcodes and make a dictionary for lookup ----------------
 class barcodeTable():
     """ class to hold barcode information """
