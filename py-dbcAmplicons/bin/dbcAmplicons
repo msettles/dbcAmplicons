@@ -1,0 +1,86 @@
+#!/usr/bin/env python
+
+# Copyright 2013, Institute for Bioninformatics and Evolutionary Studies
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import sys
+import os
+from optparse import OptionParser
+
+
+profile = False
+
+def main():
+    #
+    # Parse options
+    #
+    usage = "usage: %prog [options] input_prefix"
+    parser = OptionParser(usage=usage)
+    parser.add_option('-b', '--barcodes_file', help="file with barcodes",
+                        action="store", type="str", dest="barcodes_file",default="barcodeLookupTable.txt")
+    parser.add_option('-d', '--barcodediff', help="max hamming dist from barcode [default: %default]",
+                        type="int", dest="barcodediff", default=1)
+    parser.add_option('-p', '--primer_file', help="file with primers",
+                        action="store", type="str", dest="primer_file",default=None)
+    parser.add_option('-r', '--primerdiff', help="max hamming dist from primer [default: %default]",
+                        type="int", dest="primerdiff", default=4)
+    parser.add_option('-e', '--primerend', help="required number of matching bases at end of primer [default: %default]",
+                        type="int", dest="primerend", default=4)
+    parser.add_option('-o', '--output_prefix', help="output file basename",
+                        action="store", type="str", dest="output_base",default=None)
+    parser.add_option('-u', '--uncompressed', help="leave output files uncompressed [default: %default]",
+                        action="store_true", dest="uncompressed", default=False)
+    parser.add_option('-v', '--verbose', help="verbose output [default: %default]",
+                        action="store_true", dest="verbose", default=False)
+
+    (options,  args) = parser.parse_args()
+
+    # ----------------------- options input files -----------------------
+    bcFile = options.barcodes_file
+    prFile = options.primer_file
+    if len(args) == 1:
+        input_prefix = args[0]
+    else:
+        print "Input prefix not specified on command line"
+        sys.exit()
+
+    # ----------------------- options output prefix -----------------------
+    if options.output_base is None:
+        output_prefix = args[0]
+    else:
+        output_prefix = options.output_base
+
+    # ----------------------- other options ------------
+    barcodeMaxDiff = options.barcodediff
+    primerMaxDiff = options.primerdiff
+    primerEndMatch = options.primerend
+    uncompressed = options.uncompressed
+    verbose = options.verbose
+
+    lib_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../')
+    if lib_path not in sys.path:
+        sys.path.insert(0, lib_path)
+
+    from dbcAmplicons import App
+    app = App()
+
+    if profile:
+        import cProfile
+        cProfile.runctx('app.start(input_prefix, output_prefix, bcFile, barcodeMaxDiff, uncompressed, verbose)', globals(), locals())
+        return 255
+    else:
+        return app.start(input_prefix, output_prefix, bcFile, barcodeMaxDiff, uncompressed, verbose)
+
+if __name__ == "__main__":
+    main()
