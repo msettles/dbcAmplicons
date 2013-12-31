@@ -12,7 +12,7 @@ config = {
     'url': 'https://github.com/msettles/DBC_amplicons/py-dbcAmplicons',
     'download_url': 'https://github.com/msettles/DBC_amplicons/py-dbcAmplicons',
     'author_email': 'msettles@uidaho.edu',
-    'version': '0.1',
+    'version': '0.2',
     'install_requires': [],
     'packages': ['dbcAmplicons'],
     'scripts': ['bin/dbcAmplicons'],

@@ -33,8 +33,10 @@ class barcodeTable:
 			bcfile = open(barcodefile, 'r')
 		except IOError:
 			print 'cannot open', barcodefile
-		f = bcfile.readlines()[1:] # skip the first header line
+		f = bcfile.readlines()
 		for row in f:
+			if row[0] == "#": # comment line
+				continue
 			row = row.rstrip()
 			ID, P5BC, P7BC = row.split('\t')
 			P7BC = reverseComplement(P7BC)

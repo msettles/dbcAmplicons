@@ -19,16 +19,16 @@ import os
 from optparse import OptionParser
 
 
-profile = False
+profile = True
 
 def main():
     #
     # Parse options
     #
-    usage = "usage: %prog [options] input_prefix"
+    usage = "usage: %prog [options] -b barcodes_file input_prefix"
     parser = OptionParser(usage=usage)
     parser.add_option('-b', '--barcodes_file', help="file with barcodes",
-                        action="store", type="str", dest="barcodes_file",default="barcodeLookupTable.txt")
+                        action="store", type="str", dest="barcodes_file",default=None)
     parser.add_option('-d', '--barcodediff', help="max hamming dist from barcode [default: %default]",
                         type="int", dest="barcodediff", default=1)
     parser.add_option('-p', '--primer_file', help="file with primers",
@@ -37,6 +37,8 @@ def main():
                         type="int", dest="primerdiff", default=4)
     parser.add_option('-e', '--primerend', help="required number of matching bases at end of primer [default: %default]",
                         type="int", dest="primerend", default=4)
+    parser.add_option('-t', '--batchsize', help="batch size to process reads in [default: %default]",
+                        type="int", dest="batchsize", default=10000)    
     parser.add_option('-o', '--output_prefix', help="output file basename",
                         action="store", type="str", dest="output_base",default=None)
     parser.add_option('-u', '--uncompressed', help="leave output files uncompressed [default: %default]",
@@ -46,14 +48,21 @@ def main():
 
     (options,  args) = parser.parse_args()
 
+    if len(args) == 0:
+        parser.error("Input prefix not specified on command line")
+    elif len(args) == 1:
+        input_prefix = args[0]
+    else:
+        parser.error("Too many argument specified")
+
     # ----------------------- options input files -----------------------
     bcFile = options.barcodes_file
     prFile = options.primer_file
-    if len(args) == 1:
-        input_prefix = args[0]
-    else:
-        print "Input prefix not specified on command line"
-        sys.exit()
+    if bcFile == None:
+        parser.error("Must specify barcodes table for lookup")
+    if prFile == None:
+        print "No primer file identified"
+
 
     # ----------------------- options output prefix -----------------------
     if options.output_base is None:
@@ -67,6 +76,7 @@ def main():
     primerEndMatch = options.primerend
     uncompressed = options.uncompressed
     verbose = options.verbose
+    batchsize = options.batchsize
 
     lib_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../')
     if lib_path not in sys.path:
@@ -77,10 +87,10 @@ def main():
 
     if profile:
         import cProfile
-        cProfile.runctx('app.start(input_prefix, output_prefix, bcFile, barcodeMaxDiff, uncompressed, verbose)', globals(), locals())
+        cProfile.runctx('app.start(input_prefix, output_prefix, bcFile, prFile, barcodeMaxDiff, primerMaxDiff, primerEndMatch, batchsize, uncompressed, verbose)', globals(), locals())
         return 255
     else:
-        return app.start(input_prefix, output_prefix, bcFile, barcodeMaxDiff, uncompressed, verbose)
+        return app.start(input_prefix, output_prefix, bcFile, prFile, barcodeMaxDiff, primerMaxDiff, primerEndMatch, batchsize, uncompressed, verbose)
 
 if __name__ == "__main__":
     main()

@@ -20,21 +20,21 @@ import gzip
 from dbcAmplicons import SequenceReadSet
 
 class IlluminaRun:
+	""" A sequencing run """
 	isOpen = False
 	count = 0
-	""" A sequencing run """
-	def __init__(self,file_prefix):
-		self.prefix = file_prefix
-		self.fread1 = glob.glob("%s*R1_[0-9][0-9][0-9].fastq.gz" % file_prefix)
+	def __init__(self,input_prefix):
+		self.prefix = input_prefix
+		self.fread1 = glob.glob("%s*R1_[0-9][0-9][0-9].fastq.gz" % self.prefix)
 		if len(self.fread1) == 0 or not all(os.path.exists(f) for f in self.fread1):
 			raise Exception("R1 file not found")
-		self.fread2 = glob.glob("%s*R2_[0-9][0-9][0-9].fastq.gz" % file_prefix)
+		self.fread2 = glob.glob("%s*R2_[0-9][0-9][0-9].fastq.gz" % self.prefix)
 		if len(self.fread2) == 0 or not all(os.path.exists(f) for f in self.fread2):
 			raise Exception("R2 file not found")
-		self.fread3 = glob.glob("%s*R3_[0-9][0-9][0-9].fastq.gz" % file_prefix)
+		self.fread3 = glob.glob("%s*R3_[0-9][0-9][0-9].fastq.gz" % self.prefix)
 		if len(self.fread3) == 0 or not all(os.path.exists(f) for f in self.fread3):
 			raise Exception("R3 file not found")
-		self.fread4 = glob.glob("%s*R4_[0-9][0-9][0-9].fastq.gz" % file_prefix)
+		self.fread4 = glob.glob("%s*R4_[0-9][0-9][0-9].fastq.gz" % self.prefix)
 		if len(self.fread4) == 0 or not all(os.path.exists(f) for f in self.fread4):
 			raise Exception("R4 file not found")
 		if any(len(f) != len(self.fread1) for f in [self.fread2,self.fread3,self.fread4]):
@@ -102,3 +102,39 @@ class IlluminaRun:
 		return reads
 
 
+class IlluminaOutput:
+	""" A sequencing runs output """
+	isOpen = False
+	identified_count = 0
+	unidentified_count = 0
+	identified_R1 = None
+	identified_R2 = None
+	unidentified_R1 = None
+	unidentified_R2 = None
+	def __init__(self,output_prefix, uncompressed):
+		self.output_prefix = output_prefix
+		if uncompressed is True:
+			self.identified_R1 = open(output_prefix + '_Identified_R1.fastq', 'w')
+			self.identified_R2 = open(output_prefix + '_Identified_R2.fastq', 'w')
+			self.unidentified_R1 = open(output_prefix + '_Unidentified_R1.fastq', 'w')
+			self.unidentified_R2 = open(output_prefix + '_Unidentified_R2.fastq', 'w')
+		else:
+			self.identified_R1 = gzip.open(output_prefix + '_Identified_R1.fastq.gz', 'wb')
+			self.identified_R2 = gzip.open(output_prefix + '_Identified_R2.fastq.gz', 'wb')
+			self.unidentified_R1 = gzip.open(output_prefix + '_Unidentified_R1.fastq.gz', 'wb')
+			self.unidentified_R2 = gzip.open(output_prefix + '_Unidentified_R2.fastq.gz', 'wb')
+		self.isOpen = True
+		self.identified_count=0
+		self.unidentified_count=0
+	def close(self):
+		self.identified_R1.close()
+		self.identified_R2.close()
+		self.unidentified_R1.close()
+		self.unidentified_R2.close()
+		self.isOpen = False
+	def writeGoodReads(self,R1,R2):
+		self.identified_R1.write(R1)
+		self.identified_R2.write(R2)
+	def writeBadReads(self,R1,R2):
+		self.unidentified_R1.write(R1)
+		self.unidentified_R2.write(R2)

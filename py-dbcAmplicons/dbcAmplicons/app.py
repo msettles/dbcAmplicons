@@ -13,60 +13,73 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import sys
 import time
-import gzip
 from dbcAmplicons import barcodeTable
+from dbcAmplicons import primerTable
 from dbcAmplicons import IlluminaRun
+from dbcAmplicons import IlluminaOutput
 
 class App:
-    def start(self, input_prefix, output_prefix, barcodesFile="barcodeLookupTable.txt",barcodeMaxDiff=1, uncompressed=False,verbose=True):
+    verbose = False
+    evalPrimer = False
+    def start(self, input_prefix, output_prefix, barcodesFile, primerFile, barcodeMaxDiff=1, primerMaxDiff=4, primerEndMatch=4, batchsize=10000, uncompressed=False,verbose=True):
         """
             Process double barcoded Illumina Sequencing Run
         """
+        self.verbose = verbose
+        self.evalPrimer = primerFile != None
         try:
             lasttime = time.time()
+            ## read in primer sequences
             bcTable = barcodeTable(barcodesFile)
-            if verbose:
+            if self.verbose:
                 print "barcode table length: %s" % len(bcTable.barcodes)
-            run = IlluminaRun(input_prefix)
-            run.open()
-            if uncompressed is True:
-                outf = {'identified':[open(output_prefix + '_R1.fastq', 'w'), open(output_prefix + '_R2.fastq', 'w')], 'unidentified':[open(output_prefix + '_Unidentified_R1.fastq', 'w'), open(output_prefix + '_Unidentified_R2.fastq', 'w')]}
-            else:
-                outf = {'identified':[gzip.open(output_prefix + '_R1.fastq.gz', 'wb'), gzip.open(output_prefix + '_R2.fastq.gz', 'wb')], 'unidentified':[gzip.open(output_prefix + '_Unidentified_R1.fastq.gz', 'wb'), gzip.open(output_prefix + '_Unidentified_R2.fastq.gz', 'wb')]}
+            ## read in primer sequences if present
+            if self.evalPrimer:
+                prTable = primerTable(primerFile)
+                if verbose:
+                    print "primer table length P5 Primer Sequences:%s, P7 Primer Sequences:%s" % (len(prTable.P5sequences),len(prTable.P7sequences))
+            ## setup output files
+            self.run_out = IlluminaOutput(output_prefix,uncompressed)
+            ## establish and open the Illumin run
+            self.run = IlluminaRun(input_prefix)
+            self.run.open()
             while 1:
-                goodReads = [[],[]]
-                badReads = [[],[]]
-                reads = run.next(10000)
+                ## get next batch of reads
+                reads = self.run.next(batchsize)
                 if len(reads) == 0:
                     break
+                ## process individual reads
+                goodReads = [[],[]]
+                badReads = [[],[]]
                 for read in reads:
-                    bcTable = read.getBarcode(bcTable,barcodeMaxDiff)
+                    bcTable = read.getBarcode(bcTable,barcodeMaxDiff) ## barcode
+                    if self.evalPrimer: ## primer
+                        read.getPrimer(prTable,primerMaxDiff,primerEndMatch)
                     readOut = read.writeRead()
-                    if read.bc_ID[0] is not None :
+                    if read.goodRead == True:
+                        self.run_out.identified_count += 1
                         goodReads[0].append(readOut[0])
                         goodReads[1].append(readOut[1])
                     else:
+                        self.run_out.unidentified_count += 1
                         badReads[0].append(readOut[0])
                         badReads[1].append(readOut[1])
-                outf['unidentified'][0].write('\n'.join(badReads[0]) + '\n')
-                outf['unidentified'][1].write('\n'.join(badReads[1]) + '\n')
-                outf['identified'][0].write('\n'.join(goodReads[0]) + '\n')
-                outf['identified'][1].write('\n'.join(goodReads[1]) + '\n')
-            outf['unidentified'][0].close()
-            outf['unidentified'][1].close()
-            outf['identified'][0].close()
-            outf['identified'][1].close()
-            if verbose:
-                print "%s reads processed: Reads/second %s" % (run.count, run.count/(time.time() - lasttime))
+
+                self.run_out.writeGoodReads('\n'.join(goodReads[0]) + '\n','\n'.join(goodReads[1]) + '\n')
+                self.run_out.writeBadReads('\n'.join(badReads[0]) + '\n','\n'.join(badReads[1]) + '\n')
+                if self.verbose:
+                    print "processed %s total reads, %s identified reads, %s unidentified reads" % (self.run.count,self.run_out.identified_count,self.run_out.unidentified_count)
+            if self.verbose:
+                print "%s reads processed: Reads/second %s" % (self.run.count, self.run.count/(time.time() - lasttime))
                 print "barcode table length: %s" % len(bcTable.barcodes)
-                print("Cleaning up.")
-            run.close()
             self.clean()
             return 0	
         except Exception:
+            self.clean()
             print("A fatal error was encountered.")
+            print sys.exc_info()[0]
             return 1
         except (KeyboardInterrupt, SystemExit):
             self.clean()
@@ -74,6 +87,10 @@ class App:
             return 1
 
     def clean(self):
-        pass
-
-
+        if self.verbose:
+            print("Cleaning up.")
+        try:
+            self.run.close()
+            self.run_out.close()
+        except:
+            pass

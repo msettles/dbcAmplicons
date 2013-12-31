@@ -15,7 +15,9 @@
 # limitations under the License.
 
 from barcodes import barcodeTable
+from primers import primerTable
 from sequenceReads import SequenceReadSet
 from illuminaRun import IlluminaRun
+from illuminaRun import IlluminaOutput
 from app import App
 
