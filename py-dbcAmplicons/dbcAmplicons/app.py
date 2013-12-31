@@ -70,10 +70,10 @@ class App:
                 self.run_out.writeGoodReads('\n'.join(goodReads[0]) + '\n','\n'.join(goodReads[1]) + '\n')
                 self.run_out.writeBadReads('\n'.join(badReads[0]) + '\n','\n'.join(badReads[1]) + '\n')
                 if self.verbose:
-                    print "processed %s total reads, %s identified reads, %s unidentified reads" % (self.run.count,self.run_out.identified_count,self.run_out.unidentified_count)
+                    print "processed %s total reads, %s Reads/second, %s identified reads, %s unidentified reads" % (self.run.count, round(self.run.count/(time.time() - lasttime),0), self.run_out.identified_count,self.run_out.unidentified_count)
             if self.verbose:
-                print "%s reads processed: Reads/second %s" % (self.run.count, round(self.run.count/(time.time() - lasttime),0))
-                print "barcode table length: %s" % len(bcTable.barcodes)
+                print "%s reads processed in %s minutes" % (reads,round((time.time()-lasttime)/(60),2))
+                print "final barcode table length: %s" % len(bcTable.barcodes)
             self.clean()
             return 0	
         except Exception:
