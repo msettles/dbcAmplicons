@@ -72,7 +72,7 @@ class App:
                 if self.verbose:
                     print "processed %s total reads, %s identified reads, %s unidentified reads" % (self.run.count,self.run_out.identified_count,self.run_out.unidentified_count)
             if self.verbose:
-                print "%s reads processed: Reads/second %s" % (self.run.count, self.run.count/(time.time() - lasttime))
+                print "%s reads processed: Reads/second %s" % (self.run.count, round(self.run.count/(time.time() - lasttime),0))
                 print "barcode table length: %s" % len(bcTable.barcodes)
             self.clean()
             return 0	
