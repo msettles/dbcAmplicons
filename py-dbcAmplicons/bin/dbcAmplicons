@@ -19,7 +19,7 @@ import os
 from optparse import OptionParser
 
 
-profile = True
+profile = False
 
 def main():
     #
