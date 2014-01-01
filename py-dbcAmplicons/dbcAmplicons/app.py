@@ -58,7 +58,7 @@ class App:
                 for read in reads:
                     # bcTable = read.getBarcode(bcTable,barcodeMaxDiff) ## barcode
                     read.getBarcode(bcTable,barcodeMaxDiff) ## barcode
-                    if self.evalPrimer: ## primer
+                    if self.evalPrimer and read.bc_ID[0] != None: ## primer
                         read.getPrimer(prTable,primerMaxDiff,primerEndMatch)
                     readOut = read.writeRead()
                     if read.goodRead == True:
