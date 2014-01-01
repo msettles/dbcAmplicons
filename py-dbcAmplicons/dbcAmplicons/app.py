@@ -41,9 +41,10 @@ class App:
                 prTable = primerTable(primerFile)
                 if verbose:
                     print "primer table length P5 Primer Sequences:%s, P7 Primer Sequences:%s" % (len(prTable.P5sequences),len(prTable.P7sequences))
+                    print "%s" % prTable.primers
             ## setup output files
-            barcode_counts = Counter()
-            primer_counts = Counter()
+            barcode_counts = {}
+            primer_counts = {}
             self.run_out = IlluminaOutput(output_prefix,uncompressed)
             ## establish and open the Illumin run
             self.run = IlluminaRun(input_prefix)

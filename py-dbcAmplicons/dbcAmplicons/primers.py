@@ -24,6 +24,7 @@ class primerTable:
 		self.P7sequences = []
 		self.P7id = {}
 		self.P7pair = {}
+		self.primers = []
 		try:
 			prfile = open(primerfile, 'r')
 		except IOError:
@@ -34,6 +35,7 @@ class primerTable:
 				continue
 			row = row.rstrip()
 			READ, PAIR, ID, SEQ = row.split('\t')
+			self.primer.extend([PAIR])
 			if READ in ["P5","R1","READ1"]:
 				if SEQ in self.P5sequences:
 					self.P5id[SEQ].extend([ID])
@@ -50,6 +52,7 @@ class primerTable:
 					self.P7sequences.extend([SEQ])
 					self.P7id[SEQ] = [ID]
 					self.P7pair[SEQ] = [PAIR]
+		self.primer = sorted(list(set(self.primers)))
 		prfile.close()
 	def getP5sequences(self):
 		return self.P5sequences
