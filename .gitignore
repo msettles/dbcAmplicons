@@ -21,4 +21,4 @@
 .Rhistory
 .RData
 *.Rproj
-
+*sublime-workspace

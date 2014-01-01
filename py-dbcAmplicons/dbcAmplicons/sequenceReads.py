@@ -69,45 +69,68 @@ class SequenceReadSet:
 		self.bc_1 = bc_1
 		self.bc_2 = bc_2
 	def getBarcode(self, bcTable, max_diff):
-		bc_pair = "%s%s" % (self.bc_1, self.bc_2)
-		if bc_pair in bcTable.barcodes:
-			self.bc_ID = bcTable.barcodes[bc_pair]
-			if self.bc_ID[0] != None:
-				self.goodRead = True
-			return bcTable
-		else:
+		# bc_pair = "%s%s" % (self.bc_1, self.bc_2)
+		# if bc_pair in bcTable.barcodes:
+		# 	self.bc_ID = bcTable.barcodes[bc_pair]
+		# 	if self.bc_ID[0] != None:
+		# 		self.goodRead = True
+		# 	return bcTable
+		# else:
+		# ### Barcode One Matching ###
+		# 	bc1 = None
+		# 	bc1Mismatch = 0
+		# 	if self.bc_1 in bcTable.P7:
+		# 		bc1 = self.bc_1
+		# 	else:
+		# 		bc1Mismatch = len(self.bc_1)
+		# 		for key in bcTable.P7:
+		# 			bcdist = barcodeDist(key, self.bc_1)
+		# 			if bcdist < bc1Mismatch:
+		# 				bc1 = key
+		# 				bc1Mismatch = bcdist
+		# 	### Barcode Two Matching ###
+		# 	bc2 = None
+		# 	bc2Mismatch = 0
+		# 	if self.bc_2 in bcTable.P5:
+		# 		bc2 = self.bc_2
+		# 	else:
+		# 		bc2Mismatch = len(self.bc_2)
+		# 		for key in bcTable.P5:
+		# 			bcdist = barcodeDist(key, self.bc_2)
+		# 			if bcdist <= bc2Mismatch:
+		# 				bc2 = key
+		# 				bc2Mismatch = bcdist
+		# 	### Barcode Pair Matching ###
+		# 	combined_bc = [None,bc1Mismatch,bc2Mismatch]
+		# 	if "%s%s" % (bc1, bc2) in bcTable.barcodes.keys() and bc1Mismatch <= max_diff and bc2Mismatch <= max_diff:
+		# 		combined_bc[0] = bcTable.barcodes["%s%s" % (bc1, bc2)][0]
+		# 		self.goodRead = True
+		# 	bcTable.barcodes[bc_pair] = combined_bc
+		# 	self.bc_ID = combined_bc
+		# 	return bcTable
 		### Barcode One Matching ###
-			bc1 = None
-			bc1Mismatch = 0
-			if self.bc_1 in bcTable.P7:
-				bc1 = self.bc_1
-			else:
-				bc1Mismatch = len(self.bc_1)
-				for key in bcTable.P7:
-					bcdist = barcodeDist(key, self.bc_1)
-					if bcdist < bc1Mismatch:
-						bc1 = key
-						bc1Mismatch = bcdist
-			### Barcode Two Matching ###
-			bc2 = None
-			bc2Mismatch = 0
-			if self.bc_2 in bcTable.P5:
-				bc2 = self.bc_2
-			else:
-				bc2Mismatch = len(self.bc_2)
-				for key in bcTable.P5:
-					bcdist = barcodeDist(key, self.bc_2)
-					if bcdist <= bc2Mismatch:
-						bc2 = key
-						bc2Mismatch = bcdist
-			### Barcode Pair Matching ###
-			combined_bc = [None,bc1Mismatch,bc2Mismatch]
-			if "%s%s" % (bc1, bc2) in bcTable.barcodes.keys() and bc1Mismatch <= max_diff and bc2Mismatch <= max_diff:
-				combined_bc[0] = bcTable.barcodes["%s%s" % (bc1, bc2)][0]
-				self.goodRead = True
-			bcTable.barcodes[bc_pair] = combined_bc
-			self.bc_ID = combined_bc
-			return bcTable
+		bc1 = None
+		bc1Mismatch = len(self.bc_1)
+		for key in bcTable.P7:
+			bcdist = barcodeDist(key, self.bc_1)
+			if bcdist < bc1Mismatch:
+				bc1 = key
+				bc1Mismatch = bcdist
+		### Barcode Two Matching ###
+		bc2 = None
+		bc2Mismatch = len(self.bc_2)
+		for key in bcTable.P5:
+			bcdist = barcodeDist(key, self.bc_2)
+			if bcdist <= bc2Mismatch:
+				bc2 = key
+				bc2Mismatch = bcdist
+		### Barcode Pair Matching ###
+		combined_bc = [None,bc1Mismatch,bc2Mismatch]
+		if "%s%s" % (bc1, bc2) in bcTable.barcodes.keys() and bc1Mismatch <= max_diff and bc2Mismatch <= max_diff:
+			combined_bc[0] = bcTable.barcodes["%s%s" % (bc1, bc2)][0]
+			self.goodRead = True
+		self.bc_ID = combined_bc
+		return 1
 	def getPrimer(self, prTable, max_diff, endmatch):
 		### Barcode One Matching ###
 		pr1 = None
