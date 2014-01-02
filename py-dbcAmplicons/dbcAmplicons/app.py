@@ -19,12 +19,11 @@ from dbcAmplicons import barcodeTable
 from dbcAmplicons import primerTable
 from dbcAmplicons import IlluminaRun
 from dbcAmplicons import IlluminaOutput
-from collections import Counter
 
 class App:
     verbose = False
     evalPrimer = False
-    def start(self, input_prefix, output_prefix, barcodesFile, primerFile, barcodeMaxDiff=1, primerMaxDiff=4, primerEndMatch=4, batchsize=10000, uncompressed=False,verbose=True):
+    def start(self, input_prefix, output_prefix, barcodesFile, primerFile, barcodeMaxDiff=1, primerMaxDiff=4, primerEndMatch=4, batchsize=10000, uncompressed=False, output_unidentified=False, verbose=True):
         """
             Process double barcoded Illumina Sequencing Run
         """
@@ -43,7 +42,7 @@ class App:
                     print "primer table length P5 Primer Sequences:%s, P7 Primer Sequences:%s" % (len(prTable.P5sequences),len(prTable.P7sequences))
             ## setup output files
             barcode_counts = {}
-            self.run_out = IlluminaOutput(output_prefix,uncompressed)
+            self.run_out = IlluminaOutput(output_prefix,uncompressed,output_unidentified)
             ## establish and open the Illumin run
             self.run = IlluminaRun(input_prefix)
             self.run.open()
@@ -70,23 +69,30 @@ class App:
                             if self.evalPrimer:
                                 barcode_counts[read.bc_ID[0]][read.pr_ID[0]] += 1
                         else:
-                            barcode_counts[read.bc_ID[0]] = Counter()
+                            # setup blank primer count table
+                            barcode_counts[read.bc_ID[0]] = {}
+                            barcode_counts[read.bc_ID[0]]["Total"] = 0
+                            for pr in prTable.primers:
+                                barcode_counts[read.bc_ID[0]][pr] = 0
                             barcode_counts[read.bc_ID[0]]["Total"] += 1
                             if self.evalPrimer:
                                 barcode_counts[read.bc_ID[0]][read.pr_ID[0]] += 1
                     else:
                         self.run_out.unidentified_count += 1
-                        badReads[0].append(readOut[0])
-                        badReads[1].append(readOut[1])
+                        if output_unidentified:
+                            badReads[0].append(readOut[0])
+                            badReads[1].append(readOut[1])
+                ### Write out reads
                 self.run_out.writeGoodReads('\n'.join(goodReads[0]) + '\n','\n'.join(goodReads[1]) + '\n')
-                self.run_out.writeBadReads('\n'.join(badReads[0]) + '\n','\n'.join(badReads[1]) + '\n')
+                if output_unidentified:
+                    self.run_out.writeBadReads('\n'.join(badReads[0]) + '\n','\n'.join(badReads[1]) + '\n')
                 if self.verbose:
                     print "processed %s total reads, %s Reads/second, %s identified reads, %s unidentified reads" % (self.run.count, round(self.run.count/(time.time() - lasttime),0), self.run_out.identified_count,self.run_out.unidentified_count)
             if self.verbose:
                 print "%s reads processed in %s minutes" % (self.run.count,round((time.time()-lasttime)/(60),2))
             # Write out barcode and primer table
             bcFile = open(output_prefix + '_Barcodes.txt', 'w')
-            bckeys = sorted(barcode_counts.keys())
+            bckeys = barcode_counts.keys()
             txt = '\t'.join(barcode_counts[bckeys[0]].keys())
             txt = "Barcode\t" + txt + '\n'
             bcFile.write(txt)

@@ -111,26 +111,29 @@ class IlluminaOutput:
 	identified_R2 = None
 	unidentified_R1 = None
 	unidentified_R2 = None
-	def __init__(self,output_prefix, uncompressed):
+	def __init__(self,output_prefix, uncompressed, output_unidentified):
 		self.output_prefix = output_prefix
 		if uncompressed is True:
 			self.identified_R1 = open(output_prefix + '_Identified_R1.fastq', 'w')
 			self.identified_R2 = open(output_prefix + '_Identified_R2.fastq', 'w')
-			self.unidentified_R1 = open(output_prefix + '_Unidentified_R1.fastq', 'w')
-			self.unidentified_R2 = open(output_prefix + '_Unidentified_R2.fastq', 'w')
+			if output_unidentified:
+				self.unidentified_R1 = open(output_prefix + '_Unidentified_R1.fastq', 'w')
+				self.unidentified_R2 = open(output_prefix + '_Unidentified_R2.fastq', 'w')
 		else:
 			self.identified_R1 = gzip.open(output_prefix + '_Identified_R1.fastq.gz', 'wb')
 			self.identified_R2 = gzip.open(output_prefix + '_Identified_R2.fastq.gz', 'wb')
-			self.unidentified_R1 = gzip.open(output_prefix + '_Unidentified_R1.fastq.gz', 'wb')
-			self.unidentified_R2 = gzip.open(output_prefix + '_Unidentified_R2.fastq.gz', 'wb')
+			if output_unidentified:
+				self.unidentified_R1 = gzip.open(output_prefix + '_Unidentified_R1.fastq.gz', 'wb')
+				self.unidentified_R2 = gzip.open(output_prefix + '_Unidentified_R2.fastq.gz', 'wb')
 		self.isOpen = True
 		self.identified_count=0
 		self.unidentified_count=0
 	def close(self):
 		self.identified_R1.close()
-		self.identified_R2.close()
-		self.unidentified_R1.close()
-		self.unidentified_R2.close()
+		self.identified_R2.close() 
+		if (self.unidentified_R1 != None and self.unidentified_R2 != None):
+			self.unidentified_R1.close()
+			self.unidentified_R2.close()
 		self.isOpen = False
 	def writeGoodReads(self,R1,R2):
 		self.identified_R1.write(R1)

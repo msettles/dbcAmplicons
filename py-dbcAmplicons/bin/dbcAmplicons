@@ -33,17 +33,19 @@ def main():
                         type="int", dest="barcodediff", default=1)
     parser.add_option('-p', '--primer_file', help="file with primers",
                         action="store", type="str", dest="primer_file",default=None)
-    parser.add_option('-r', '--primerdiff', help="max hamming dist from primer [default: %default]",
+    parser.add_option('-D', '--primerdiff', help="max hamming dist from primer [default: %default]",
                         type="int", dest="primerdiff", default=4)
     parser.add_option('-e', '--primerend', help="required number of matching bases at end of primer [default: %default]",
                         type="int", dest="primerend", default=4)
-    parser.add_option('-t', '--batchsize', help="batch size to process reads in [default: %default]",
+    parser.add_option('-B', '--batchsize', help="batch size to process reads in [default: %default]",
                         type="int", dest="batchsize", default=10000)    
     parser.add_option('-o', '--output_prefix', help="output file basename",
                         action="store", type="str", dest="output_base",default=None)
-    parser.add_option('-u', '--uncompressed', help="leave output files uncompressed [default: %default]",
+    parser.add_option('-u', '--output_unidentified', help="output unidentified reads [default: %default]",
+                        action="store_true", dest="unidentified", default=False)
+    parser.add_option('-U', '--uncompressed', help="leave output files uncompressed [default: %default]",
                         action="store_true", dest="uncompressed", default=False)
-    parser.add_option('-v', '--verbose', help="verbose output [default: %default]",
+    parser.add_option('-s', '--silent', help="verbose output [default: %default]",
                         action="store_true", dest="verbose", default=False)
 
     (options,  args) = parser.parse_args()
@@ -75,8 +77,9 @@ def main():
     primerMaxDiff = options.primerdiff
     primerEndMatch = options.primerend
     uncompressed = options.uncompressed
-    verbose = options.verbose
+    verbose = not options.verbose
     batchsize = options.batchsize
+    output_unidentified = options.unidentified
 
     lib_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../')
     if lib_path not in sys.path:
@@ -90,7 +93,7 @@ def main():
         cProfile.runctx('app.start(input_prefix, output_prefix, bcFile, prFile, barcodeMaxDiff, primerMaxDiff, primerEndMatch, batchsize, uncompressed, verbose)', globals(), locals())
         return 255
     else:
-        return app.start(input_prefix, output_prefix, bcFile, prFile, barcodeMaxDiff, primerMaxDiff, primerEndMatch, batchsize, uncompressed, verbose)
+        return app.start(input_prefix, output_prefix, bcFile, prFile, barcodeMaxDiff, primerMaxDiff, primerEndMatch, batchsize, uncompressed, output_unidentified, verbose)
 
 if __name__ == "__main__":
     main()
