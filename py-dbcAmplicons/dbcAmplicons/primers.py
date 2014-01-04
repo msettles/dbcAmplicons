@@ -65,16 +65,16 @@ class primerTable:
 			id1 = self.P5id[seq1]
 		else:
 			pair1 = None
-			id1 = None
+			id1 = [None]
 		if seq2 in self.P7pair.keys():
 			pair2 = self.P7pair[seq2]
 			id2 = self.P7id[seq2]
 		else:
 			pair2 = None
-			id2 = None
+			id2 = [None]
 		# at least one primer not id
 		if pair1 == None or pair2 == None:
-			return [None,id1,id2]
+			return [None,id1[0],id2[0]]
 		# simple case of single length and matching
 		elif len(pair1) == 1 and len(pair2) == 1 and pair1 == pair2:
 			return [pair1[0],id1[0],id2[0]]

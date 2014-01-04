@@ -15,7 +15,7 @@ config = {
     'version': '0.2',
     'install_requires': [],
     'packages': ['dbcAmplicons'],
-    'scripts': ['bin/dbcAmplicons'],
+    'scripts': ['bin/dbcPreprocess'],
     'name': 'dbcAmplicons',
     "ext_package":'dbcAmplicons',
     'ext_modules': [editdist]
