@@ -17,9 +17,9 @@
 import os
 import glob
 import gzip
-from dbcAmplicons import SequenceReadSet
+from dbcAmplicons import FourSequenceReadSet
 
-class IlluminaRun:
+class FourReadIlluminaRun:
 	""" A sequencing run """
 	isOpen = False
 	count = 0
@@ -97,7 +97,7 @@ class IlluminaRun:
 				#add it to the stack
 			except StopIteration:
 				break
-			reads.append(SequenceReadSet(name=name,read_1=read_1,qual_1=qual_1,read_2=read_2,qual_2=qual_2,bc_1=bc_1,bc_2=bc_2))
+			reads.append(FourSequenceReadSet(name=name,read_1=read_1,qual_1=qual_1,read_2=read_2,qual_2=qual_2,bc_1=bc_1,bc_2=bc_2))
 			self.count += 1
 		return reads
 

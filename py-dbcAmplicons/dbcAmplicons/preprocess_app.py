@@ -17,7 +17,7 @@ import sys
 import time
 from dbcAmplicons import barcodeTable
 from dbcAmplicons import primerTable
-from dbcAmplicons import IlluminaRun
+from dbcAmplicons import FourReadIlluminaRun
 from dbcAmplicons import IlluminaOutput
 
 class preprocessApp:
@@ -44,7 +44,7 @@ class preprocessApp:
             barcode_counts = {}
             self.run_out = IlluminaOutput(output_prefix,uncompressed,output_unidentified)
             ## establish and open the Illumin run
-            self.run = IlluminaRun(input_prefix)
+            self.run = FourReadIlluminaRun(input_prefix)
             self.run.open()
             while 1:
                 ## get next batch of reads

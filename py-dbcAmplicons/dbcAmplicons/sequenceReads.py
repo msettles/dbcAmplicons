@@ -18,7 +18,8 @@ import sys
 try: 
 	from dbcAmplicons import editdist
 	editdist_loaded = True
-except ImportError: 
+except ImportError:
+	print("Warning: editdist library not loaded, Insertion Deletion detetion in barcodes and primers will not be performed")
 	editdist_loaded = False 
 
 
@@ -55,11 +56,12 @@ def primerDist(primer,read, max_diff, end_match):
 
 
 # ---------------- Class for 4 read sequence data with double barcode set ----------------
-class SequenceReadSet:
+class FourSequenceReadSet:
 	""" class to hold a read set """
 	goodRead = False
-	bc_ID = None
-	pr_ID = None
+	bc_ID = None ## vector of length 3 [barcodePairID, editdist1, editdist2]
+	pr_ID = None ## vector of length 6 [primerPairID,primerID1,editdist1,readendpos1, primerID2,editdist2,readendpos2]
+	sample_ID = None
 	def __init__(self,name,read_1,qual_1,read_2,qual_2,bc_1,bc_2):
 		self.name = name
 		self.read_1 = read_1
@@ -91,6 +93,8 @@ class SequenceReadSet:
 			combined_bc[0] = bcTable.barcodes["%s%s" % (bc1, bc2)][0]
 			self.goodRead = True
 		self.bc_ID = combined_bc
+		if self.sample_ID == None:
+			self.sample_ID = self.bc_ID[0]
 		return 1
 	def getPrimer(self, prTable, max_diff, endmatch):
 		### Barcode One Matching ###
@@ -118,18 +122,19 @@ class SequenceReadSet:
 		self.goodRead = self.goodRead and combined_pr[0] != None and pr1Mismatch <= max_diff and pr2Mismatch <= max_diff
 		self.pr_ID = [combined_pr[0],combined_pr[1],pr2Mismatch,pr1Position,combined_pr[2],pr2Mismatch,pr2Position]
 		return 1
+	def setSampleID(self,sampleID):
+		""" set the sample_ID of the read """
+		self.sampleID = sampleID
 	def writeRead(self):
-		if (self.bc_ID == None):
-			raise 
 		""" create four line string for the read """
 		if self.pr_ID != None:
-			read1_name = "%s 1:N:0:%s:%s %s|%s|%s|%s %s|%s|%s" % (self.name, self.bc_ID[0], self.pr_ID[0], self.bc_1, self.bc_ID[1], self.bc_2 , self.bc_ID[2], self.pr_ID[1], self.pr_ID[2], self.pr_ID[3])
-			read2_name = "%s 2:N:0:%s:%s %s|%s|%s|%s %s|%s|%s" % (self.name, self.bc_ID[0], self.pr_ID[0], self.bc_1, self.bc_ID[1], self.bc_2 , self.bc_ID[2], self.pr_ID[4], self.pr_ID[5], self.pr_ID[6])
+			read1_name = "%s 1:N:0:%s:%s %s|%s|%s|%s %s|%s|%s" % (self.name, self.sample_ID, self.pr_ID[0], self.bc_1, self.bc_ID[1], self.bc_2 , self.bc_ID[2], self.pr_ID[1], self.pr_ID[2], self.pr_ID[3])
+			read2_name = "%s 2:N:0:%s:%s %s|%s|%s|%s %s|%s|%s" % (self.name, self.sample_ID, self.pr_ID[0], self.bc_1, self.bc_ID[1], self.bc_2 , self.bc_ID[2], self.pr_ID[4], self.pr_ID[5], self.pr_ID[6])
 			r1 = '\n'.join([read1_name, self.read_1[self.pr_ID[3]:],'+',self.qual_1[self.pr_ID[3]:]])
 			r2 = '\n'.join([read2_name, self.read_2[self.pr_ID[6]:],'+',self.qual_2[self.pr_ID[6]:]])
 		else:
-			read1_name = "%s 1:N:0:%s %s|%s|%s|%s" % (self.name, self.bc_ID[0], self.bc_1, self.bc_ID[1], self.bc_2 , self.bc_ID[2])
-			read2_name = "%s 2:N:0:%s %s|%s|%s|%s" % (self.name, self.bc_ID[0], self.bc_1, self.bc_ID[1], self.bc_2 , self.bc_ID[2])
+			read1_name = "%s 1:N:0:%s %s|%s|%s|%s" % (self.name, self.sample_ID, self.bc_1, self.bc_ID[1], self.bc_2 , self.bc_ID[2])
+			read2_name = "%s 2:N:0:%s %s|%s|%s|%s" % (self.name, self.sample_ID, self.bc_1, self.bc_ID[1], self.bc_2 , self.bc_ID[2])
 			r1 = '\n'.join([read1_name, self.read_1,'+',self.qual_1])
 			r2 = '\n'.join([read2_name, self.read_2,'+',self.qual_2])
 		return [r1,r2]

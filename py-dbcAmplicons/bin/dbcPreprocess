@@ -14,6 +14,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+######################################################################
+##
+## dbcPreprocess is an application which preprocesses raw four read (2 sequence reads and 2 barcode reads) Illumina amplicon data.
+## identifying paired barcodes and primer pair and removes the primer sequences from the reads. The application outputs new files
+## with the two reads where barocode and primer pair Ids are recorded in the reads name
+##
+## barcode lookup file should look like
+## #Barcode_name   P5_barcode  P7_barcode
+## Alpha1  TAGATCGC    TAAGGCGA
+## Alpha2  CTCTCTAT    TAAGGCGA
+## Alpha3  TATCCTCT    TAAGGCGA
+## Alpha4  AGAGTAGA    TAAGGCGA
+##
+## primer lookup file should look like, where Read is P5 or R1 or READ1 and P7 or R2 or READ2
+## #Read    Pair_ID Primer_ID   Sequence
+## P5  16S 27F_YM1 GTAGAGTTTGATCCTGGCTCAG
+## P5  16S 27F_YM2 CGTAGAGTTTGATCATGGCTCAG
+## P5  16S 27F_YM3 ACGTAGAGTTTGATTCTGGCTCAG
+## P5  16S 27F_YM4 TACGTAGAGTTTGATTATGGCTCAG
+## P5  16S 27F_Bif GTACGTAGGGTTCGATTCTGGCTCAG
+## P5  16S 27F_Bor CGTACGTAGAGTTTGATCCTGGCTTAG
+##
+######################################################################
+
 import sys
 import os
 from optparse import OptionParser
