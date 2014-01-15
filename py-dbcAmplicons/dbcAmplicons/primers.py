@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
 # ---------------- primer class ----------------
 class primerTable:
 	""" class to hold primer information """
@@ -28,13 +29,23 @@ class primerTable:
 		try:
 			prfile = open(primerfile, 'r')
 		except IOError:
-			print 'cannot open', primerfile
+			print 'Primers: Error cannot open', primerfile
+			raise
 		f = prfile.readlines()
+		line = 0
 		for row in f:
+			line += 1
 			if row[0] == "#": # comment line
 				continue
 			row = row.rstrip()
-			READ, PAIR, ID, SEQ = row.split('\t')
+			try:
+				READ, PAIR, ID, SEQ = row.split('\t')
+			except ValueError as e:
+				print "Primers: Error reading line %s of primer file: %s" % (str(line), str(e))
+				raise
+			except:
+				print "Primers: Unexpected error on line %s: %s" % (line,sys.exc_info()[0])
+				raise
 			self.primers.extend([PAIR])
 			if READ in ["P5","R1","READ1"]:
 				if SEQ in self.P5sequences:

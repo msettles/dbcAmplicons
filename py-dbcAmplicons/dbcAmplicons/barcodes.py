@@ -15,10 +15,15 @@
 # limitations under the License.
 
 # ---------------- reverse complement a sequence s ----------------
+import sys
+
 def reverseComplement(s):
 	basecomplement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
 	letters = list(s)
-	letters = [basecomplement[base] for base in letters]
+	try:
+		letters = [basecomplement[base] for base in letters]
+	except:
+		raise
 	return ''.join(letters[::-1])
 
 # ---------------- barcodes class ----------------
@@ -32,14 +37,27 @@ class barcodeTable:
 		try:
 			bcfile = open(barcodefile, 'r')
 		except IOError:
-			print 'cannot open', barcodefile
+			print 'Barcodes: Error cannot open', barcodefile
+			raise
 		f = bcfile.readlines()
+		line = 0
 		for row in f:
+			line += 1
 			if row[0] == "#": # comment line
 				continue
 			row = row.rstrip()
-			ID, P5BC, P7BC = row.split('\t')
-			P7BC = reverseComplement(P7BC)
+			try:
+				ID, P5BC, P7BC = row.split('\t')
+				P7BC = reverseComplement(P7BC)
+			except ValueError as e:
+				print "Barcodes: Error reading line %s of barcode file: %s" % (str(line), str(e))
+				raise
+			except KeyError:
+				print "Barcodes: Error reverse complementing P7 barcode %s, unknown character" % P7BC
+				raise
+			except:
+				print "Barcodes: Unexpected error on line %s: %s" % (line,sys.exc_info()[0])
+				raise
 			if P5BC not in self.P5:
 				self.P5.extend([P5BC])
 			if P7BC not in self.P7:

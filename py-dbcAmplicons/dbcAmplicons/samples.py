@@ -16,7 +16,7 @@
 
 
 import re
-
+import sys
 class KeyFoundError(Exception):
 	def __init__(self, barcode, primer):
 		self.barcode = barcode
@@ -42,25 +42,27 @@ class sampleTable:
 		try:
 			sampleID_index = vheader.index("SampleID")
 		except ValueError:
-			print "Column 'SampleID' was not found in the samples table"
+			print "Samples: Column 'SampleID' was not found in the samples table"
 			raise
 		try:
 			barcodeID_index = vheader.index("BarcodeID")
 		except ValueError:
-			print "Column 'BarcodeID' was not found in the samples table"
+			print "Samples: Column 'BarcodeID' was not found in the samples table"
 			raise
 		try:
 			primerID_index = vheader.index("PrimerPairID")
 		except ValueError:
-			print "Column 'PrimerPairID' was not found in the samples table"
+			print "Samples: Column 'PrimerPairID' was not found in the samples table"
 			raise
 		try:
 			projectID_index = vheader.index("ProjectID")
 		except ValueError:
-			print "Column 'ProjectID' was not found in the samples table"
+			print "Samples: Column 'ProjectID' was not found in the samples table"
 			raise
 		try:
+			line=1
 			for row in f:
+				line += 1
 				if row[0] == "#": # comment line
 					continue
 				row = row.rstrip() # strip off newline
@@ -82,11 +84,11 @@ class sampleTable:
 						self.sampleTable[barcode][primer] = [sid,pid]
 				self.sampleCount += 1
 		except KeyFoundError as e:
-			print "Error in sample sheet: Barcode [%s] and Primer [%s] pair previously specified" % (e.getBarcode(), e.getPrimer())
+			print "Samples: Error in sample sheet: Barcode [%s] and Primer [%s] pair previously specified" % (e.getBarcode(), e.getPrimer())
 			sfile.close()
 			raise
 		except:
-			print "An Unknown Error occured reading in the sample sheet"
+			print "Samples: Unexpected error on line %s: %s" % (line,sys.exc_info()[0])
 			sfile.close()
 			raise
 		sfile.close()
@@ -102,6 +104,7 @@ class sampleTable:
 		except KeyError:
 			return(None)
 		except:
+			print "Samples: Unexpected error:", sys.exc_info()[0]
 			raise
 	def getProjectID(self,barcode,primer):
 		try:
@@ -113,4 +116,5 @@ class sampleTable:
 		except KeyError:
 			return(None)
 		except:
+			print "Samples: Unexpected error:", sys.exc_info()[0]
 			raise

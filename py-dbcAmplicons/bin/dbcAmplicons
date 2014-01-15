@@ -1,0 +1,153 @@
+#!/usr/bin/env python
+
+# Copyright 2013, Institute for Bioninformatics and Evolutionary Studies
+#
+# Licensed under the Apache License, Version 2.0 (the 'License');
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an 'AS IS' BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+######################################################################
+##
+## dbcAmplicons is an application which preprocesses raw four read (2 sequence reads and 2 barcode reads) Illumina amplicon data.
+## identifying paired barcodes and primer pair and removes the primer sequences from the reads. The application outputs new files
+## with the two reads where barocode and primer pair Ids are recorded in the reads name
+##
+## barcode lookup file should look like
+## #Barcode_name   P5_barcode  P7_barcode
+## Alpha1  TAGATCGC    TAAGGCGA
+## Alpha2  CTCTCTAT    TAAGGCGA
+## Alpha3  TATCCTCT    TAAGGCGA
+## Alpha4  AGAGTAGA    TAAGGCGA
+##
+## primer lookup file should look like, where Read is P5 or R1 or READ1 and P7 or R2 or READ2
+## #Read    Pair_ID Primer_ID   Sequence
+## P5  16S 27F_YM1 GTAGAGTTTGATCCTGGCTCAG
+## P5  16S 27F_YM2 CGTAGAGTTTGATCATGGCTCAG
+## P5  16S 27F_YM3 ACGTAGAGTTTGATTCTGGCTCAG
+## P5  16S 27F_YM4 TACGTAGAGTTTGATTATGGCTCAG
+## P5  16S 27F_Bif GTACGTAGGGTTCGATTCTGGCTCAG
+## P5  16S 27F_Bor CGTACGTAGAGTTTGATCCTGGCTTAG
+##
+## sample sheet files should have at miniumum the 4 columns [SampleID,BarcodeID,PrimerPairID,ProjectID] order doesn't matter and should look something like
+## SampleID TubeID  BarcodeID   PrimerPairID    Vol Conc    Quantity    ProjectID   Investigator
+## 1    1   Hotel353    ITS-4_5 NA  NA  NA  Anahi-Pollen    Anahi
+## 2    2   Hotel354    ITS-4_5 NA  NA  NA  Anahi-Pollen    Anahi
+## 3    3   Hotel355    ITS-4_5 NA  NA  NA  Anahi-Pollen    Anahi
+######################################################################
+import sys
+import os
+import argparse 
+
+profile = False
+
+version_num = "1.0"
+
+#####################################################################################
+## Preprocess four read raw amplicon data set
+
+''' preprocessApp parser parameters '''
+def preprocessApp(subparsers):
+    #
+    # Parse options
+    #
+    preprocess_parser = subparsers.add_parser('preprocess', help = 'Preprocess four read raw amplicon data, identifying barcode and primer sequence')
+    preprocess_parser.add_argument('-d', '--barcodediff', help='max hamming dist from barcode [default: %(default)s]',
+                        type=int, dest='barcodediff', default=1, nargs=1)
+    preprocess_parser.add_argument('-p', '--primer_file', help='file with primers',
+                        action='store', type=str, dest='primer_file',metavar='primerFile', default=None, nargs=1)
+    preprocess_parser.add_argument('-D', '--primerdiff', help='max hamming dist from primer [default: %(default)s]',
+                        type=int, dest='primerdiff', default=4, nargs=1)
+    preprocess_parser.add_argument('-e', '--primerend', help='required number of matching bases at end of primer [default: %(default)s]',
+                        type=int, dest='primerend', default=4, nargs=1)
+    preprocess_parser.add_argument('-B', '--batchsize', help='batch size to process reads in [default: %(default)s]',
+                        type=int, dest='batchsize', default=10000, nargs=1)    
+    preprocess_parser.add_argument('-o', '--output_prefix', help='output file basename [default: fastq_prefix]',
+                        action='store', type=str, dest='output_base', metavar='outputPrefix', default=None, nargs=1)
+    preprocess_parser.add_argument('-u', '--output_unidentified', help='output unidentified reads [default: %(default)s]',
+                        action='store_true', dest='unidentified', default=False)
+    preprocess_parser.add_argument('-U', '--uncompressed', help='leave output files uncompressed [default: %(default)s]',
+                        action='store_true', dest='uncompressed', default=False)
+    preprocess_parser.add_argument('-s', '--silent', help='verbose output [default: %(default)s]',
+                        action='store_true', dest='verbose', default=False)
+    preprocess_parser.add_argument('barcodes_file', help='file with barcodes',
+                        action='store', type=str, metavar='barcodesFile', nargs=1)
+    preprocess_parser.add_argument('in_prefix', metavar='fastq_prefix', help='four read amplicon fastq file prefix',
+                        action='store',type=str, nargs=1)
+    return preprocess_parser 
+
+''' validate preprocessApp parser parameters and launch the app '''
+class preprocessCMD:
+    def __init__(self):
+        pass
+    def execute (self,args):
+        # ----------------------- options input files -----------------------
+        input_prefix = args.in_prefix[0]
+        bcFile = args.barcodes_file[0]
+        if args.primer_file == None:
+            prFile = None
+            print "No primer file identified"
+        else:
+            prFile = args.primer_file[0]
+        # ----------------------- options output prefix -----------------------
+        if args.output_base is None:
+            output_prefix = args.in_prefix[0]
+        else:
+            output_prefix = args.output_base[0]
+        # ----------------------- other options ------------
+        barcodeMaxDiff = args.barcodediff
+        primerMaxDiff = args.primerdiff
+        primerEndMatch = args.primerend
+        uncompressed = args.uncompressed
+        verbose = not args.verbose
+        batchsize = args.batchsize
+        output_unidentified = args.unidentified
+
+        lib_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../')
+        if lib_path not in sys.path:
+            sys.path.insert(0, lib_path)
+
+        from dbcAmplicons import preprocessApp
+        app = preprocessApp()
+
+        if profile:
+            import cProfile
+            cProfile.runctx('app.start(input_prefix, output_prefix, bcFile, prFile, barcodeMaxDiff, primerMaxDiff, primerEndMatch, batchsize, uncompressed, verbose)', globals(), locals())
+            return 255
+        else:
+            return app.start(input_prefix, output_prefix, bcFile, prFile, barcodeMaxDiff, primerMaxDiff, primerEndMatch, batchsize, uncompressed, output_unidentified, verbose)
+
+#####################################################################################
+##  Master parser arguments
+def parseArgs():
+    parser = argparse.ArgumentParser( \
+        description = 'dbcAmplicons, a python package for preprocessing of massively multiplexed, dual barcoded Illumina Amplicons', \
+        epilog ='For questions or comments, please contact Matt Settles <msettles@uidaho.edu>', add_help=True)
+    parser.add_argument('--version', action='version', version="%(prog)s Version:" + version_num)
+    subparsers = parser.add_subparsers(help='commands', dest='command')
+
+    preprocessApp(subparsers)
+
+    args = parser.parse_args() 
+
+    return args
+
+
+def main():
+    preprocess = preprocessCMD()
+
+    commands = {'preprocess': preprocess}
+
+    args = parseArgs()
+    commands[args.command].execute(args)
+
+if __name__ == '__main__':
+    main()

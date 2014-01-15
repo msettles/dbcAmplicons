@@ -141,3 +141,34 @@ class IlluminaOutput:
 	def writeBadReads(self,R1,R2):
 		self.unidentified_R1.write(R1)
 		self.unidentified_R2.write(R2)
+
+class IlluminaTwoReadOutput:
+	""" Output paired sequence reads """
+	isOpen = False
+	count = 0
+	R1f = None
+	R2f = None
+	def __init__(self,output_prefix, uncompressed):
+		self.output_prefix = output_prefix
+		if uncompressed is True:
+			self.R1f = open(output_prefix + '_R1.fastq', 'w')
+			self.R2f = open(output_prefix + '_R2.fastq', 'w')
+		else:
+			self.R1f = gzip.open(output_prefix + '_R1.fastq.gz', 'wb')
+			self.R2f = gzip.open(output_prefix + '_R2.fastq.gz', 'wb')
+		self.isOpen = True
+		self.count=0
+		self.R1 = []
+		self.R2 = []
+	def close(self):
+		self.R1.close()
+		self.R2.close() 
+		self.isOpen = False
+	def appendRead(self,R1,R2):
+		self.R1.append(R1)
+		self.R2.append(R2)
+	def writeReads(self):
+		self.R1f.write('\n'.join(self.R1) + '\n')
+		self.R2f.write('\n'.join(self.R2) + '\n')
+		self.R1 = []
+		self.R2 = []

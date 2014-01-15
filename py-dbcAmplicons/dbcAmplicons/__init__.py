@@ -16,6 +16,7 @@
 
 from barcodes import barcodeTable
 from primers import primerTable
+from samples import sampleTable
 from sequenceReads import FourSequenceReadSet
 from illuminaRun import FourReadIlluminaRun
 from illuminaRun import IlluminaOutput
