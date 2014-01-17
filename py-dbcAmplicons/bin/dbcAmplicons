@@ -47,9 +47,9 @@ import sys
 import os
 import argparse 
 
-profile = False
+profile = True
 
-version_num = "1.0"
+version_num = "0.3"
 
 #####################################################################################
 ## Preprocess four read raw amplicon data set
@@ -68,6 +68,8 @@ def preprocessApp(subparsers):
                         type=int, dest='primerdiff', default=4, nargs=1)
     preprocess_parser.add_argument('-e', '--primerend', help='required number of matching bases at end of primer [default: %(default)s]',
                         type=int, dest='primerend', default=4, nargs=1)
+    preprocess_parser.add_argument('-s', '--samples_file', help='file with primers',
+                        action='store', type=str, dest='samples_file',metavar='sampleFile', default=None, nargs=1)
     preprocess_parser.add_argument('-B', '--batchsize', help='batch size to process reads in [default: %(default)s]',
                         type=int, dest='batchsize', default=10000, nargs=1)    
     preprocess_parser.add_argument('-o', '--output_prefix', help='output file basename [default: fastq_prefix]',
@@ -76,7 +78,7 @@ def preprocessApp(subparsers):
                         action='store_true', dest='unidentified', default=False)
     preprocess_parser.add_argument('-U', '--uncompressed', help='leave output files uncompressed [default: %(default)s]',
                         action='store_true', dest='uncompressed', default=False)
-    preprocess_parser.add_argument('-s', '--silent', help='verbose output [default: %(default)s]',
+    preprocess_parser.add_argument('-v', '--silent', help='verbose output [default: %(default)s]',
                         action='store_true', dest='verbose', default=False)
     preprocess_parser.add_argument('barcodes_file', help='file with barcodes',
                         action='store', type=str, metavar='barcodesFile', nargs=1)
@@ -89,27 +91,36 @@ class preprocessCMD:
     def __init__(self):
         pass
     def execute (self,args):
+        verbose = not args.verbose
         # ----------------------- options input files -----------------------
         input_prefix = args.in_prefix[0]
         bcFile = args.barcodes_file[0]
+        if args.samples_file == None:
+            sFile = None
+            if verbose:
+                print "No sample file identified"
+        else:
+            sFile = args.samples_file[0]
         if args.primer_file == None:
             prFile = None
-            print "No primer file identified"
+            if verbose:
+                print "No primer file identified"
         else:
             prFile = args.primer_file[0]
         # ----------------------- options output prefix -----------------------
-        if args.output_base is None:
-            output_prefix = args.in_prefix[0]
+        if args.output_base is None and sFile is None:
+            output_prefix = os.path.basename(args.in_prefix[0])
+        elif args.output_base is None and sFile is not None:
+            output_prefix = "."
         else:
             output_prefix = args.output_base[0]
+        uncompressed = args.uncompressed
+        output_unidentified = args.unidentified
         # ----------------------- other options ------------
         barcodeMaxDiff = args.barcodediff
         primerMaxDiff = args.primerdiff
         primerEndMatch = args.primerend
-        uncompressed = args.uncompressed
-        verbose = not args.verbose
         batchsize = args.batchsize
-        output_unidentified = args.unidentified
 
         lib_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../')
         if lib_path not in sys.path:
@@ -120,21 +131,78 @@ class preprocessCMD:
 
         if profile:
             import cProfile
-            cProfile.runctx('app.start(input_prefix, output_prefix, bcFile, prFile, barcodeMaxDiff, primerMaxDiff, primerEndMatch, batchsize, uncompressed, verbose)', globals(), locals())
+            cProfile.runctx('app.start(input_prefix, output_prefix, bcFile, prFile, sFile, barcodeMaxDiff, primerMaxDiff, primerEndMatch, batchsize, uncompressed, output_unidentified, verbose)', globals(), locals())
             return 255
         else:
-            return app.start(input_prefix, output_prefix, bcFile, prFile, barcodeMaxDiff, primerMaxDiff, primerEndMatch, batchsize, uncompressed, output_unidentified, verbose)
+            return app.start(input_prefix, output_prefix, bcFile, prFile, sFile, barcodeMaxDiff, primerMaxDiff, primerEndMatch, batchsize, uncompressed, output_unidentified, verbose)
 
+#####################################################################################
+## Split Preprocessed data by project
+
+''' splitreadsApp parser parameters '''
+def splitreadsApp(subparsers):
+    #
+    # Parse options
+    #
+    preprocess_parser = subparsers.add_parser('splitreads', help = 'Split reads from a preprocessed four read illumina run by project id')
+    preprocess_parser.add_argument('-B', '--batchsize', help='batch size to process reads in [default: %(default)s]',
+                        type=int, dest='batchsize', default=10000, nargs=1)    
+    preprocess_parser.add_argument('-o', '--output_path', help='path for output files [default: %(default)s]',
+                        action='store', type=str, dest='output_base', metavar='outputPrefix', default=".", nargs=1)
+    preprocess_parser.add_argument('-u', '--output_unidentified', help='output unidentified reads [default: %(default)s]',
+                        action='store_true', dest='unidentified', default=False)
+    preprocess_parser.add_argument('-U', '--uncompressed', help='leave output files uncompressed [default: %(default)s]',
+                        action='store_true', dest='uncompressed', default=False)
+    preprocess_parser.add_argument('-s', '--silent', help='verbose output [default: %(default)s]',
+                        action='store_true', dest='verbose', default=False)
+    preprocess_parser.add_argument('samples_file', help='file with sample/project information',
+                        action='store', type=str, metavar='samplesFile', nargs=1)
+    preprocess_parser.add_argument('in_prefix', metavar='fastq_prefix', help='preprocessed amplicon fastq file prefix',
+                        action='store',type=str, nargs=1)
+    return preprocess_parser 
+
+''' validate splitreadsApp parser parameters and launch the app '''
+class splitreadsCMD:
+    def __init__(self):
+        pass
+    def execute (self,args):
+        # ----------------------- options input files -----------------------
+        input_prefix = args.in_prefix[0]
+        sFile = args.samples_file[0]
+        # ----------------------- options output prefix -----------------------
+        output_prefix = args.output_base[0]
+        uncompressed = args.uncompressed
+        output_unidentified = args.unidentified
+        # ----------------------- other options ------------
+        verbose = not args.verbose
+        batchsize = args.batchsize
+
+        lib_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../')
+        if lib_path not in sys.path:
+            sys.path.insert(0, lib_path)
+
+        from dbcAmplicons import splitreadsApp
+        app = splitreadsApp()
+
+        if profile:
+            import cProfile
+            cProfile.runctx('app.start(input_prefix, output_prefix, sFile, batchsize, uncompressed, output_unidentified, verbose)', globals(), locals())
+            return 255
+        else:
+            return app.start(input_prefix, output_prefix, sFile, batchsize, uncompressed, output_unidentified, verbose)
+
+#
 #####################################################################################
 ##  Master parser arguments
 def parseArgs():
     parser = argparse.ArgumentParser( \
         description = 'dbcAmplicons, a python package for preprocessing of massively multiplexed, dual barcoded Illumina Amplicons', \
         epilog ='For questions or comments, please contact Matt Settles <msettles@uidaho.edu>', add_help=True)
-    parser.add_argument('--version', action='version', version="%(prog)s Version:" + version_num)
+    parser.add_argument('--version', action='version', version="%(prog)s Version " + version_num)
     subparsers = parser.add_subparsers(help='commands', dest='command')
 
     preprocessApp(subparsers)
+    splitreadsApp(subparsers)
 
     args = parser.parse_args() 
 
@@ -143,8 +211,9 @@ def parseArgs():
 
 def main():
     preprocess = preprocessCMD()
+    splitreads = splitreadsCMD()
 
-    commands = {'preprocess': preprocess}
+    commands = {'preprocess': preprocess, 'splitreads':splitreads}
 
     args = parseArgs()
     commands[args.command].execute(args)

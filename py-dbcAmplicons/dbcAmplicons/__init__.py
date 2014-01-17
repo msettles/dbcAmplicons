@@ -18,7 +18,10 @@ from barcodes import barcodeTable
 from primers import primerTable
 from samples import sampleTable
 from sequenceReads import FourSequenceReadSet
+from sequenceReads import TwoSequenceReadSet
 from illuminaRun import FourReadIlluminaRun
-from illuminaRun import IlluminaOutput
-from preprocess_app import preprocessApp
+from illuminaRun import TwoReadIlluminaRun
+from illuminaRun import IlluminaTwoReadOutput
 
+from preprocess_app import preprocessApp
+from splitreads_app import splitreadsApp
