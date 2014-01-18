@@ -65,3 +65,7 @@ class barcodeTable:
             self.IDS.extend([ID])
             self.barcodes["%s%s" % (P7BC, P5BC)] = [ID,0,0]
         bcfile.close()
+    def length(self):
+        return len(self.barcodes)
+    def getBarcodes(self):
+        return self.IDS

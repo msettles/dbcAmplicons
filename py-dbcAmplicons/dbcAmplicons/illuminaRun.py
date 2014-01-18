@@ -216,6 +216,8 @@ class IlluminaTwoReadOutput:
         self.R1.close()
         self.R2.close() 
         self.isOpen = False
+    def Count(self):
+        return self.count
     def appendRead(self,Pair):
         if self.isOpen is False:
             self.open()

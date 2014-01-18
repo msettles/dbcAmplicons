@@ -45,12 +45,21 @@
 ######################################################################
 import sys
 import os
+import errno
 import argparse 
 
 profile = False
 
 version_num = "0.3"
 
+
+def make_sure_path_exists(path):
+    if path != '':
+        try:
+            os.makedirs(path)
+        except OSError as exception:
+            if exception.errno != errno.EEXIST:
+                raise
 #####################################################################################
 ## Preprocess four read raw amplicon data set
 
@@ -84,6 +93,8 @@ def preprocessApp(subparsers):
                         action='store', type=str, metavar='barcodesFile', nargs=1)
     preprocess_parser.add_argument('in_prefix', metavar='fastq_prefix', help='four read amplicon fastq file prefix',
                         action='store',type=str, nargs=1)
+    preprocess_parser.add_argument('--debug', help='show traceback on error',
+                        action='store_true', dest="debug", default = False)
     return preprocess_parser 
 
 ''' validate preprocessApp parser parameters and launch the app '''
@@ -92,6 +103,7 @@ class preprocessCMD:
         pass
     def execute (self,args):
         verbose = not args.verbose
+        debug = args.debug
         # ----------------------- options input files -----------------------
         input_prefix = args.in_prefix[0]
         bcFile = args.barcodes_file[0]
@@ -112,8 +124,12 @@ class preprocessCMD:
             output_prefix = os.path.basename(args.in_prefix[0])
         elif args.output_base is None and sFile is not None:
             output_prefix = "."
-        else:
+        elif args.output_base is not None and sFile is None:
             output_prefix = args.output_base[0]
+            make_sure_path_exists(os.path.dirname(output_prefix))
+        elif args.output_base is not None and sFile is not None:
+            output_prefix = args.output_base[0]
+            make_sure_path_exists(output_prefix)
         uncompressed = args.uncompressed
         output_unidentified = args.unidentified
         # ----------------------- other options ------------
@@ -131,10 +147,10 @@ class preprocessCMD:
 
         if profile:
             import cProfile
-            cProfile.runctx('app.start(input_prefix, output_prefix, bcFile, prFile, sFile, barcodeMaxDiff, primerMaxDiff, primerEndMatch, batchsize, uncompressed, output_unidentified, verbose)', globals(), locals())
+            cProfile.runctx('app.start(input_prefix, output_prefix, bcFile, prFile, sFile, barcodeMaxDiff, primerMaxDiff, primerEndMatch, batchsize, uncompressed, output_unidentified, verbose, debug)', globals(), locals())
             return 255
         else:
-            return app.start(input_prefix, output_prefix, bcFile, prFile, sFile, barcodeMaxDiff, primerMaxDiff, primerEndMatch, batchsize, uncompressed, output_unidentified, verbose)
+            return app.start(input_prefix, output_prefix, bcFile, prFile, sFile, barcodeMaxDiff, primerMaxDiff, primerEndMatch, batchsize, uncompressed, output_unidentified, verbose, debug)
 
 #####################################################################################
 ## Split Preprocessed data by project
@@ -159,6 +175,8 @@ def splitreadsApp(subparsers):
                         action='store', type=str, metavar='samplesFile', nargs=1)
     preprocess_parser.add_argument('in_prefix', metavar='fastq_prefix', help='preprocessed amplicon fastq file prefix',
                         action='store',type=str, nargs=1)
+    preprocess_parser.add_argument('--debug', help='show traceback on error',
+                        action='store_true', dest="debug", default = False)
     return preprocess_parser 
 
 ''' validate splitreadsApp parser parameters and launch the app '''
@@ -171,9 +189,12 @@ class splitreadsCMD:
         sFile = args.samples_file[0]
         # ----------------------- options output prefix -----------------------
         output_prefix = args.output_base[0]
+        make_sure_path_exists(output_prefix)
+        make_sure_path_exists(os.path.dirname(output_prefix))
         uncompressed = args.uncompressed
         output_unidentified = args.unidentified
         # ----------------------- other options ------------
+        debug = args.debug
         verbose = not args.verbose
         batchsize = args.batchsize
 
@@ -186,10 +207,10 @@ class splitreadsCMD:
 
         if profile:
             import cProfile
-            cProfile.runctx('app.start(input_prefix, output_prefix, sFile, batchsize, uncompressed, output_unidentified, verbose)', globals(), locals())
+            cProfile.runctx('app.start(input_prefix, output_prefix, sFile, batchsize, uncompressed, output_unidentified, verbose, debug)', globals(), locals())
             return 255
         else:
-            return app.start(input_prefix, output_prefix, sFile, batchsize, uncompressed, output_unidentified, verbose)
+            return app.start(input_prefix, output_prefix, sFile, batchsize, uncompressed, output_unidentified, verbose, debug)
 
 #
 #####################################################################################

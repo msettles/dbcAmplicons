@@ -65,6 +65,8 @@ class primerTable:
                     self.P7pair[SEQ] = [PAIR]
         self.primers = sorted(list(set(self.primers)))
         prfile.close()
+    def getPrimers(self):
+        return self.primers
     def getP5sequences(self):
         return self.P5sequences
     def getP7sequences(self):
