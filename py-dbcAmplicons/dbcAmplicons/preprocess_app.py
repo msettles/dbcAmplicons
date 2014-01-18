@@ -76,7 +76,10 @@ class preprocessApp:
                         read.assignRead(sTable,True) ## barcode
                     if read.goodRead == True:
                         identified_count += 1
-                        self.run_out[read.getProject()].appendRead(read.getRead())
+                        if self.evalSample:
+                            self.run_out[read.getProject()].appendRead(read.getRead())
+                        else:
+                            self.run_out["Identified"].appendRead(read.getRead())
                         if read.getBarcode() in barcode_counts:
                             barcode_counts[read.getBarcode()]["Total"] += 1
                             if self.evalPrimer:

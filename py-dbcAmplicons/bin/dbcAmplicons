@@ -47,7 +47,7 @@ import sys
 import os
 import argparse 
 
-profile = True
+profile = False
 
 version_num = "0.3"
 
