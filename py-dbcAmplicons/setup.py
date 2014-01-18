@@ -12,10 +12,10 @@ config = {
     'url': 'https://github.com/msettles/DBC_amplicons/py-dbcAmplicons',
     'download_url': 'https://github.com/msettles/DBC_amplicons/py-dbcAmplicons',
     'author_email': 'msettles@uidaho.edu',
-    'version': '0.3',
+    'version': '0.3.0',
     'install_requires': [],
     'packages': ['dbcAmplicons'],
-    'scripts': ['bin/dbcPreprocess'],
+    'scripts': ['bin/dbcAmplicons'],
     'name': 'dbcAmplicons',
     "ext_package":'dbcAmplicons',
     'ext_modules': [editdist]
