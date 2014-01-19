@@ -118,7 +118,10 @@ class preprocessApp:
                 except:
                     print ("Can't open file %s for writing" % (output_prefix + '_Identified_Barcodes.txt'))
                 # write out header line
-                txt = 'Barcode\t'+ '\t'.join(prTable.getPrimers()) + '\n'
+                if evalPrimer:
+                    txt = 'Barcode\t'+ '\t'.join(prTable.getPrimers()) + '\n'
+                else:
+                    txt = 'Barcode\tTotal\n'
                 bcFile.write(txt)
                 bckeys = barcode_counts.keys()
                 for bc in bcTable.getBarcodes():
