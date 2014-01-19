@@ -71,7 +71,7 @@ class sampleTable:
                 row = row.split('\t') # split by tab
                 barcode = row[barcodeID_index]
                 sid = re.sub(r'[\\/:"\' ]+', ".",row[sampleID_index]) # replace unsafe characters from sampleID with '.'
-                pid = re.sub(r'[\\/:"\'*?<>| ]+', ".",row[projectID_index]) # replace unsafe characters from projectID with '.'
+                pid = re.sub(r'[:"\'*?<>| ]+', ".",row[projectID_index]) # replace unsafe characters from projectID with '.'
                 projects.append(pid)
                 for primer in row[primerID_index].split(','):
                     primer = primer.strip()

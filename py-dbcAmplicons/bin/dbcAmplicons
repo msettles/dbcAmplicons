@@ -50,7 +50,11 @@ import argparse
 
 profile = False
 
-version_num = "0.3.1"
+# version 0.3.0
+# initial release add support for preprocess and splitreads
+# version 0.4.0
+# add support for multiple input files
+version_num = "v0.4.0"
 
 
 def make_sure_path_exists(path):
@@ -92,7 +96,7 @@ def preprocessApp(subparsers):
     preprocess_parser.add_argument('barcodes_file', help='file with barcodes',
                         action='store', type=str, metavar='barcodesFile', nargs=1)
     preprocess_parser.add_argument('in_prefix', metavar='fastq_prefix', help='four read amplicon fastq file prefix',
-                        action='store',type=str, nargs=1)
+                        action='store',type=str, nargs='+')
     preprocess_parser.add_argument('--debug', help='show traceback on error',
                         action='store_true', dest="debug", default = False)
     return preprocess_parser 
@@ -105,7 +109,7 @@ class preprocessCMD:
         verbose = not args.verbose
         debug = args.debug
         # ----------------------- options input files -----------------------
-        input_prefix = args.in_prefix[0]
+        input_prefix = args.in_prefix
         bcFile = args.barcodes_file[0]
         if args.samples_file == None:
             sFile = None
@@ -137,10 +141,6 @@ class preprocessCMD:
         primerMaxDiff = args.primerdiff[0]
         primerEndMatch = args.primerend[0]
         batchsize = args.batchsize[0]
-
-        lib_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../')
-        if lib_path not in sys.path:
-            sys.path.insert(0, lib_path)
 
         from dbcAmplicons import preprocessApp
         app = preprocessApp()
@@ -174,7 +174,7 @@ def splitreadsApp(subparsers):
     preprocess_parser.add_argument('samples_file', help='file with sample/project information',
                         action='store', type=str, metavar='samplesFile', nargs=1)
     preprocess_parser.add_argument('in_prefix', metavar='fastq_prefix', help='preprocessed amplicon fastq file prefix',
-                        action='store',type=str, nargs=1)
+                        action='store',type=str, nargs='+')
     preprocess_parser.add_argument('--debug', help='show traceback on error',
                         action='store_true', dest="debug", default = False)
     return preprocess_parser 
@@ -185,7 +185,7 @@ class splitreadsCMD:
         pass
     def execute (self,args):
         # ----------------------- options input files -----------------------
-        input_prefix = args.in_prefix[0]
+        input_prefix = args.in_prefix
         sFile = args.samples_file[0]
         # ----------------------- options output prefix -----------------------
         output_prefix = args.output_base[0]
@@ -197,10 +197,6 @@ class splitreadsCMD:
         debug = args.debug
         verbose = not args.verbose
         batchsize = args.batchsize[0]
-
-        lib_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../')
-        if lib_path not in sys.path:
-            sys.path.insert(0, lib_path)
 
         from dbcAmplicons import splitreadsApp
         app = splitreadsApp()
@@ -237,6 +233,11 @@ def main():
     commands = {'preprocess': preprocess, 'splitreads':splitreads}
 
     args = parseArgs()
+    lib_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../')
+    if lib_path not in sys.path:
+        sys.path.insert(0, lib_path)
+
+
     commands[args.command].execute(args)
 
 if __name__ == '__main__':

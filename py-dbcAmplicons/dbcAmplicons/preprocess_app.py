@@ -57,7 +57,7 @@ class preprocessApp:
                 self.run_out["Identified"] = IlluminaTwoReadOutput(output_prefix,uncompressed)
             if output_unidentified:
                 if evalSample:
-                    self.run_out["Unidentified"] = IlluminaTwoReadOutput(os.path.join(output_prefix,os.path.basename(input_prefix))+"_Unidentified",uncompressed)
+                    self.run_out["Unidentified"] = IlluminaTwoReadOutput(os.path.join(output_prefix,'UnidentifiedProject'),uncompressed)
                 else:
                     self.run_out["Unidentified"] = IlluminaTwoReadOutput(output_prefix+"_Unidentified",uncompressed)
             ## establish and open the Illumin run
@@ -110,13 +110,13 @@ class preprocessApp:
             # Write out barcode and primer table
             if (identified_count > 0):
                 if evalSample:
-                    file_prefix = os.path.join(output_prefix,os.path.basename(input_prefix))
+                    file_name = os.path.join(output_prefix,'Identified_Barcodes.txt')
                 else:
-                    file_prefix = output_prefix
+                    file_name = output_prefix + '_Identified_Barcodes.txt'
                 try:
-                    bcFile = open(file_prefix + '_Identified_Barcodes.txt', 'w')
+                    bcFile = open(file_name, 'w')
                 except:
-                    print ("Can't open file %s for writing" % (output_prefix + '_Identified_Barcodes.txt'))
+                    print ("Can't open file %s for writing" % file_name)
                 # write out header line
                 if evalPrimer:
                     txt = 'Barcode\t'+ '\t'.join(prTable.getPrimers()) + '\n'
