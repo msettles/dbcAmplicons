@@ -50,7 +50,7 @@ import argparse
 
 profile = False
 
-version_num = "0.3.0"
+version_num = "0.3.1"
 
 
 def make_sure_path_exists(path):
@@ -70,17 +70,17 @@ def preprocessApp(subparsers):
     #
     preprocess_parser = subparsers.add_parser('preprocess', help = 'Preprocess four read raw amplicon data, identifying barcode and primer sequence')
     preprocess_parser.add_argument('-d', '--barcodediff', help='max hamming dist from barcode [default: %(default)s]',
-                        type=int, dest='barcodediff', default=1, nargs=1)
+                        type=int, dest='barcodediff', default=[1], nargs=1)
     preprocess_parser.add_argument('-p', '--primer_file', help='file with primers',
                         action='store', type=str, dest='primer_file',metavar='primerFile', default=None, nargs=1)
     preprocess_parser.add_argument('-D', '--primerdiff', help='max hamming dist from primer [default: %(default)s]',
-                        type=int, dest='primerdiff', default=4, nargs=1)
+                        type=int, dest='primerdiff', default=[4], nargs=1)
     preprocess_parser.add_argument('-e', '--primerend', help='required number of matching bases at end of primer [default: %(default)s]',
-                        type=int, dest='primerend', default=4, nargs=1)
+                        type=int, dest='primerend', default=[4], nargs=1)
     preprocess_parser.add_argument('-s', '--samples_file', help='file with primers',
                         action='store', type=str, dest='samples_file',metavar='sampleFile', default=None, nargs=1)
     preprocess_parser.add_argument('-B', '--batchsize', help='batch size to process reads in [default: %(default)s]',
-                        type=int, dest='batchsize', default=10000, nargs=1)    
+                        type=int, dest='batchsize', default=[10000], nargs=1)    
     preprocess_parser.add_argument('-o', '--output_prefix', help='output file basename [default: fastq_prefix]',
                         action='store', type=str, dest='output_base', metavar='outputPrefix', default=None, nargs=1)
     preprocess_parser.add_argument('-u', '--output_unidentified', help='output unidentified reads [default: %(default)s]',
@@ -133,10 +133,10 @@ class preprocessCMD:
         uncompressed = args.uncompressed
         output_unidentified = args.unidentified
         # ----------------------- other options ------------
-        barcodeMaxDiff = args.barcodediff
-        primerMaxDiff = args.primerdiff
-        primerEndMatch = args.primerend
-        batchsize = args.batchsize
+        barcodeMaxDiff = args.barcodediff[0]
+        primerMaxDiff = args.primerdiff[0]
+        primerEndMatch = args.primerend[0]
+        batchsize = args.batchsize[0]
 
         lib_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../')
         if lib_path not in sys.path:
@@ -162,7 +162,7 @@ def splitreadsApp(subparsers):
     #
     preprocess_parser = subparsers.add_parser('splitreads', help = 'Split reads from a preprocessed four read illumina run by project id')
     preprocess_parser.add_argument('-B', '--batchsize', help='batch size to process reads in [default: %(default)s]',
-                        type=int, dest='batchsize', default=10000, nargs=1)    
+                        type=int, dest='batchsize', default=[10000], nargs=1)    
     preprocess_parser.add_argument('-o', '--output_path', help='path for output files [default: %(default)s]',
                         action='store', type=str, dest='output_base', metavar='outputPrefix', default=".", nargs=1)
     preprocess_parser.add_argument('-u', '--output_unidentified', help='output unidentified reads [default: %(default)s]',
@@ -196,7 +196,7 @@ class splitreadsCMD:
         # ----------------------- other options ------------
         debug = args.debug
         verbose = not args.verbose
-        batchsize = args.batchsize
+        batchsize = args.batchsize[0]
 
         lib_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../')
         if lib_path not in sys.path:
