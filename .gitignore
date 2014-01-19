@@ -17,6 +17,7 @@
 *.out
 *.app
 .Rproj.user
+._DS_Store
 .DS_Store
 .Rhistory
 .RData
