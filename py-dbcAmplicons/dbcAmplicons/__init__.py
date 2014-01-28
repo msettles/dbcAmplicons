@@ -17,11 +17,16 @@ import misc
 from barcodes import barcodeTable
 from primers import primerTable
 from samples import sampleTable
+
 from sequenceReads import FourSequenceReadSet
 from sequenceReads import TwoSequenceReadSet
+from sequenceReads import OneSequenceReadSet
+
 from illuminaRun import FourReadIlluminaRun
 from illuminaRun import TwoReadIlluminaRun
+from illuminaRun import OneReadIlluminaRun
 from illuminaRun import IlluminaTwoReadOutput
+from illuminaRun import IlluminaOneReadOutput
 
 from preprocess_app import preprocessApp
 from splitreads_app import splitreadsApp

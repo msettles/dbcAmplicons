@@ -22,16 +22,19 @@ from dbcAmplicons import FourReadIlluminaRun
 from dbcAmplicons import IlluminaTwoReadOutput
 
 class preprocessApp:
-    verbose = False
-    def start(self, input_prefix, output_prefix, barcodesFile, primerFile, samplesFile, barcodeMaxDiff=1, primerMaxDiff=4, primerEndMatch=4, batchsize=10000, uncompressed=False, output_unidentified=False, verbose=True, debug=False):
+    """
+    Preprocess raw Illumina four read amplicon data
+    """ 
+    def __init__(self):
+        self.verbose = False
+    def start(self, fastq_file1, fastq_file2, fastq_file3, fastq_file4, output_prefix, barcodesFile, primerFile, samplesFile, barcodeMaxDiff=1, primerMaxDiff=4, primerEndMatch=4, batchsize=10000, uncompressed=False, output_unidentified=False, verbose=True, debug=False):
         """
-            Process double barcoded Illumina Sequencing Run
+        Start preprocessing double barcoded Illumina sequencing run, perform 
         """
         self.verbose = verbose
         evalPrimer = primerFile != None
         evalSample = samplesFile != None
         try:
-            lasttime = time.time()
             ## read in primer sequences
             bcTable = barcodeTable(barcodesFile)
             if self.verbose:
@@ -40,18 +43,18 @@ class preprocessApp:
             if evalPrimer:
                 prTable = primerTable(primerFile)
                 if verbose:
-                    print "primer table length P5 Primer Sequences:%s, P7 Primer Sequences:%s" % (len(prTable.P5sequences),len(prTable.P7sequences))
+                    print "primer table length P5 Primer Sequences:%s, P7 Primer Sequences:%s" % (len(prTable.getP5sequences()),len(prTable.getP7sequences()))
             if evalSample:
                 sTable = sampleTable(samplesFile)
                 if verbose:
-                    print "sample table length: %s, and %s projects." % (sTable.sampleCount,len(sTable.projectList))
+                    print "sample table length: %s, and %s projects." % (sTable.getSampleNumber(),len(sTable.getProjectList()))
             ## setup output files
             barcode_counts = {}
             identified_count = 0
             unidentified_count = 0
             self.run_out = {}
             if evalSample:
-                for project in sTable.projectList:
+                for project in sTable.getProjectList():
                     self.run_out[project] = IlluminaTwoReadOutput(os.path.join(output_prefix,project),uncompressed)
             else:
                 self.run_out["Identified"] = IlluminaTwoReadOutput(output_prefix,uncompressed)
@@ -61,8 +64,9 @@ class preprocessApp:
                 else:
                     self.run_out["Unidentified"] = IlluminaTwoReadOutput(output_prefix+"_Unidentified",uncompressed)
             ## establish and open the Illumin run
-            self.run = FourReadIlluminaRun(input_prefix)
+            self.run = FourReadIlluminaRun(fastq_file1, fastq_file2, fastq_file3, fastq_file4)
             self.run.open()
+            lasttime = time.time()
             while 1:
                 ## get next batch of reads
                 reads = self.run.next(batchsize)
@@ -78,9 +82,9 @@ class preprocessApp:
                     if read.goodRead == True:
                         identified_count += 1
                         if evalSample:
-                            self.run_out[read.getProject()].appendRead(read.getRead())
+                            self.run_out[read.getProject()].addRead(read.getRead())
                         else:
-                            self.run_out["Identified"].appendRead(read.getRead())
+                            self.run_out["Identified"].addRead(read.getRead())
                         # Record data for final barcode table
                         if read.getBarcode() in barcode_counts:
                             if evalPrimer:
@@ -99,14 +103,14 @@ class preprocessApp:
                     else:
                         unidentified_count += 1
                         if output_unidentified:
-                            self.run_out["Unidentified"].appendRead(read.getRead())
+                            self.run_out["Unidentified"].addRead(read.getRead())
                 ### Write out reads
                 for key in self.run_out:
                     self.run_out[key].writeReads()
                 if self.verbose:
-                    print "processed %s total reads, %s Reads/second, %s identified reads, %s unidentified reads" % (self.run.count, round(self.run.count/(time.time() - lasttime),0), identified_count,unidentified_count)
+                    print "processed %s total reads, %s Reads/second, %s identified reads, %s unidentified reads" % (self.run.count(), round(self.run.count()/(time.time() - lasttime),0), identified_count,unidentified_count)
             if self.verbose:
-                print "%s reads processed in %s minutes" % (self.run.count,round((time.time()-lasttime)/(60),2))
+                print "%s reads processed in %s minutes" % (self.run.count(),round((time.time()-lasttime)/(60),2))
             # Write out barcode and primer table
             if (identified_count > 0):
                 if evalSample:
@@ -137,7 +141,7 @@ class preprocessApp:
             # write out project table
             if evalSample and self.verbose:
                 for key in self.run_out:
-                    print "%s\treads found for project\t%s" % (self.run_out[key].Count(), key)
+                    print "%s\treads found for project\t%s" % (self.run_out[key].count(), key)
             self.clean()
             return 0    
         except (KeyboardInterrupt, SystemExit):

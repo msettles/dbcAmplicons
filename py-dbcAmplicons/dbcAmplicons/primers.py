@@ -14,11 +14,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+## primer lookup file should look like, where Read is P5 or R1 or READ1 and P7 or R2 or READ2, 
+## the '#' character represents a comments and will be ignored
+## #Read    Pair_ID Primer_ID   Sequence
+## P5  16S 27F_YM1 GTAGAGTTTGATCCTGGCTCAG
+## P5  16S 27F_YM2 CGTAGAGTTTGATCATGGCTCAG
+## P5  16S 27F_YM3 ACGTAGAGTTTGATTCTGGCTCAG
+## P5  16S 27F_YM4 TACGTAGAGTTTGATTATGGCTCAG
+## P5  16S 27F_Bif GTACGTAGGGTTCGATTCTGGCTCAG
+## P5  16S 27F_Bor CGTACGTAGAGTTTGATCCTGGCTTAG
+
+"""
+primer.py parses and stores primer information associated with a double barcoded illumina amplicon project
+"""
 import sys
 # ---------------- primer class ----------------
 class primerTable:
-    """ class to hold primer information """
+    """
+    Class to read in and hold amplicon pcr primer table information associated with an Illumina double
+    barcoded amplicon project
+    """
     def __init__(self, primerfile):
+        """
+        Initialize a new primerTable object with the file primer table, parses and stores the primer information
+        """
         self.P5sequences = []
         self.P5id = {}
         self.P5pair = {}
@@ -29,7 +48,7 @@ class primerTable:
         try:
             prfile = open(primerfile, 'r')
         except IOError:
-            print '[Primers] Error cannot open', primerfile
+            print 'ERROR:[Primers] Error cannot open', primerfile
             raise
         f = prfile.readlines()
         line = 0
@@ -41,10 +60,10 @@ class primerTable:
             try:
                 READ, PAIR, ID, SEQ = row.split('\t')
             except ValueError as e:
-                print "[Primers] Error reading line %s of primer file: %s" % (str(line), str(e))
+                print "ERROR:[Primers] Error reading line %s of primer file: %s" % (str(line), str(e))
                 raise
             except:
-                print "[Primers] Unexpected error on line %s of the primers file: %s" % (line,sys.exc_info()[0])
+                print "ERROR:[Primers] Unexpected error on line %s of the primers file: %s" % (line,sys.exc_info()[0])
                 raise
             self.primers.extend([PAIR])
             if READ in ["P5","R1","READ1"]:
@@ -66,13 +85,25 @@ class primerTable:
         self.primers = sorted(list(set(self.primers)))
         prfile.close()
     def getPrimers(self):
+        """
+        Return the list of primer names
+        """
         return self.primers
     def getP5sequences(self):
+        """
+        Return the list of P5 sequence
+        """
         return self.P5sequences
     def getP7sequences(self):
+        """
+        Return the list of P7 sequences
+        """
         return self.P7sequences
     def getMatch(self,seq1,seq2):
-        """ Determine if two primers are matching primers """
+        """
+        Determine if two primers are matching primers and return the 
+        primer pair name and two id names
+        """
         if seq1 in self.P5pair.keys():
             pair1 = self.P5pair[seq1]
             id1 = self.P5id[seq1]

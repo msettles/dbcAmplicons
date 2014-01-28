@@ -73,6 +73,8 @@ def preprocessApp(subparsers):
     # Parse options
     #
     preprocess_parser = subparsers.add_parser('preprocess', help = 'Preprocess four read raw amplicon data, identifying barcode and primer sequence')
+    preprocess_parser.add_argument('-b', '--barcodes_file', help='file with barcodes',
+                        action='store', type=str, metavar='barcodesFile', nargs=1)
     preprocess_parser.add_argument('-d', '--barcodediff', help='max hamming dist from barcode [default: %(default)s]',
                         type=int, dest='barcodediff', default=[1], nargs=1)
     preprocess_parser.add_argument('-p', '--primer_file', help='file with primers',
@@ -93,9 +95,13 @@ def preprocessApp(subparsers):
                         action='store_true', dest='uncompressed', default=False)
     preprocess_parser.add_argument('-v', '--silent', help='verbose output [default: %(default)s]',
                         action='store_true', dest='verbose', default=False)
-    preprocess_parser.add_argument('barcodes_file', help='file with barcodes',
-                        action='store', type=str, metavar='barcodesFile', nargs=1)
-    preprocess_parser.add_argument('in_prefix', metavar='fastq_prefix', help='four read amplicon fastq file prefix',
+    preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq four file set',
+                        action='store',type=str, nargs='+')
+    preprocess_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq four file set',
+                        action='store',type=str, nargs='+')
+    preprocess_parser.add_argument('-3', metavar="read3", dest='fastq_file3', help='read3 of an amplicon fastq four file set',
+                        action='store',type=str, nargs='+')
+    preprocess_parser.add_argument('-4', metavar="read4", dest='fastq_file4', help='read4 of an amplicon fastq four file set',
                         action='store',type=str, nargs='+')
     preprocess_parser.add_argument('--debug', help='show traceback on error',
                         action='store_true', dest="debug", default = False)
@@ -107,9 +113,7 @@ class preprocessCMD:
         pass
     def execute (self,args):
         verbose = not args.verbose
-        debug = args.debug
         # ----------------------- options input files -----------------------
-        input_prefix = args.in_prefix
         bcFile = args.barcodes_file[0]
         if args.samples_file == None:
             sFile = None
@@ -125,7 +129,7 @@ class preprocessCMD:
             prFile = args.primer_file[0]
         # ----------------------- options output prefix -----------------------
         if args.output_base is None and sFile is None:
-            output_prefix = os.path.basename(args.in_prefix[0])
+            output_prefix = "preprocessed_out"
         elif args.output_base is None and sFile is not None:
             output_prefix = "."
         elif args.output_base is not None and sFile is None:
@@ -134,23 +138,16 @@ class preprocessCMD:
         elif args.output_base is not None and sFile is not None:
             output_prefix = args.output_base[0]
             make_sure_path_exists(output_prefix)
-        uncompressed = args.uncompressed
-        output_unidentified = args.unidentified
-        # ----------------------- other options ------------
-        barcodeMaxDiff = args.barcodediff[0]
-        primerMaxDiff = args.primerdiff[0]
-        primerEndMatch = args.primerend[0]
-        batchsize = args.batchsize[0]
 
         from dbcAmplicons import preprocessApp
         app = preprocessApp()
 
         if profile:
             import cProfile
-            cProfile.runctx('app.start(input_prefix, output_prefix, bcFile, prFile, sFile, barcodeMaxDiff, primerMaxDiff, primerEndMatch, batchsize, uncompressed, output_unidentified, verbose, debug)', globals(), locals())
+            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff[0], args.primerdiff[0], args.primerend[0], args.batchsize[0], args.uncompressed, args.unidentified, verbose, args.debug)', globals(), locals())
             return 255
         else:
-            return app.start(input_prefix, output_prefix, bcFile, prFile, sFile, barcodeMaxDiff, primerMaxDiff, primerEndMatch, batchsize, uncompressed, output_unidentified, verbose, debug)
+            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff[0], args.primerdiff[0], args.primerend[0], args.batchsize[0], args.uncompressed, args.unidentified, verbose, args.debug)
 
 #####################################################################################
 ## Split Preprocessed data by project
@@ -169,11 +166,13 @@ def splitreadsApp(subparsers):
                         action='store_true', dest='unidentified', default=False)
     preprocess_parser.add_argument('-U', '--uncompressed', help='leave output files uncompressed [default: %(default)s]',
                         action='store_true', dest='uncompressed', default=False)
-    preprocess_parser.add_argument('-s', '--silent', help='verbose output [default: %(default)s]',
+    preprocess_parser.add_argument('-v', '--silent', help='verbose output [default: %(default)s]',
                         action='store_true', dest='verbose', default=False)
-    preprocess_parser.add_argument('samples_file', help='file with sample/project information',
-                        action='store', type=str, metavar='samplesFile', nargs=1)
-    preprocess_parser.add_argument('in_prefix', metavar='fastq_prefix', help='preprocessed amplicon fastq file prefix',
+    preprocess_parser.add_argument('-s', '--samples_file', help='file with primers',
+                        action='store', type=str, dest='samples_file',metavar='sampleFile', default=None, nargs=1)
+    preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq four file set',
+                        action='store',type=str, nargs='+')
+    preprocess_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq four file set',
                         action='store',type=str, nargs='+')
     preprocess_parser.add_argument('--debug', help='show traceback on error',
                         action='store_true', dest="debug", default = False)
@@ -185,7 +184,6 @@ class splitreadsCMD:
         pass
     def execute (self,args):
         # ----------------------- options input files -----------------------
-        input_prefix = args.in_prefix
         sFile = args.samples_file[0]
         # ----------------------- options output prefix -----------------------
         output_prefix = args.output_base[0]
@@ -203,10 +201,10 @@ class splitreadsCMD:
 
         if profile:
             import cProfile
-            cProfile.runctx('app.start(input_prefix, output_prefix, sFile, batchsize, uncompressed, output_unidentified, verbose, debug)', globals(), locals())
+            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, output_prefix, sFile, batchsize, uncompressed, output_unidentified, verbose, debug)', globals(), locals())
             return 255
         else:
-            return app.start(input_prefix, output_prefix, sFile, batchsize, uncompressed, output_unidentified, verbose, debug)
+            return app.start(args.fastq_file1, args.fastq_file2, output_prefix, sFile, batchsize, uncompressed, output_unidentified, verbose, debug)
 
 #
 #####################################################################################

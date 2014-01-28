@@ -22,29 +22,29 @@ from dbcAmplicons import IlluminaTwoReadOutput
 class splitreadsApp:
     verbose = False
     evalPrimer = False
-    def start(self, input_prefix, output_prefix, samplesFile, batchsize = 10000, uncompressed = False, output_unidentified = False, verbose = True, debug = False):
+    def start(self, fastq_file1, fastq_file2, output_prefix, samplesFile, batchsize = 10000, uncompressed = False, output_unidentified = False, verbose = True, debug = False):
         """
             split a double barcoded Illumina Sequencing Run by project
         """
         self.verbose = verbose
         try:
-            lasttime = time.time()
             ## read in primer sequences
             sTable = sampleTable(samplesFile)
             if self.verbose:
-                print "sample table length: %s, and %s projects." % (sTable.sampleCount,len(sTable.projectList))
+                print "sample table length: %s, and %s projects." % (sTable.getSampleNumber(),len(sTable.getProjectList()))
             ## read in primer sequences if present
             ## setup output files
             identified_count = 0
             unidentified_count = 0
             self.run_out = {}
-            for project in sTable.projectList:
+            for project in sTable.getProjectList():
                 self.run_out[project] = IlluminaTwoReadOutput(os.path.join(output_prefix,project),uncompressed)
             if output_unidentified:
                 self.run_out["Unidentified"] = IlluminaTwoReadOutput(os.path.join(output_prefix,'UnidentifiedProject'),uncompressed)
             ## establish and open the Illumin run
-            self.run = TwoReadIlluminaRun(input_prefix)
+            self.run = TwoReadIlluminaRun(fastq_file1, fastq_file2)
             self.run.open()
+            lasttime = time.time()
             while 1:
                 ## get next batch of reads
                 reads = self.run.next(batchsize)
@@ -54,21 +54,21 @@ class splitreadsApp:
                 for read in reads:
                     read.assignRead(sTable,True) ## barcode
                     if read.goodRead == True:
-                        self.run_out[read.project].appendRead(read.getRead())
+                        self.run_out[read.project].addRead(read.getRead())
                         identified_count +=1
                     else:
                         unidentified_count += 1
                         if output_unidentified:
-                            self.run_out["Unidentified"].appendRead(read.getRead())
+                            self.run_out["Unidentified"].addRead(read.getRead())
                 ### Write out reads
                 for key in self.run_out:
                     self.run_out[key].writeReads()
                 if self.verbose:
-                    print "processed %s total reads, %s Reads/second, %s identified reads, %s unidentified reads" % (self.run.count, round(self.run.count/(time.time() - lasttime),0), identified_count,unidentified_count)
+                    print "processed %s total reads, %s Reads/second, %s identified reads, %s unidentified reads" % (self.run.count(), round(self.run.count()/(time.time() - lasttime),0), identified_count,unidentified_count)
             if self.verbose:
-                print "%s reads processed in %s minutes" % (self.run.count,round((time.time()-lasttime)/(60),2))
+                print "%s reads processed in %s minutes" % (self.run.count(),round((time.time()-lasttime)/(60),2))
             for key in self.run_out:
-                print "%s\treads found for project\t%s" % (self.run_out[key].Count(), key)
+                print "%s\treads found for project\t%s" % (self.run_out[key].count(), key)
 
             self.clean()
             return 0    

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2013, Institute for Bioninformatics and Evolutionary Studies
+# Copyright 2014, Institute for Bioninformatics and Evolutionary Studies
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,88 +13,129 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+illuminaRun.py handles input and output of illumina reads from/to files. Input reads are in 4, 2, 1 read sets and output
+is in 2 and 1 reads setss
+"""
 
 import os
 import glob
 import gzip
 from dbcAmplicons import FourSequenceReadSet
 from dbcAmplicons import TwoSequenceReadSet
+from dbcAmplicons import OneSequenceReadSet
 from dbcAmplicons import misc
 
 class FourReadIlluminaRun:
-    """ An Illumina four read sequencing run, raw data output from CASAVA """
-    isOpen = False
-    count = 0
-    fread1 = []
-    fread2 = []
-    fread3 = []
-    fread4 = []
-    def __init__(self,input_prefix):
-        self.prefix = input_prefix
+    """
+    Class to open/close and read a four read illumin sequencing run (double barcoded),
+    data is expected to be in fastq format (possibly gzipped) from CASAVA 1.8
+    """
+    def __init__(self,read1, read2, read3, read4):
+        """
+        Initialize a FourReadIlluminaRun object with expandible paths (with glob) to the four
+        sequencing read files. A vector of multiple files per read is allowed.
+        """
+        self.isOpen = False
+        self.mcount = 0
+        self.fread1 = []
+        self.fbc1 = []
+        self.fbc2 = []
+        self.fread2 = []
         try:
-            for fread in self.prefix:
-                self.fread1.extend(glob.glob("%s*R1_[0-9][0-9][0-9].fastq*" % fread))
+            for fread in read1:
+                self.fread1.extend(glob.glob(fread))
                 if len(self.fread1) == 0 or not all(os.path.exists(f) for f in self.fread1):
-                    print ("[IlluminaRun] R1 file not found")
+                    print ('ERROR:[FourReadIlluminaRun] read1 file(s) not found')
                     raise
-                self.fread2.extend(glob.glob("%s*R2_[0-9][0-9][0-9].fastq*" % fread))
+            for fread in read2:
+                self.fbc1.extend(glob.glob(fread))
+                if len(self.fbc1) == 0 or not all(os.path.exists(f) for f in self.fbc1):
+                    print ('ERROR:[FourReadIlluminaRun] read2 (BC1) file not found')
+                    raise
+            for fread in read3:
+                self.fbc2.extend(glob.glob(fread))
+                if len(self.fbc2) == 0 or not all(os.path.exists(f) for f in self.fbc2):
+                    print ('ERROR:[FourReadIlluminaRun] read3 (BC2) file not found')
+                    raise
+            for fread in read4:
+                self.fread2.extend(glob.glob(fread))
                 if len(self.fread2) == 0 or not all(os.path.exists(f) for f in self.fread2):
-                    print ("[IlluminaRun] R2 file not found")
+                    print ('ERROR:[FourReadIlluminaRun] read4 file not found')
                     raise
-                self.fread3.extend(glob.glob("%s*R3_[0-9][0-9][0-9].fastq*" % fread))
-                if len(self.fread3) == 0 or not all(os.path.exists(f) for f in self.fread3):
-                    print ("[IlluminaRun] R3 file not found")
-                    raise
-                self.fread4.extend(glob.glob("%s*R4_[0-9][0-9][0-9].fastq*" % fread))
-                if len(self.fread4) == 0 or not all(os.path.exists(f) for f in self.fread4):
-                    print ("[IlluminaRun] R4 file not found")
-                    raise
-                if any(len(f) != len(self.fread1) for f in [self.fread2,self.fread3,self.fread4]):
-                    print ("[IlluminaRun] Inconsistant number of files for each read")
-                    raise
+            if any(len(f) != len(self.fread1) for f in [self.fbc1,self.fbc2,self.fread2]):
+                print ('ERROR:[FourReadIlluminaRun] Inconsistant number of files for each read')
+                raise
         except:
             raise
         # record the number of files per read
         self.numberoffiles = len(self.fread1)
     def open(self):
-        try:
-            read1 = self.fread1.pop()
-            if read1.split(".")[-1] == "gz":
-                self.R1 = gzip.open(read1, 'rb')
-            else:
-                self.R1 = open(read1, 'r')
-            read2 = self.fread2.pop()
-            if read2.split(".")[-1] == "gz":
-                self.R2 = gzip.open(read2, 'rb')
-            else:
-                self.R2 = open(read2, 'r')
-            read3 = self.fread3.pop()
-            if read3.split(".")[-1] == "gz":
-                self.R3 = gzip.open(read3, 'rb')
-            else:
-                self.R3 = open(read3, 'r')
-            read4 = self.fread4.pop()
-            if read3.split(".")[-1] == "gz":
-                self.R4 = gzip.open(read4, 'rb')
-            else:
-                self.R4 = open(read4, 'r')
-        except:
-            print '[IlluminaRun] cannot open input files: READ1[%s]' % read1
-            raise
-        self.isOpen = True
-        self.numberoffiles -= 1
+        """
+        Open a FourReadIlluminaRun file set, if file ends in .gz, open will use gzip
+        """
+        if self.isOpen:
+            self.close()
+        if self.numberoffiles > 0:
+            try:
+                read1 = self.fread1.pop()
+                if read1.split(".")[-1] == "gz":
+                    self.R1 = gzip.open(read1, 'rb')
+                else:
+                    self.R1 = open(read1, 'r')
+                bc1 = self.fbc1.pop()
+                if bc1.split(".")[-1] == "gz":
+                    self.BC1 = gzip.open(bc1, 'rb')
+                else:
+                    self.BC1 = open(bc1, 'r')
+                bc2 = self.fbc2.pop()
+                if bc2.split(".")[-1] == "gz":
+                    self.BC2 = gzip.open(bc2, 'rb')
+                else:
+                    self.BC2 = open(bc2, 'r')
+                read2 = self.fread2.pop()
+                if read2.split(".")[-1] == "gz":
+                    self.R2 = gzip.open(read2, 'rb')
+                else:
+                    self.R2 = open(read2, 'r')
+            except:
+                print 'ERROR:[FourReadIlluminaRun] cannot open input files: READ1[%s]' % read1
+                raise
+            self.isOpen = True
+            self.numberoffiles -= 1
+            return 0
+        else:
+            return 1
     def close(self):
+        """
+        Close a FourReadIlluminaRun file set
+        """
         self.R1.close()
+        self.BC1.close()
+        self.BC2.close()
         self.R2.close()
-        self.R3.close()
-        self.R4.close()
         self.isOpen = False
-    def next(self, count=1):
+    def count(self):
+        """
+        Provide the current count of reads read in 
+        """
+        return self.mcount
+    def next(self, ncount=1):
+        """
+        Extract and store the next [count] reads into a FourSequenceReadSet object.
+        If the file object is not open, or if 'next' reaches the end of a file, it will
+        attempt to open the file in the list, or gracefully exit
+        """
         if not self.isOpen:
-            self.open()
+            try:
+                if self.open() == 1:
+                    print('ERROR:[FourReadIlluminaRun] ERROR Opening files for reading')
+                    raise
+            except:
+                raise
         reads = []
         i = 0
-        while i < count:
+        while i < ncount:
             try:
                 #process read_1 (Read1)
                 name = self.R1.next().split(" ")[0] # name
@@ -102,124 +143,276 @@ class FourReadIlluminaRun:
                 self.R1.next()  # '+'
                 qual_1 = self.R1.next().rstrip() # qual
                 #process read _2 (BC1)
-                self.R2.next() # name
-                bc_1 = self.R2.next().rstrip() # read 
-                self.R2.next() # '+'
-                self.R2.next() # qual
+                if self.BC1.next().split(" ")[0] != name: # name
+                    print('ERROR:[FourReadIlluminaRun] Read names do not match each other')
+                    raise
+                bc_1 = self.BC1.next().rstrip() # read 
+                self.BC1.next() # '+'
+                self.BC1.next() # qual
                 #process reed_3 (BC2)
-                self.R3.next() # name
-                bc_2 = self.R3.next().rstrip() # read
-                self.R3.next() # '+'
-                self.R3.next() # qual
+                if self.BC2.next().split(" ")[0] != name: # name
+                    print('ERROR:[FourReadIlluminaRun] Read names do not match each other')
+                    raise
+                bc_2 = self.BC2.next().rstrip() # read
+                self.BC2.next() # '+'
+                self.BC2.next() # qual
                 #process read_4 (Read2)
-                self.R4.next() # name
-                read_2 = self.R4.next().rstrip() # read
-                self.R4.next() # '+'
-                qual_2 = self.R4.next().rstrip() # qual
+                if self.R2.next().split(" ")[0] != name: # name
+                    print('ERROR:[FourReadIlluminaRun] Read names do not match each other')
+                    raise
+                read_2 = self.R2.next().rstrip() # read
+                self.R2.next() # '+'
+                qual_2 = self.R2.next().rstrip() # qual
                 #add it to the stack
                 reads.append(FourSequenceReadSet(name=name,read_1=read_1,qual_1=qual_1,read_2=read_2,qual_2=qual_2,bc_1=bc_1,bc_2=bc_2))
-                self.count += 1
+                self.mcount += 1  # increment total read counter
             except StopIteration:
                 if self.numberoffiles > 0:
-                    self.open()
+                    try:
+                        if self.open() == 1:
+                            print('ERROR:[FourReadIlluminaRun] ERROR Opening files for reading')
+                            raise
+                    except:
+                        raise
                     continue
                 break
             except:
-                print("[IlluminaRun] Error reading next read")
+                print('ERROR:[FourReadIlluminaRun] Error reading next read')
                 raise
             i += 1
         return reads
 
 class TwoReadIlluminaRun:
-    """ Two sequencing run output result from dbcAmplicons preprocess routine """
-    isOpen = False
-    count = 0
-    fread1 = []
-    fread2 = []
-    def __init__(self,input_prefix):
-        self.prefix = input_prefix
+    """
+    Class to open/close and read a two read illumina sequencing run. Data is expected to be in
+    fastq format (possibly gzipped) first processed with dbcAmplicons preprocess subroutine
+    """
+    def __init__(self,read1,read2):
+        """
+        Initialize a TwoReadIlluminaRun object with expandible paths (with glob) to the two
+        sequencing read files. A vector of multiple files per read is allowed.
+        """
+        self.isOpen = False
+        self.mcount = 0
+        self.fread1 = []
+        self.fread2 = []
         try:
-            for fread in self.prefix:
-                self.fread1.extend(glob.glob("%s_R1.fastq*" % fread))
+            for fread in read1:
+                self.fread1.extend(glob.glob(fread))
                 if len(self.fread1) == 0 or not all(os.path.exists(f) for f in self.fread1):
-                    print("[IlluminaRun] R1 file(s) not found")
+                    print('ERROR:[TwoReadIlluminaRun] read1 file(s) not found')
                     raise
-                self.fread2.extend(glob.glob("%s_R2.fastq*" % fread))
+            for fread in read2:
+                self.fread2.extend(glob.glob(fread))
                 if len(self.fread2) == 0 or not all(os.path.exists(f) for f in self.fread2):
-                    print("[IlluminaRun] R2 file(s) not found")
+                    print('ERROR:[TwoReadIlluminaRun] read2 file(s) not found')
                     raise 
-                if any(len(f) != len(self.fread1) for f in [self.fread2]):
-                    print("[IlluminaRun] Inconsistant number of files for each read")
+                if len(self.fread1) != len(self.fread2):
+                    print('ERROR:[TwoReadIlluminaRun] Inconsistant number of files for each read')
                     raise
         except:
             raise
         # record the number of files per read
         self.numberoffiles = len(self.fread1)
     def open(self):
-        try:
-            read1 = self.fread1.pop()
-            if read1.split(".")[-1] == "gz":
-                self.R1 = gzip.open(read1, 'rb')
-            else:
-                self.R1 = open(read1, 'r')
-            read2 = self.fread2.pop()
-            if read2.split(".")[-1] == "gz":
-                self.R2 = gzip.open(read2, 'rb')
-            else:
-                self.R2 = open(read2, 'r')
-        except:
-            print '[IlluminaRun] cannot open input files'
-            raise
-        self.isOpen = True
-        self.numberoffiles -= 1
+        """
+        Open a OneReadIlluminaRun file set, if file ends in .gz, open will use gzip
+        """
+        if self.isOpen:
+            self.close()
+        if self.numberoffiles > 0:
+            try:
+                read1 = self.fread1.pop()
+                if read1.split(".")[-1] == "gz":
+                    self.R1 = gzip.open(read1, 'rb')
+                else:
+                    self.R1 = open(read1, 'r')
+                read2 = self.fread2.pop()
+                if read2.split(".")[-1] == "gz":
+                    self.R2 = gzip.open(read2, 'rb')
+                else:
+                    self.R2 = open(read2, 'r')
+            except:
+                print 'ERROR:[TwoReadIlluminaRun] cannot open input files'
+                raise
+            self.isOpen = True
+            self.numberoffiles -= 1
+            return 0
+        else:
+            return 1
     def close(self):
+        """
+        Close a TwoReadIlluminaRun file set
+        """
         self.R1.close()
         self.R2.close()
         self.isOpen = False
-    def next(self, count=1):
+    def count(self):
+        """
+        Provide the current count of reads read in 
+        """
+        return self.mcount
+    def next(self, ncount=1):
+        """
+        Extract and store the next [count] reads into a TwoSequenceReadSet object.
+        If the file object is not open, or if 'next' reaches the end of a file, it will
+        attempt to open the file in the list, or gracefully exit
+        """
         if not self.isOpen:
-            self.open()
+            try:
+                if self.open() == 1:
+                    print('ERROR:[TwoReadIlluminaRun] ERROR Opening files for reading')
+                    raise
+            except:
+                raise
         reads = []
         i = 0
-        while i < count:
+        while i < ncount:
             try:
                 #process read_1 (Read1)
                 name_1 = self.R1.next().rstrip() # name
                 read_1 = self.R1.next().rstrip()    # read
                 self.R1.next()  # '+'
                 qual_1 = self.R1.next().rstrip() # qual
-                #process read _2 (BC1)
+                #process read _2 (Read2)
                 name_2 = self.R2.next().rstrip() # name
                 read_2 = self.R2.next().rstrip() # read 
                 self.R2.next() # '+'
                 qual_2 = self.R2.next().rstrip() # qual
                 #add it to the stack
+                if name_1.split(" ")[0] != name_2.split(" ")[0]: # check name
+                    print('ERROR:[TwoReadIlluminaRun] Read names do not match each other')
+                    raise
                 reads.append(TwoSequenceReadSet(name_1=name_1,read_1=read_1,qual_1=qual_1,name_2=name_2,read_2=read_2,qual_2=qual_2))
-                self.count += 1
+                self.mcount += 1
             except StopIteration:
                 if self.numberoffiles > 0:
-                    self.open()
+                    try:
+                        if self.open() == 1:
+                            print('ERROR:[TwoReadIlluminaRun] ERROR Opening files for reading')
+                            raise
+                    except: 
+                        raise
                     continue
                 break
             except:
-                print("[IlluminaRun] Error reading next read")
+                print('ERROR:[TwoReadIlluminaRun] Error reading next read')
+                raise
+            i +=1
+        return reads
+
+class OneReadIlluminaRun:
+    """
+    Class to open/close and read a one read illumina sequencing run. Data is expected to be in
+    fastq format (possibly gzipped), first processed with dbcAmplicons preprocess subroutine and 
+    then joined using some method like flash.
+    """
+    def __init__(self,read1):
+        self.isOpen = False
+        self.mcount = 0
+        self.fread1 = []
+        try:
+            for fread in read1:
+                self.fread1.extend(glob.glob(fread))
+                if len(self.fread1) == 0 or not all(os.path.exists(f) for f in self.fread1):
+                    print('ERROR:[OneReadIlluminaRun] read1 file(s) not found')
+                    raise
+        except:
+            raise
+        # record the number of files per read
+        self.numberoffiles = len(self.fread1)
+    def open(self):
+        """
+        Open a OneReadIlluminaRun file set, if file ends in .gz, open will use gzip
+        """
+        if self.isOpen:
+            self.close()
+        if self.numberoffiles > 0:
+            try:
+                read1 = self.fread1.pop()
+                if read1.split(".")[-1] == "gz":
+                    self.R1 = gzip.open(read1, 'rb')
+                else:
+                    self.R1 = open(read1, 'r')
+            except:
+                print 'ERROR:[OneReadIlluminaRun] cannot open input files'
+                raise
+            self.isOpen = True
+            self.numberoffiles -= 1
+            return 0
+        else:
+            return 1
+    def close(self):
+        """
+        Close a OneReadIlluminaRun file set
+        """
+        self.R1.close()
+        self.isOpen = False
+    def count(self):
+        """
+        Provide the current count of reads read in 
+        """
+        return self.mcount
+    def next(self, ncount=1):
+        if not self.isOpen:
+            try:
+                if self.open() == 1:
+                    print('ERROR:[OneReadIlluminaRun] ERROR Opening files for reading')
+                    raise
+            except:
+                raise
+        reads = []
+        i = 0
+        while i < ncount:
+            try:
+                #process read_1 (Read1)
+                name_1 = self.R1.next().rstrip() # name
+                read_1 = self.R1.next().rstrip()    # read
+                self.R1.next()  # '+'
+                qual_1 = self.R1.next().rstrip() # qual
+                #add it to the stack
+                reads.append(OneSequenceReadSet(name_1=name_1,read_1=read_1,qual_1=qual_1))
+                self.mcount += 1
+            except StopIteration:
+                if self.numberoffiles > 0:
+                    try:
+                        if self.open() == 1:
+                            print('ERROR:[OneReadIlluminaRun] ERROR Opening files for reading')
+                            raise
+                    except:
+                        raise
+                    continue
+                break
+            except:
+                print('ERROR:[OneReadIlluminaRun] Error reading next read')
                 raise
             i +=1
         return reads
 
 class IlluminaTwoReadOutput:
-    """ Output paired sequence reads """
-    isOpen = False
-    count=0
-    R1 = []
-    R2 = []
+    """ 
+    Given Paired-end reads, output them to a paired files (possibly gzipped) 
+    """
     def __init__(self,output_prefix, uncompressed):
+        """
+        Initialize an IlluminaTwoReadOutput object with output_prefix and whether or not 
+        output should be compressed with gzip [uncompressed True/False]
+        """
+        self.isOpen = False
         self.output_prefix = output_prefix
         self.uncompressed = uncompressed
+        self.R1 = []
+        self.R2 = []
+        self.mcount=0
     def open(self):
+        """
+        Open the two read files for writing, appending _R1.fastq and _R2.fastq to the output_prefix.
+        Create directories as needed.
+        """
+        if self.isOpen:
+            self.close()
         try:
-            misc.make_sure_path_exists(os.path.dirname(self.output_prefix + '_R1.fastq'))
-            misc.make_sure_path_exists(os.path.dirname(self.output_prefix + '_R2.fastq'))
+            misc.make_sure_path_exists(os.path.dirname(self.output_prefix))
             if self.uncompressed is True:
                 self.R1f = open(self.output_prefix + '_R1.fastq', 'w')
                 self.R2f = open(self.output_prefix + '_R2.fastq', 'w')
@@ -227,34 +420,125 @@ class IlluminaTwoReadOutput:
                 self.R1f = gzip.open(self.output_prefix + '_R1.fastq.gz', 'wb')
                 self.R2f = gzip.open(self.output_prefix + '_R2.fastq.gz', 'wb')
         except:
-            print("[IlluminaOutput] Cannot open output files for writing: %s" % (self.output_prefix + '_R1.fastq.gz'))
+            print('ERROR:[IlluminaTwoReadOutput] Cannot write reads to file with prefix: %s' % self.output_prefix)
             raise
         self.isOpen = True
-        self.count=0
-        self.R1 = []
-        self.R2 = []
+        return 0
     def close(self):
+        """
+        Close an IlluminaTwoReadOutput file set
+        """
         self.R1.close()
         self.R2.close() 
         self.isOpen = False
-    def Count(self):
-        return self.count
-    def appendRead(self,Pair):
+    def count(self):
+        """
+        Provide the current read count for the file output
+        """
+        return self.mcount
+    def addRead(self,read):
+        """
+        Add a pair of reads to the output queue
+        """
         if self.isOpen is False:
             self.open()
-        self.R1.append(Pair[0])
-        self.R2.append(Pair[1])
-        self.count +=1
+        self.R1.append(read[0])
+        self.R2.append(read[1])
+        self.mcount +=1
     def writeReads(self):
+        """
+        Write the paired reads in the queue to the output files
+        """
         if (len(self.R1) == 0):
             pass
         else:
+            if not self.isOpen:
+                try:
+                    if self.open() == 1:
+                        print('ERROR:[IlluminaTwoReadOutput] ERROR Opening files for writing')
+                        raise
+                except:
+                    raise
             try:
                 self.R1f.write('\n'.join(self.R1) + '\n')
                 self.R2f.write('\n'.join(self.R2) + '\n')
             except:
-                print("[IlluminaOutput] Cannot write reads to file with prefix: %s" % self.output_prefix)
+                print('ERROR:[IlluminaTwoReadOutput] Cannot write reads to file with prefix: %s' % self.output_prefix)
                 raise
             self.R1 = []
             self.R2 = []
-    
+
+class IlluminaOneReadOutput:
+    """ 
+    Given single reads, output them to a file (possibly gzipped) 
+    """
+    def __init__(self,output_prefix, uncompressed):
+        """
+        Initialize an IlluminaOneReadOutput object with output_prefix and whether or not 
+        output should be compressed with gzip [uncompressed True/False]
+        """
+        self.isOpen = False
+        self.output_prefix = output_prefix
+        self.uncompressed = uncompressed
+        self.mcount=0
+        self.R1 = []
+    def open(self):
+        """
+        Open the two read files for writing, appending .fastq to the output_prefix.
+        Create directories as needed.
+        """
+        if self.isOpen:
+            self.close()
+        try:
+            misc.make_sure_path_exists(os.path.dirname(self.output_prefix))
+            if self.uncompressed is True:
+                self.R1f = open(self.output_prefix + '.fastq', 'w')
+            else:
+                self.R1f = gzip.open(self.output_prefix + '.fastq.gz', 'wb')
+        except:
+            print('ERROR:[IlluminaOneReadOutput] Cannot write reads to file with prefix: %s' % self.output_prefix)
+            raise
+        self.isOpen = True
+        return 0
+    def close(self):
+        """
+        Close an IlluminaOneReadOutput file set
+        """
+        self.R1.close()
+        self.isOpen = False
+    def count(self):
+        """
+        Provide the current read count for the file output
+        """
+        return self.mcount
+    def addRead(self,read):
+        """
+        Add a pair of reads to the output queue
+        """
+        if self.isOpen is False:
+            self.open()
+        self.R1.append(read[0])
+        self.mcount +=1
+    def writeReads(self):
+        """
+        Write the paired reads in the queue to the output files
+        """
+        if (len(self.R1) == 0):
+            pass
+        else:
+            if not self.isOpen:
+                try:
+                    if self.open() == 1:
+                        print('ERROR:[IlluminaOneReadOutput] ERROR Opening file for writing')
+                        raise
+                except:
+                    raise
+            try:
+                self.R1f.write('\n'.join(self.R1) + '\n')
+            except:
+                print('ERROR:[IlluminaOneReadOutput] Cannot write read to file with prefix: %s' % self.output_prefix)
+                raise
+            self.R1 = []
+            self.R2 = []
+
+

@@ -14,10 +14,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+## sample sheet files should have at miniumum the 4 columns [SampleID,BarcodeID,PrimerPairID,ProjectID] order doesn't matter and should look something like
+## SampleID TubeID  BarcodeID   PrimerPairID    Vol Conc    Quantity    ProjectID   Investigator
+## 1    1   Hotel353    ITS-4_5 NA  NA  NA  Anahi-Pollen    Anahi
+## 2    2   Hotel354    ITS-4_5 NA  NA  NA  Anahi-Pollen    Anahi
+## 3    3   Hotel355    ITS-4_5 NA  NA  NA  Anahi-Pollen    Anahi
 
 import re
 import sys
 class KeyFoundError(Exception):
+    """
+    Exception class KeyFoundError, to store barcode and primer that generate the key error
+    """
     def __init__(self, barcode, primer):
         self.barcode = barcode
         self.primer = primer
@@ -28,15 +36,23 @@ class KeyFoundError(Exception):
 
 # ---------------- samples class ----------------
 class sampleTable:
-    sampleCount = 0
-    """ class to hold sample information """
+    """
+    Class to read in and hold sample table information associated with an Illumina double
+    barcoded amplicon project
+    """
     def __init__(self, samplefile):
+        """
+        Initialize a new sampleTable object with the file sample table, parses and stores the sample information and 
+        associated project. Class assumes the input file samplefile contains the following 4 columns
+        'SampleID','BarcodeID','PrimerPairID','ProjectID' (defined in the header) others columns in the file are allowed and ignored
+        """
+        self.sampleCount = 0
         self.sampleTable = {}
         projects = []
         try:
             sfile = open(samplefile, 'r')
         except IOError:
-            print '[Samples] cannot open', samplefile
+            print 'ERROR:[Samples] cannot open', samplefile
             raise
         f = sfile.next() ## read the file
         header = f.rstrip()
@@ -44,22 +60,22 @@ class sampleTable:
         try:
             sampleID_index = vheader.index("SampleID")
         except ValueError:
-            print "[Samples] Column 'SampleID' was not found in the samples table"
+            print 'ERROR:[Samples] Column "SampleID" was not found in the samples table'
             raise
         try:
             barcodeID_index = vheader.index("BarcodeID")
         except ValueError:
-            print "[Samples] Column 'BarcodeID' was not found in the samples table"
+            print 'ERROR:[Samples] Column "BarcodeID" was not found in the samples table'
             raise
         try:
             primerID_index = vheader.index("PrimerPairID")
         except ValueError:
-            print "[Samples] Column 'PrimerPairID' was not found in the samples table"
+            print 'ERROR:[Samples] Column "PrimerPairID" was not found in the samples table'
             raise
         try:
             projectID_index = vheader.index("ProjectID")
         except ValueError:
-            print "[Samples] Column 'ProjectID' was not found in the samples table"
+            print 'ERROR:[Samples] Column "ProjectID" was not found in the samples table'
             raise
         try:
             line=1
@@ -88,17 +104,28 @@ class sampleTable:
                 self.projectList = sorted(set(projects))
                 self.sampleCount += 1
         except KeyFoundError as e:
-            print "[Samples] Error in sample sheet: Barcode [%s] and Primer [%s] pair previously specified" % (e.getBarcode(), e.getPrimer())
+            print 'ERROR:[Samples] Error in sample sheet: Barcode [%s] and Primer [%s] pair previously specified' % (e.getBarcode(), e.getPrimer())
             sfile.close()
             raise
         except:
-            print "[Samples] Unexpected error on line %s of the samples file: %s" % (line,sys.exc_info()[0])
+            print 'ERROR:[Samples] Unexpected error on line %s of the samples file: %s' % (line,sys.exc_info()[0])
             sfile.close()
             raise
         sfile.close()
     def getSampleNumber(self):
+        """
+        Get the number of samples read in from the sampleFile
+        """
         return repr(self.sampleCount)
+    def getProjectList(self):
+        """
+        Get the list of projects the samples represent
+        """
+        return self.projectList
     def getSampleID(self,barcode,primer):
+        """
+        Given a barcode and primer, return the associated sampleID, "*" is allowed in the primer for 'any' primer match
+        """
         try:
             sid = self.sampleTable[barcode]
             if sid.keys() == ["*"]:
@@ -108,9 +135,12 @@ class sampleTable:
         except KeyError:
             return(None)
         except:
-            print "[Samples] Unexpected error in getSampleID:", sys.exc_info()[0]
+            print 'ERROR:[Samples] Unexpected error in getSampleID:', sys.exc_info()[0]
             raise
     def getProjectID(self,barcode,primer):
+        """
+        Given a barcode and primer, return the associated project, "*" is allowd in the primer for 'any' primer match
+        """
         try:
             sid = self.sampleTable[barcode]
             if sid.keys() == ["*"]:
@@ -120,5 +150,5 @@ class sampleTable:
         except KeyError:
             return(None)
         except:
-            print "[Samples] Unexpected error getProjectID:", sys.exc_info()[0]
+            print 'ERROR:[Samples] Unexpected error getProjectID:', sys.exc_info()[0]
             raise
