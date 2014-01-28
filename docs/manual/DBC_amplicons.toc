@@ -1,0 +1,6 @@
+\contentsline {chapter}{Contents}{iii}
+\contentsline {chapter}{\chapternumberline {1}Amplicon Primer Design}{1}
+\contentsline {chapter}{\chapternumberline {2}The dbcAmplicons python package}{2}
+\contentsline {section}{\numberline {2.1}Input Files}{2}
+\contentsline {subsection}{Barcode File}{2}
+\contentsline {appendix}{\chapternumberline {A}An appendix}{3}

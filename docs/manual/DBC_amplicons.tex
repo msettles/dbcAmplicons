@@ -1,0 +1,80 @@
+\documentclass[10pt,oneside]{memoir}
+\usepackage{tikz}
+\usepackage{xcolor}
+\usepackage{palatino}
+\usepackage{amssymb}
+ 
+\settrimmedsize{11in}{8.5in}{*}
+\setlength{\trimtop}{0pt}
+\setlength{\trimedge}{\stockwidth}
+\addtolength{\trimedge}{-\paperwidth}
+\settypeblocksize{7.75in}{33pc}{*}
+\setulmargins{4cm}{*}{*}
+\setlrmargins{1.25in}{*}{*}
+\setmarginnotes{17pt}{51pt}{\onelineskip}
+\setheadfoot{\onelineskip}{2\onelineskip}
+\setheaderspaces{*}{2\onelineskip}{*}
+\checkandfixthelayout
+\fixpdflayout
+
+
+%%%%%% Commands used for 'protocol' development
+%% timing command, accepts one parameter for time
+\newcommand{\timing}[1]{\tikz\draw[orange,fill=orange] (0,0) circle (.7ex); \textcolor{orange}{\textbf{TIMING }}\textbf{#1}}
+%% critical step command
+\newcommand{\critical}{\textcolor{violet}{{\Large$\blacktriangle$} \textbf{CRITICAL STEP }}}
+%% Pause point command
+\newcommand{\pause}{\textcolor{green}{\rule{1.5ex}{1.5ex} \textbf{PAUSE POINT }}}
+%% troubleshooting command
+\newcommand{\trouble}{\textcolor{blue}{\textbf{ ? TROUBLESHOOTING }}}
+%% caution command
+\newcommand{\caution}{\textcolor{red}{\textbf{ ! CAUTION }}}
+%%%%%%%
+
+
+
+\begin{document}
+\frontmatter
+\title{\textbf{A modular two-step and highly multiplexed amplicon design for Illumina sequencing}\\{\Large and the python DBC\_amplicons package}}
+\author{Matt Settles\\
+  Institute for Bioinformatics and Evolutionary Studies,\\
+  University of Idaho,\\
+  Moscow,ID,\\
+  \texttt{msettles@uidaho.edu}}
+\date{\today}
+\maketitle
+
+\clearpage
+
+\section*{Introduction}
+Polymerase chain reaction (PCR) amplicon sequencing is an important tool used to query genetic variation and structure in individual biological samples and ecological communities. Applications range from determining the taxon community structure in microbial, fungal and other community types to determining mutation frequencies in a set of genes across many individuals, or even complete resequencing of small genomes. Common practice is to add a barcoded DNA sequencing adapter to the template specific primer, generating a PCR product that can be sequenced on an Illumina machine. The barcode can then be used post-sequencing to determine the sample the PCR product came from. As sequencing throughput continuing to increase the need for flexible methods that can maximize the sequencing effort are needed. For amplicons this implies sequencing more individual and/or amplicons in the same sequencing run.
+
+An amplicon is an amplified molecule, usually generated via PCR, of a single type and is an exact replicate of the original DNA template. A pair of PCR primers are designed to uniquely target the DNA region of interest. In order to sequence a DNA fragment using the Illumina platform, certain DNA sequences are necessary for the fragment to bind to the Illumina flowcell, amplify and then initiate sequencing. Typically, paired target specific PCR primers are designed to include the extra oligonucleotides necessary for sequencing (~60bp to each primer). PCR amplicon sequencing in this manner then requires a unique pair of ~80bp primers for every target region and sample (including barcode) in the Illumina sequencing run. A technique that is neither modular nor cost effective.
+
+The increase in sequencing density offers an opportunity to sequence many loci across hundreds or even thousands of samples at significant depth of coverage. New techniques are needed however to both multiplex amplicons and samples in the same sequencing reaction.
+
+\clearpage
+
+\tableofcontents
+
+\clearpage
+
+
+\mainmatter
+
+\chapter{Amplicon Primer Design}
+chapter on design
+\chapter{The dbcAmplicons python package}
+the package
+\section{Input Files}
+inputs
+\subsection{Barcode File}
+the barcode file
+
+\appendix
+\chapter{An appendix}
+and appendix
+
+\backmatter
+
+\end{document}
