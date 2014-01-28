@@ -76,7 +76,7 @@ def preprocessApp(subparsers):
     #
     preprocess_parser = subparsers.add_parser('preprocess', help = 'Preprocess four read raw amplicon data, identifying barcode and primer sequence')
     preprocess_parser.add_argument('-b', '--barcodes_file', help='file with barcodes',
-                        action='store', type=str, metavar='barcodesFile', nargs=1)
+                        action='store', type=str, metavar='barcodesFile', required=True, nargs=1)
     preprocess_parser.add_argument('-d', '--barcodediff', help='max hamming dist from barcode [default: %(default)s]',
                         type=int, dest='barcodediff', default=[1], nargs=1)
     preprocess_parser.add_argument('-p', '--primer_file', help='file with primers',
@@ -98,13 +98,13 @@ def preprocessApp(subparsers):
     preprocess_parser.add_argument('-v', '--silent', help='verbose output [default: %(default)s]',
                         action='store_true', dest='verbose', default=False)
     preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq four file set',
-                        action='store',type=str, nargs='+')
+                        action='store',type=str, required=True, nargs='+')
     preprocess_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq four file set',
-                        action='store',type=str, nargs='+')
+                        action='store',type=str, required=True, nargs='+')
     preprocess_parser.add_argument('-3', metavar="read3", dest='fastq_file3', help='read3 of an amplicon fastq four file set',
-                        action='store',type=str, nargs='+')
+                        action='store',type=str, required=True, nargs='+')
     preprocess_parser.add_argument('-4', metavar="read4", dest='fastq_file4', help='read4 of an amplicon fastq four file set',
-                        action='store',type=str, nargs='+')
+                        action='store',type=str, required=True, nargs='+')
     preprocess_parser.add_argument('--debug', help='show traceback on error',
                         action='store_true', dest="debug", default = False)
     return preprocess_parser 
@@ -171,11 +171,11 @@ def splitreadsApp(subparsers):
     preprocess_parser.add_argument('-v', '--silent', help='verbose output [default: %(default)s]',
                         action='store_true', dest='verbose', default=False)
     preprocess_parser.add_argument('-s', '--samples_file', help='file with primers',
-                        action='store', type=str, dest='samples_file',metavar='sampleFile', default=None, nargs=1)
+                        action='store', type=str, dest='samples_file',metavar='sampleFile', default=None, required=True, nargs=1)
     preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq four file set',
-                        action='store',type=str, nargs='+')
+                        action='store',type=str, required=True, nargs='+')
     preprocess_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq four file set',
-                        action='store',type=str, nargs='+')
+                        action='store',type=str, required=True, nargs='+')
     preprocess_parser.add_argument('--debug', help='show traceback on error',
                         action='store_true', dest="debug", default = False)
     return preprocess_parser 
