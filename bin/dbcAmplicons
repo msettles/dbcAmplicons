@@ -216,7 +216,7 @@ def joinApp(subparsers):
                           if that overlap results in a mismatched base density \
                           higher than this value.  Note: Any occurence of an \
                           "N" in either read is ignored and not counted \
-                          towards the mismatches or overlap length. [default:%(default)s]', type=int, dest='max_mixmatch_density', metavar='NUM',
+                          towards the mismatches or overlap length. [default:%(default)s]', type=float, dest='max_mixmatch_density', metavar='NUM',
                           default=0.25, nargs=1)
     preprocess_parser.add_argument('-t', '--threads',metavar='NTHREADS', help='Set the number of worker threads.',
                         type=int, dest='threads',default=[0.25],nargs=1)
