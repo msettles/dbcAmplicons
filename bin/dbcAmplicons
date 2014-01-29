@@ -17,36 +17,14 @@
 
 ######################################################################
 ##
-## dbcAmplicons is an application which preprocesses raw four read (2 sequence reads and 2 barcode reads) Illumina amplicon data.
-## identifying paired barcodes and primer pair and removes the primer sequences from the reads. The application outputs new files
-## with the two reads where barocode and primer pair Ids are recorded in the reads name
+## dbcAmplicons is an application which processes raw four read (2 sequence reads and 2 barcode reads) Illumina amplicon experiments.
 ##
-## barcode lookup file should look like
-## #Barcode_name   P5_barcode  P7_barcode
-## Alpha1  TAGATCGC    TAAGGCGA
-## Alpha2  CTCTCTAT    TAAGGCGA
-## Alpha3  TATCCTCT    TAAGGCGA
-## Alpha4  AGAGTAGA    TAAGGCGA
-##
-## primer lookup file should look like, where Read is P5 or R1 or READ1 and P7 or R2 or READ2
-## #Read    Pair_ID Primer_ID   Sequence
-## P5  16S 27F_YM1 GTAGAGTTTGATCCTGGCTCAG
-## P5  16S 27F_YM2 CGTAGAGTTTGATCATGGCTCAG
-## P5  16S 27F_YM3 ACGTAGAGTTTGATTCTGGCTCAG
-## P5  16S 27F_YM4 TACGTAGAGTTTGATTATGGCTCAG
-## P5  16S 27F_Bif GTACGTAGGGTTCGATTCTGGCTCAG
-## P5  16S 27F_Bor CGTACGTAGAGTTTGATCCTGGCTTAG
-##
-## sample sheet files should have at miniumum the 4 columns [SampleID,BarcodeID,PrimerPairID,ProjectID] order doesn't matter and should look something like
-## SampleID TubeID  BarcodeID   PrimerPairID    Vol Conc    Quantity    ProjectID   Investigator
-## 1    1   Hotel353    ITS-4_5 NA  NA  NA  Anahi-Pollen    Anahi
-## 2    2   Hotel354    ITS-4_5 NA  NA  NA  Anahi-Pollen    Anahi
-## 3    3   Hotel355    ITS-4_5 NA  NA  NA  Anahi-Pollen    Anahi
 ######################################################################
 import sys
 import os
 import errno
 import argparse 
+from subprocess import call
 
 profile = False
 
@@ -60,6 +38,9 @@ version_num = "v0.5.0"
 
 
 def make_sure_path_exists(path):
+    """
+    Make the path
+    """
     if path != '':
         try:
             os.makedirs(path)
@@ -68,9 +49,10 @@ def make_sure_path_exists(path):
                 raise
 #####################################################################################
 ## Preprocess four read raw amplicon data set
-
-''' preprocessApp parser parameters '''
 def preprocessApp(subparsers):
+    """
+    preprocessApp parser parameters
+    """
     #
     # Parse options
     #
@@ -90,7 +72,7 @@ def preprocessApp(subparsers):
     preprocess_parser.add_argument('-B', '--batchsize', help='batch size to process reads in [default: %(default)s]',
                         type=int, dest='batchsize', default=[10000], nargs=1)    
     preprocess_parser.add_argument('-o', '--output_prefix', help='output file basename [default: fastq_prefix]',
-                        action='store', type=str, dest='output_base', metavar='outputPrefix', default=None, nargs=1)
+                        action='store', type=str, dest='output_base', metavar='PREFIX', default=None, nargs=1)
     preprocess_parser.add_argument('-u', '--output_unidentified', help='output unidentified reads [default: %(default)s]',
                         action='store_true', dest='unidentified', default=False)
     preprocess_parser.add_argument('-U', '--uncompressed', help='leave output files uncompressed [default: %(default)s]',
@@ -109,8 +91,10 @@ def preprocessApp(subparsers):
                         action='store_true', dest="debug", default = False)
     return preprocess_parser 
 
-''' validate preprocessApp parser parameters and launch the app '''
 class preprocessCMD:
+    """
+    validate preprocessApp parser parameters and launch the app
+    """
     def __init__(self):
         pass
     def execute (self,args):
@@ -136,10 +120,10 @@ class preprocessCMD:
             output_prefix = "."
         elif args.output_base is not None and sFile is None:
             output_prefix = args.output_base[0]
-            make_sure_path_exists(os.path.dirname(output_prefix))
+#            make_sure_path_exists(os.path.dirname(output_prefix))
         elif args.output_base is not None and sFile is not None:
             output_prefix = args.output_base[0]
-            make_sure_path_exists(output_prefix)
+#            make_sure_path_exists(output_prefix)
 
         from dbcAmplicons import preprocessApp
         app = preprocessApp()
@@ -153,9 +137,10 @@ class preprocessCMD:
 
 #####################################################################################
 ## Split Preprocessed data by project
-
-''' splitreadsApp parser parameters '''
 def splitreadsApp(subparsers):
+    """
+    splitreadsApp parser parameters
+    """
     #
     # Parse options
     #
@@ -163,7 +148,7 @@ def splitreadsApp(subparsers):
     preprocess_parser.add_argument('-B', '--batchsize', help='batch size to process reads in [default: %(default)s]',
                         type=int, dest='batchsize', default=[10000], nargs=1)    
     preprocess_parser.add_argument('-o', '--output_path', help='path for output files [default: %(default)s]',
-                        action='store', type=str, dest='output_base', metavar='outputPrefix', default=".", nargs=1)
+                        action='store', type=str, dest='output_base', metavar='PREFIX', default=".", nargs=1)
     preprocess_parser.add_argument('-u', '--output_unidentified', help='output unidentified reads [default: %(default)s]',
                         action='store_true', dest='unidentified', default=False)
     preprocess_parser.add_argument('-U', '--uncompressed', help='leave output files uncompressed [default: %(default)s]',
@@ -180,8 +165,10 @@ def splitreadsApp(subparsers):
                         action='store_true', dest="debug", default = False)
     return preprocess_parser 
 
-''' validate splitreadsApp parser parameters and launch the app '''
 class splitreadsCMD:
+    """
+    validate splitreadsApp parser parameters and launch the app
+    """
     def __init__(self):
         pass
     def execute (self,args):
@@ -189,8 +176,8 @@ class splitreadsCMD:
         sFile = args.samples_file[0]
         # ----------------------- options output prefix -----------------------
         output_prefix = args.output_base[0]
-        make_sure_path_exists(output_prefix)
-        make_sure_path_exists(os.path.dirname(output_prefix))
+#        make_sure_path_exists(output_prefix)
+#        make_sure_path_exists(os.path.dirname(output_prefix))
         uncompressed = args.uncompressed
         output_unidentified = args.unidentified
         # ----------------------- other options ------------
@@ -208,10 +195,136 @@ class splitreadsCMD:
         else:
             return app.start(args.fastq_file1, args.fastq_file2, output_prefix, sFile, batchsize, uncompressed, output_unidentified, verbose, debug)
 
+
+#####################################################################################
+## join reads using flash, path through application
+def joinApp(subparsers):
+    """
+    joinApp parser parameters
+    """
+    #
+    # Parse options
+    #
+    preprocess_parser = subparsers.add_parser('join', help = 'join reads using flash')
+    preprocess_parser.add_argument('-o', '--output_path', help='path for output files [default: %(default)s]',
+                        action='store', type=str, dest='output_base', metavar='PREFIX', default=".", nargs=1)
+    preprocess_parser.add_argument('-U', '--uncompressed', help='leave output files uncompressed [default: %(default)s]',
+                        action='store_true', dest='uncompressed', default=False)
+    preprocess_parser.add_argument('-v', '--silent', help='verbose output [default: %(default)s]',
+                        action='store_true', dest='verbose', default=False)
+    preprocess_parser.add_argument('-x', '--max-mismatch-density', help=' Maximum allowed ratio between the number of \
+                          mismatched base pairs and the overlap length. \
+                          Two reads will not be combined with a given overlap \
+                          if that overlap results in a mismatched base density \
+                          higher than this value.  Note: Any occurence of an \
+                          "N" in either read is ignored and not counted \
+                          towards the mismatches or overlap length. [default:%(default)s]', type=int, dest='max_mixmatch_density', metavar='NUM',
+                          default=0.25, nargs=1)
+    preprocess_parser.add_argument('-t', '--threads',metavar='NTHREADS', help='Set the number of worker threads.',
+                        type=int, dest='threads',default=[0.25],nargs=1)
+    preprocess_parser.add_argument('-p', '--flash_path', help='path to the application flash',
+                        action='store', type=str, dest='flash_path',metavar='path', default='flash', required=False, nargs=1)
+    preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq four file set',
+                        action='store',type=str, required=True, nargs='+')
+    preprocess_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq four file set',
+                        action='store',type=str, required=True, nargs='+')
+    preprocess_parser.add_argument('--debug', help='show traceback on error',
+                        action='store_true', dest="debug", default = False)
+    return preprocess_parser 
+
+class joinCMD:
+    """
+    validate joinApp parser parameters and launch the app
+    """
+    def __init__(self):
+        pass
+    def execute (self,args):
+        # ----------------------- options output prefix -----------------------
+        output_prefix = args.output_base[0]
+        # ----------------------- other options ------------
+        debug = args.debug
+        verbose = not args.verbose
+        batchsize = args.batchsize[0]
+        if args.uncompressed:
+            compress=""
+        else:
+            compress='-z'
+        # System call
+        call_string = " ".join([args.flash_path,"-t",args.threads,"-x",args.max_mixmatch_density,"-o",output_prefix,compress,args.fastq_file1,args.fastq_file2])
+        if profile:
+            import cProfile
+            cProfile.runctx('subprocess.call(call_string)', globals(), locals())
+            return 255
+        else:
+            return call(call_string)
+
+
+#####################################################################################
+## Classify reads using rdp
+def classifyApp(subparsers):
+    """
+    classifyApp parser parameters
+    """
+    #
+    # Parse options
+    #
+    preprocess_parser = subparsers.add_parser('classify', help = 'classify reads using RDP')
+    preprocess_parser.add_argument('-B', '--batchsize', help='batch size to process reads in [default: %(default)s]',
+                        type=int, dest='batchsize', default=[10000], nargs=1)    
+    preprocess_parser.add_argument('-o', '--output_path', help='path for output files [default: %(default)s]',
+                        action='store', type=str, dest='output_base', metavar='outputPrefix', default=".", nargs=1)
+    preprocess_parser.add_argument('-u', '--output_unidentified', help='output unidentified reads [default: %(default)s]',
+                        action='store_true', dest='unidentified', default=False)
+    preprocess_parser.add_argument('-v', '--silent', help='verbose output [default: %(default)s]',
+                        action='store_true', dest='verbose', default=False)
+    preprocess_parser.add_argument('-s', '--samples_file', help='file with primers',
+                        action='store', type=str, dest='samples_file',metavar='sampleFile', default=None, required=True, nargs=1)
+    preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq four file set',
+                        action='store',type=str, required=False, nargs='+')
+    preprocess_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq four file set',
+                        action='store',type=str, required=False, nargs='+')
+    preprocess_parser.add_argument('-U', metavar="single", dest='fastq_file3', help='single-end amplicon, typically from joined paired reads',
+                        action='store',type=str, required=False, nargs='+')
+    preprocess_parser.add_argument('--debug', help='show traceback on error',
+                        action='store_true', dest="debug", default = False)
+    return preprocess_parser 
+
+class classifyCMD:
+    """
+    validate classifyApp parser parameters and launch the app
+    """
+    def __init__(self):
+        pass
+    def execute (self,args):
+        # ----------------------- options input files -----------------------
+        sFile = args.samples_file[0]
+        # ----------------------- options output prefix -----------------------
+        output_prefix = args.output_base[0]
+#        make_sure_path_exists(output_prefix)
+#        make_sure_path_exists(os.path.dirname(output_prefix))
+        output_unidentified = args.unidentified
+        # ----------------------- other options ------------
+        debug = args.debug
+        verbose = not args.verbose
+        batchsize = args.batchsize[0]
+
+        from dbcAmplicons import classifyApp
+        app = classifyApp()
+
+        if profile:
+            import cProfile
+            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, sFile, batchsize, output_unidentified, verbose, debug)', globals(), locals())
+            return 255
+        else:
+            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, sFile, batchsize, output_unidentified, verbose, debug)
+
 #
 #####################################################################################
 ##  Master parser arguments
 def parseArgs():
+    """
+    generate main parser
+    """
     parser = argparse.ArgumentParser( \
         description = 'dbcAmplicons, a python package for preprocessing of massively multiplexed, dual barcoded Illumina Amplicons', \
         epilog ='For questions or comments, please contact Matt Settles <msettles@uidaho.edu>', add_help=True)
@@ -220,6 +333,7 @@ def parseArgs():
 
     preprocessApp(subparsers)
     splitreadsApp(subparsers)
+    joinApp(subparsers)
 
     args = parser.parse_args() 
 
@@ -227,10 +341,14 @@ def parseArgs():
 
 
 def main():
+    """
+    main function
+    """
     preprocess = preprocessCMD()
     splitreads = splitreadsCMD()
+    join = joinCMD()
 
-    commands = {'preprocess': preprocess, 'splitreads':splitreads}
+    commands = {'preprocess': preprocess, 'splitreads':splitreads, 'join':join}
 
     args = parseArgs()
     lib_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../')
