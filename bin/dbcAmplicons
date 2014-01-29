@@ -62,7 +62,7 @@ def preprocessApp(subparsers):
     preprocess_parser.add_argument('-d', '--barcodediff', help='max hamming dist from barcode [default: %(default)s]',
                         type=int, dest='barcodediff', default=1)
     preprocess_parser.add_argument('-p', '--primer_file', help='file with primers',
-                        action='store', type=str, dest='primer_file',metavar='primerFile', default=None, nargs=1)
+                        action='store', type=str, dest='primer_file',metavar='primerFile', default=None)
     preprocess_parser.add_argument('-D', '--primerdiff', help='max hamming dist from primer [default: %(default)s]',
                         type=int, dest='primerdiff', default=4)
     preprocess_parser.add_argument('-e', '--primerend', help='required number of matching bases at end of primer [default: %(default)s]',
