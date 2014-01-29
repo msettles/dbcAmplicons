@@ -223,9 +223,9 @@ def joinApp(subparsers):
     preprocess_parser.add_argument('-p', '--flash_path', help='path to the application flash',
                         action='store', type=str, dest='flash_path',metavar='path', default='flash', required=False, nargs=1)
     preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq four file set',
-                        action='store',type=str, required=True, nargs='+')
+                        action='store',type=str, required=True, nargs=1)
     preprocess_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq four file set',
-                        action='store',type=str, required=True, nargs='+')
+                        action='store',type=str, required=True, nargs=1)
     return preprocess_parser 
 
 class joinCMD:
@@ -243,7 +243,7 @@ class joinCMD:
         else:
             compress='-z'
         # System call
-        call_string = " ".join([args.flash_path,"-t",str(args.threads[0]),"-x",str(args.max_mixmatch_density[0]),"-o",output_prefix,compress,args.fastq_file1,args.fastq_file2])
+        call_string = " ".join([args.flash_path,"-t",str(args.threads[0]),"-x",str(args.max_mixmatch_density[0]),"-o",output_prefix,compress,args.fastq_file1[0],args.fastq_file2[0]])
         if profile:
             import cProfile
             cProfile.runctx('subprocess.call(call_string)', globals(), locals())
