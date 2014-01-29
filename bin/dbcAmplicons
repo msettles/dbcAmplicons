@@ -210,8 +210,6 @@ def joinApp(subparsers):
                         action='store', type=str, dest='output_base', metavar='PREFIX', default=".", nargs=1)
     preprocess_parser.add_argument('-U', '--uncompressed', help='leave output files uncompressed [default: %(default)s]',
                         action='store_true', dest='uncompressed', default=False)
-    preprocess_parser.add_argument('-v', '--silent', help='verbose output [default: %(default)s]',
-                        action='store_true', dest='verbose', default=False)
     preprocess_parser.add_argument('-x', '--max-mismatch-density', help=' Maximum allowed ratio between the number of \
                           mismatched base pairs and the overlap length. \
                           Two reads will not be combined with a given overlap \
@@ -228,8 +226,6 @@ def joinApp(subparsers):
                         action='store',type=str, required=True, nargs='+')
     preprocess_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq four file set',
                         action='store',type=str, required=True, nargs='+')
-    preprocess_parser.add_argument('--debug', help='show traceback on error',
-                        action='store_true', dest="debug", default = False)
     return preprocess_parser 
 
 class joinCMD:
@@ -241,10 +237,7 @@ class joinCMD:
     def execute (self,args):
         # ----------------------- options output prefix -----------------------
         output_prefix = args.output_base[0]
-        # ----------------------- other options ------------
-        debug = args.debug
-        verbose = not args.verbose
-        batchsize = args.batchsize[0]
+
         if args.uncompressed:
             compress=""
         else:
