@@ -243,7 +243,7 @@ class joinCMD:
         else:
             compress='-z'
         # System call
-        call_string = [args.flash_path[0],"-t",str(args.threads[0]),"-x",str(args.max_mixmatch_density[0]),"-o",output_prefix,compress,args.fastq_file1[0],args.fastq_file2[0]])
+        call_string = [args.flash_path[0],"-t",str(args.threads[0]),"-x",str(args.max_mixmatch_density[0]),"-o",output_prefix,compress,args.fastq_file1[0],args.fastq_file2[0]]
         print(call_string)
         if profile:
             import cProfile
