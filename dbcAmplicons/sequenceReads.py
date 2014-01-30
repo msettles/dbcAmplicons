@@ -23,6 +23,12 @@ except ImportError:
     print("Warning: editdist library not loaded, Insertion/Deletion detetion in barcodes and primers will not be performed")
     editdist_loaded = False 
 
+try: 
+    from dbcAmplicons import trim 
+    trim_loaded = True
+except ImportError:
+    print("Warning: trim library not loaded, trimming using python")
+    trim_loaded = False 
 
 #------------------- calculate distance between two barcode sequences ------------------------------
 def barcodeDist(b_1, b_2):
@@ -58,7 +64,6 @@ def primerDist(primer,read, max_diff, end_match):
                     return [dist,len(primer)]
         return [dist,len(primer)]
 
-
 # ---------------- Class for 4 read sequence data with double barcode set ----------------
 class FourSequenceReadSet:
     """ 
@@ -83,6 +88,8 @@ class FourSequenceReadSet:
         self.qual_2 = qual_2
         self.bc_1 = bc_1
         self.bc_2 = bc_2
+        self.trim_left = len(read_1)
+        self.trim_right = len(read_2)
         self.goodRead = False
     def assignBarcode(self, bcTable, max_diff):
         """
@@ -150,6 +157,16 @@ class FourSequenceReadSet:
         if self.project == None:
             self.goodRead = False
         return 0
+    def trimRead(self, minQ, minL):
+        """
+        Trim the read by a minQ score
+        """
+        if (trim_loaded):
+            trim_points = trim.trim(self.qual_1,self.qual_2,minQ)
+            self.trim_left = trim_points["left_trim"]
+            self.trim_right = trim_points["right_trim"]
+            if ((self.trim_left-self.primer[3]) < minL or (self.trim_right-self.primer[6]) < minL):
+                self.goodRead=False
     def getBarcode(self):
         """
         Return the reads barcode pair ID
@@ -177,13 +194,11 @@ class FourSequenceReadSet:
         if self.primer[0] != None:
             read1_name = "%s 1:N:0:%s:%s %s|%s|%s|%s %s|%s|%s" % (self.name, self.barcode[0], self.primer[0], self.bc_1, self.barcode[1], self.bc_2 , self.barcode[2], self.primer[1], self.primer[2], self.primer[3])
             read2_name = "%s 2:N:0:%s:%s %s|%s|%s|%s %s|%s|%s" % (self.name, self.barcode[0], self.primer[0], self.bc_1, self.barcode[1], self.bc_2 , self.barcode[2], self.primer[4], self.primer[5], self.primer[6])
-            r1 = '\n'.join([read1_name, self.read_1[self.primer[3]:],'+',self.qual_1[self.primer[3]:]])
-            r2 = '\n'.join([read2_name, self.read_2[self.primer[6]:],'+',self.qual_2[self.primer[6]:]])
         else:
             read1_name = "%s 1:N:0:%s %s|%s|%s|%s" % (self.name, self.barcode[0], self.bc_1, self.barcode[1], self.bc_2 , self.barcode[2])
             read2_name = "%s 2:N:0:%s %s|%s|%s|%s" % (self.name, self.barcode[0], self.bc_1, self.barcode[1], self.bc_2 , self.barcode[2])
-            r1 = '\n'.join([read1_name, self.read_1,'+',self.qual_1])
-            r2 = '\n'.join([read2_name, self.read_2,'+',self.qual_2])
+        r1 = '\n'.join([read1_name, self.read_1[self.primer[3]:self.trim_left],'+',self.qual_1[self.primer[3]:self.trim_left]])
+        r2 = '\n'.join([read2_name, self.read_2[self.primer[6]:self.trim_right],'+',self.qual_2[self.primer[6]:self.trim_right]])
         return [r1,r2]
 
 # ---------------- Class for 2 read sequence data processed with dbcAmplicons preprocess ----------------

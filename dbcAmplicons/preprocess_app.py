@@ -27,7 +27,7 @@ class preprocessApp:
     """ 
     def __init__(self):
         self.verbose = False
-    def start(self, fastq_file1, fastq_file2, fastq_file3, fastq_file4, output_prefix, barcodesFile, primerFile, samplesFile, barcodeMaxDiff=1, primerMaxDiff=4, primerEndMatch=4, batchsize=10000, uncompressed=False, output_unidentified=False, verbose=True, debug=False):
+    def start(self, fastq_file1, fastq_file2, fastq_file3, fastq_file4, output_prefix, barcodesFile, primerFile, samplesFile, barcodeMaxDiff=1, primerMaxDiff=4, primerEndMatch=4, batchsize=10000, uncompressed=False, output_unidentified=False, minQ=None, minL = 0, verbose=True, debug=False):
         """
         Start preprocessing double barcoded Illumina sequencing run, perform 
         """
@@ -79,6 +79,8 @@ class preprocessApp:
                         read.assignPrimer(prTable,primerMaxDiff,primerEndMatch)
                     if evalSample and read.goodRead: ## sample
                         read.assignRead(sTable) ## barcode
+                    if minQ != None:
+                        read.trimRead(minQ, minL)
                     if read.goodRead == True:
                         identified_count += 1
                         if evalSample:
