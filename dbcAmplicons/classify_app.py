@@ -33,7 +33,7 @@ def rdpCall(query, output, gene, rdpPath, verbose):
         print( 'ERROR:[rdpCall] incorrect gene string provided to rdp')
         raise
     #rdp_call = "java -Xmx1g -jar %s classify -q %s -o %s -f fixrank -g %s" % (rdpPath, query, output, gene)
-    rdp_call = ['java', '-Xmx1g', '-jar', rdpPath, 'classify', '-q', query, '-o', output, '-f', 'fixrank', '-g', gene]
+    rdp_call = ['java', '-xmx1024M', '-xms128M', '-XX:+UseParallelGC', '-XX:ParallelGCThreads=2', '-jar', rdpPath, 'classify', '-q', query, '-o', output, '-f', 'fixrank', '-g', gene]
     starttime = time.time()
     if verbose:
         print "Starting rdp for file %s" % query
