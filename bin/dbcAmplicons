@@ -34,7 +34,9 @@ profile = False
 # add support for multiple input files
 # version 0.5.0
 # reconfigure repository and interface
-version_num = "v0.5.0"
+# version 0.5.1
+# added support for rdp classification
+version_num = "v0.5.1"
 
 
 def make_sure_path_exists(path):
