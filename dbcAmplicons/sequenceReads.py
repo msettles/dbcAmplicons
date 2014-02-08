@@ -16,6 +16,9 @@
 """
 sequenceReads.py stores and processes individual DNA sequence reads.
 """
+
+from dbcAmplicons import misc
+
 try: 
     from dbcAmplicons import editdist
     editdist_loaded = True
@@ -187,7 +190,7 @@ class FourSequenceReadSet:
         Return the reads project ID
         """
         return self.project
-    def getRead(self):
+    def getFastq(self):
         """ 
         Create four line string ('\n' separator included) for the read pair, returning a length 2 vector (one for each read)
         """
@@ -247,7 +250,7 @@ class TwoSequenceReadSet:
         if self.project != None:
             self.goodRead = True
         return 0
-    def getRead(self):
+    def getFastq(self):
         """ 
         Create four line string ('\n' separator included) for the read pair, returning a length 2 vector (one for each read)
         """
@@ -260,6 +263,32 @@ class TwoSequenceReadSet:
         r1 = '\n'.join([read1_name, self.read_1,'+',self.qual_1])
         r2 = '\n'.join([read2_name, self.read_2,'+',self.qual_2])
         return [r1,r2]
+    def getFasta(self):
+        """ 
+        Create two line string ('\n' separator included) for the read pair, returning a length 1 vector (one read)
+        """
+        name = '>' + self.name[1:]
+        if self.primer != None:
+            read1_name = "%s 1:N:0:%s:%s" % (name, self.barcode, self.primer)
+            read2_name = "%s 2:N:0:%s:%s" % (name, self.barcode, self.primer)
+        else:
+            read1_name = "%s 1:N:0:%s" % (name, self.barcode)
+            read2_name = "%s 1:N:0:%s" % (name, self.barcode)
+        r1 = '\n'.join([read1_name, self.read_1])
+        r2 = '\n'.join([read2_name, self.read_2])
+        return [r1,r2]
+    def getJoinedFasta(self):
+        """ 
+        Create two line string ('\n' separator included) for the read pair, concatenating the two reads into a single returning length 1 vector (one read)
+        """
+        name = '>' + self.name[1:]
+        if self.primer != None:
+            read1_name = "%s|%s:%s" % (name, self.barcode, self.primer)
+        else:
+            read1_name = "%s:%s" % (name, self.barcode)
+        r1 = '\n'.join([read1_name, self.read_1 + misc.reverseComplement(self.read_2)])
+        return [r1]
+    
 
 # ---------------- Class for 2 read sequence data processed with dbcAmplicons preprocess ----------------
 class OneSequenceReadSet:
@@ -288,15 +317,26 @@ class OneSequenceReadSet:
             raise            
         self.read_1 = read_1
         self.qual_1 = qual_1
-    def getRead(self):
+    def getFastq(self):
         """ 
-        Create four line string ('\n' separator included) for the read pair, returning a length 1 vector (one read)
+        Create four line string ('\n' separator included) for the read, returning a length 1 vector (one read)
         """
         if self.primer != None:
             read1_name = "%s 1:N:0:%s:%s" % (self.name, self.barcode, self.primer)
         else:
             read1_name = "%s 1:N:0:%s" % (self.name, self.barcode)
         r1 = '\n'.join([read1_name, self.read_1,'+',self.qual_1])
+        return [r1]
+    def getFasta(self):
+        """ 
+        Create two line string ('\n' separator included) for the read, returning a length 1 vector (one read)
+        """
+        name = '>' + self.name[1:]
+        if self.primer != None:
+            read1_name = "%s|%s:%s" % (name, self.barcode, self.primer)
+        else:
+            read1_name = "%s|%s" % (name, self.barcode)
+        r1 = '\n'.join([read1_name, self.read_1])
         return [r1]
 
 

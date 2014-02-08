@@ -84,9 +84,9 @@ class preprocessApp:
                     if read.goodRead == True:
                         identified_count += 1
                         if evalSample:
-                            self.run_out[read.getProject()].addRead(read.getRead())
+                            self.run_out[read.getProject()].addRead(read.getFastq())
                         else:
-                            self.run_out["Identified"].addRead(read.getRead())
+                            self.run_out["Identified"].addRead(read.getFastq())
                         # Record data for final barcode table
                         if read.getBarcode() in barcode_counts:
                             if evalPrimer:
@@ -105,7 +105,7 @@ class preprocessApp:
                     else:
                         unidentified_count += 1
                         if output_unidentified:
-                            self.run_out["Unidentified"].addRead(read.getRead())
+                            self.run_out["Unidentified"].addRead(read.getFastq())
                 ### Write out reads
                 for key in self.run_out:
                     self.run_out[key].writeReads()

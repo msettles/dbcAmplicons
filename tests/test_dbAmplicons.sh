@@ -2,7 +2,6 @@
 
 dbcAmplicons preprocess -B 15001 -b barcodeLookupTable.txt -p primerLookupTable.txt -1 Amplicon_Raw_fastq/Test100K_16S_R1_001.fastq.gz Amplicon_Raw_fastq/test40k_R1_001.fastq.gz -2 Amplicon_Raw_fastq/Test100K_16S_R2_001.fastq.gz Amplicon_Raw_fastq/test40k_R2_001.fastq.gz -3 Amplicon_Raw_fastq/Test100K_16S_R3_001.fastq.gz Amplicon_Raw_fastq/test40k_R3_001.fastq.gz -4 Amplicon_Raw_fastq/Test100K_16S_R4_001.fastq.gz Amplicon_Raw_fastq/test40k_R4_001.fastq.gz -o preprocess/trimL --debug
 
-
 # Current output should be
 
 #No sample file identified
@@ -20,3 +19,86 @@ dbcAmplicons preprocess -B 15001 -b barcodeLookupTable.txt -p primerLookupTable.
 #processed 140000 total reads, 2421.0 Reads/second, 87346 identified reads, 52654 unidentified reads
 #140000 reads processed in 0.96 minutes
 #Cleaning up.
+
+dbcAmplicons splitreads -B 15001 -s sampleLookupTable.txt -1 preprocess/trimL_R1.fastq.gz -2 preprocess/trimL_R2.fastq.gz -o splitreads
+
+# Current output should be
+
+#sample table length: 208, and 5 projects.
+#processed 15001 total reads, 3766.0 Reads/second, 10188 identified reads, 4813 unidentified reads
+#processed 30002 total reads, 3289.0 Reads/second, 24073 identified reads, 5929 unidentified reads
+#processed 45003 total reads, 3167.0 Reads/second, 37964 identified reads, 7039 unidentified reads
+#processed 60004 total reads, 3107.0 Reads/second, 51809 identified reads, 8195 unidentified reads
+#processed 75005 total reads, 3076.0 Reads/second, 65595 identified reads, 9410 unidentified reads
+#processed 87346 total reads, 3030.0 Reads/second, 76970 identified reads, 10376 unidentified reads
+#87346 reads processed in 0.48 minutes
+#25093	reads found for project	match_twoprimersecond
+#31438	reads found for project	match_twoprimer
+#2195	reads found for project	subfolder/match_16S
+#18244	reads found for project	match_wildcard
+#0	reads found for project	nomatch
+#Cleaning up.
+
+dbcAmplicons join -t 4 -x 0.25 -1 splitreads/match_twoprimer_R1.fastq.gz -2 splitreads/match_twoprimer_R2.fastq.gz -o join/match_twoprimer
+
+# Results should be
+
+#[FLASH] Starting FLASH v1.2.8
+#[FLASH] Fast Length Adjustment of SHort reads
+#[FLASH]
+#[FLASH] Input files:
+#[FLASH]     splitreads/match_twoprimer_R1.fastq.gz
+#[FLASH]     splitreads/match_twoprimer_R2.fastq.gz
+#[FLASH]
+#[FLASH] Output files:
+#[FLASH]     ./join/match_twoprimer.extendedFrags.fastq.gz
+#[FLASH]     ./join/match_twoprimer.notCombined_1.fastq.gz
+#[FLASH]     ./join/match_twoprimer.notCombined_2.fastq.gz
+#[FLASH]     ./join/match_twoprimer.hist
+#[FLASH]     ./join/match_twoprimer.histogram
+#[FLASH]
+#[FLASH] Parameters:
+#[FLASH]     Min overlap:          10
+#[FLASH]     Max overlap:          65
+#[FLASH]     Phred offset:         33
+#[FLASH]     Combiner threads:     4
+#[FLASH]     Max mismatch density: 0.250000
+#[FLASH]     Cap mismatch quals:   false
+#[FLASH]     Output format:        gzip
+#[FLASH]     Interleaved input:    false
+#[FLASH]     Interleaved output:   false
+#[FLASH]
+#[FLASH] Starting FASTQ readers and writer threads
+#[FLASH] Starting 4 combiner threads
+#[FLASH] Processed 25000 read pairs
+#[FLASH] Processed 31438 read pairs
+#[FLASH]
+#[FLASH] Read combination statistics:
+#[FLASH]     Total reads:      31438
+#[FLASH]     Combined reads:   25357
+#[FLASH]     Uncombined reads: 6081
+#[FLASH]     Percent combined: 80.66%
+#[FLASH]
+#[FLASH] Writing histogram files.
+#[FLASH]
+#[FLASH] FLASH v1.2.8 complete!
+#[FLASH] 3.178 seconds elapsed
+
+dbcAmplicons classify -B 7500 -o join/classify -U join/match_twoprimer.extendedFrags.fastq.gz --debug  --rdpPath=/Users/msettles/opt/RDPTools/classifier.jar -p 4 -1 join/match_twoprimer.notCombined_1.fastq.gz -2 join/match_twoprimer.notCombined_2.fastq.gz
+
+# Result should be
+
+#Starting rdp for file joint/classify.7500.fasta
+#Starting rdp for file joint/classify.15000.fasta
+#Starting rdp for file joint/classify.22500.fasta
+#Starting rdp for file joint/classify.25357.fasta
+#Finished processing joint/classify.25357.fasta in 1.36 minutes
+#Starting rdp for file joint/classify.31438.fasta
+#Finished processing joint/classify.22500.fasta in 2.97 minutes
+#Finished processing joint/classify.15000.fasta in 3.0 minutes
+#Finished processing joint/classify.7500.fasta in 3.01 minutes
+#Finished processing joint/classify.31438.fasta in 2.04 minutes
+#Combining temporary files
+#31438 reads processed in 3.43 minutes
+#Cleaning up.
+
