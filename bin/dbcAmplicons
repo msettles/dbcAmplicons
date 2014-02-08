@@ -25,7 +25,7 @@ import os
 import errno
 import argparse 
 from subprocess import call
-
+from multiprocessing import cpu_count
 profile = False
 
 # version 0.3.0
@@ -241,17 +241,16 @@ class joinCMD:
     def execute (self,args):
         # ----------------------- options output prefix -----------------------
         output_prefix = args.output_base
-
+        make_sure_path_exists(os.path.dirname(output_prefix))
         if args.uncompressed:
             compress=""
         else:
             compress='-z'
         # System call
         call_string = [args.flash_path,"-t",str(args.threads),"-x",str(args.max_mixmatch_density),"-o",output_prefix,compress,args.fastq_file1,args.fastq_file2]
-        print(call_string)
         if profile:
             import cProfile
-            cProfile.runctx('subprocess.call(call_string)', globals(), locals())
+            cProfile.runctx('call(call_string)', globals(), locals())
             return 255
         else:
             return call(call_string)
@@ -269,20 +268,22 @@ def classifyApp(subparsers):
     preprocess_parser = subparsers.add_parser('classify', help = 'classify reads using RDP')
     preprocess_parser.add_argument('-B', '--batchsize', help='batch size to process reads in [default: %(default)s]',
                         type=int, dest='batchsize', default=10000)    
+    preprocess_parser.add_argument('-p', '--processors', help='number of processors to use, [default: %(default)s]',
+                        type=int, dest='procs', default=1)
     preprocess_parser.add_argument('-o', '--output_path', help='path for output files [default: %(default)s]',
-                        action='store', type=str, dest='output_base', metavar='outputPrefix', default=".")
-    preprocess_parser.add_argument('-u', '--output_unidentified', help='output unidentified reads [default: %(default)s]',
-                        action='store_true', dest='unidentified', default=False)
+                        action='store', type=str, dest='output_base', metavar='outputPrefix', default='classify')
+    preprocess_parser.add_argument('-s', '--samples_file', help='file with primers',
+                        action='store', type=str, dest='samples_file',metavar='sampleFile', default=None, required=False)
+    preprocess_parser.add_argument('--rdpPath',metavar='PATH', dest='rdpPath', help='path to the RDP classifyer',
+                        action='store',type=str, default='classify.jar', required=False)
+    preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq four file set',
+                        action='store',type=str, default=None, required=False, nargs='+')
+    preprocess_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq four file set',
+                        action='store',type=str, default=None, required=False, nargs='+')
+    preprocess_parser.add_argument('-U', metavar="single", dest='fastq_file3', help='single-end amplicon, typically from joined paired reads',
+                        action='store',type=str, default=None, required=False, nargs='+')
     preprocess_parser.add_argument('-v', '--silent', help='verbose output [default: %(default)s]',
                         action='store_true', dest='verbose', default=False)
-    preprocess_parser.add_argument('-s', '--samples_file', help='file with primers',
-                        action='store', type=str, dest='samples_file',metavar='sampleFile', default=None, required=True)
-    preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq four file set',
-                        action='store',type=str, required=False, nargs='+')
-    preprocess_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq four file set',
-                        action='store',type=str, required=False, nargs='+')
-    preprocess_parser.add_argument('-U', metavar="single", dest='fastq_file3', help='single-end amplicon, typically from joined paired reads',
-                        action='store',type=str, required=False, nargs='+')
     preprocess_parser.add_argument('--debug', help='show traceback on error',
                         action='store_true', dest="debug", default = False)
     return preprocess_parser 
@@ -298,23 +299,26 @@ class classifyCMD:
         sFile = args.samples_file
         # ----------------------- options output prefix -----------------------
         output_prefix = args.output_base
-#        make_sure_path_exists(output_prefix)
-#        make_sure_path_exists(os.path.dirname(output_prefix))
-        output_unidentified = args.unidentified
         # ----------------------- other options ------------
         debug = args.debug
         verbose = not args.verbose
         batchsize = args.batchsize
+        procs = args.procs
+        rdpPath = args.rdpPath
+
+        if (procs > cpu_count()):
+            print("The number of processors specified [%s] is greater than the number available [%s], exiting application" % (str(procs),str(cpu_count())))
+            sys.exit()
 
         from dbcAmplicons import classifyApp
         app = classifyApp()
 
         if profile:
             import cProfile
-            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, sFile, batchsize, output_unidentified, verbose, debug)', globals(), locals())
+            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, rdpPath, batchsize, procs, verbose, debug)', globals(), locals())
             return 255
         else:
-            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, sFile, batchsize, output_unidentified, verbose, debug)
+            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, rdpPath, batchsize, procs, verbose, debug)
 
 #
 #####################################################################################
@@ -332,6 +336,7 @@ def parseArgs():
     preprocessApp(subparsers)
     splitreadsApp(subparsers)
     joinApp(subparsers)
+    classifyApp(subparsers)
 
     args = parser.parse_args() 
 
@@ -345,8 +350,9 @@ def main():
     preprocess = preprocessCMD()
     splitreads = splitreadsCMD()
     join = joinCMD()
+    classify = classifyCMD()
 
-    commands = {'preprocess': preprocess, 'splitreads':splitreads, 'join':join}
+    commands = {'preprocess': preprocess, 'splitreads':splitreads, 'join':join, 'classify':classify}
 
     args = parseArgs()
     lib_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../')
@@ -358,3 +364,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+ 

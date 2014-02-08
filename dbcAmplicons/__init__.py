@@ -27,6 +27,8 @@ from illuminaRun import TwoReadIlluminaRun
 from illuminaRun import OneReadIlluminaRun
 from illuminaRun import IlluminaTwoReadOutput
 from illuminaRun import IlluminaOneReadOutput
+from illuminaRun import IlluminaFastaOutput
 
 from preprocess_app import preprocessApp
 from splitreads_app import splitreadsApp
+from classify_app import classifyApp
