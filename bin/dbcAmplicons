@@ -59,29 +59,29 @@ def preprocessApp(subparsers):
     # Parse options
     #
     preprocess_parser = subparsers.add_parser('preprocess', help = 'Preprocess four read raw amplicon data, identifying barcode and primer sequence')
-    preprocess_parser.add_argument('-b', '--barcodes_file', help='file with barcodes',
+    preprocess_parser.add_argument('-B', '--barcodes_file', help='file with barcodes',
                         action='store', type=str, metavar='barcodesFile', required=True)
     preprocess_parser.add_argument('-d', '--barcodediff', help='max hamming dist from barcode [default: %(default)s]',
                         type=int, dest='barcodediff', default=1)
-    preprocess_parser.add_argument('-p', '--primer_file', help='file with primers',
+    preprocess_parser.add_argument('-P', '--primer_file', help='file with primers',
                         action='store', type=str, dest='primer_file',metavar='primerFile', default=None)
     preprocess_parser.add_argument('-D', '--primerdiff', help='max hamming dist from primer [default: %(default)s]',
                         type=int, dest='primerdiff', default=4)
     preprocess_parser.add_argument('-e', '--primerend', help='required number of matching bases at end of primer [default: %(default)s]',
                         type=int, dest='primerend', default=4)
-    preprocess_parser.add_argument('-s', '--samples_file', help='file with primers',
+    preprocess_parser.add_argument('-S', '--samples_file', help='file with primers',
                         action='store', type=str, dest='samples_file',metavar='sampleFile', default=None)
     preprocess_parser.add_argument('-q', '--minQ', help="trim 3' end of sequences to minQ [default: %(default)s]",
                         type=int, dest='minQ', default=None),
     preprocess_parser.add_argument('-l', '--minL', help='if minQ is not None, only keep reads that are at least minL length [default: %(default)s]',
                         type=int, dest='minL', default=0),
-    preprocess_parser.add_argument('-B', '--batchsize', help='batch size to process reads in [default: %(default)s]',
+    preprocess_parser.add_argument('-b', '--batchsize', help='batch size to process reads in [default: %(default)s]',
                         type=int, dest='batchsize', default=10000)    
-    preprocess_parser.add_argument('-o', '--output_prefix', help='output file basename [default: fastq_prefix]',
+    preprocess_parser.add_argument('-O', '--output_prefix', help='output file basename [default: fastq_prefix]',
                         action='store', type=str, dest='output_base', metavar='PREFIX', default=None)
-    preprocess_parser.add_argument('-u', '--output_unidentified', help='output unidentified reads [default: %(default)s]',
+    preprocess_parser.add_argument('-U', '--output_unidentified', help='output unidentified reads [default: %(default)s]',
                         action='store_true', dest='unidentified', default=False)
-    preprocess_parser.add_argument('-U', '--uncompressed', help='leave output files uncompressed [default: %(default)s]',
+    preprocess_parser.add_argument('-u', '--uncompressed', help='leave output files uncompressed [default: %(default)s]',
                         action='store_true', dest='uncompressed', default=False)
     preprocess_parser.add_argument('-v', '--silent', help='verbose output [default: %(default)s]',
                         action='store_true', dest='verbose', default=False)
@@ -151,21 +151,21 @@ def splitreadsApp(subparsers):
     # Parse options
     #
     preprocess_parser = subparsers.add_parser('splitreads', help = 'Split reads from a preprocessed four read illumina run by project id')
-    preprocess_parser.add_argument('-B', '--batchsize', help='batch size to process reads in [default: %(default)s]',
+    preprocess_parser.add_argument('-b', '--batchsize', help='batch size to process reads in [default: %(default)s]',
                         type=int, dest='batchsize', default=10000)    
-    preprocess_parser.add_argument('-o', '--output_path', help='path for output files [default: %(default)s]',
+    preprocess_parser.add_argument('-O', '--output_path', help='path for output files [default: %(default)s]',
                         action='store', type=str, dest='output_base', metavar='PREFIX', default=".")
-    preprocess_parser.add_argument('-u', '--output_unidentified', help='output unidentified reads [default: %(default)s]',
+    preprocess_parser.add_argument('-U', '--output_unidentified', help='output unidentified reads [default: %(default)s]',
                         action='store_true', dest='unidentified', default=False)
-    preprocess_parser.add_argument('-U', '--uncompressed', help='leave output files uncompressed [default: %(default)s]',
+    preprocess_parser.add_argument('-u', '--uncompressed', help='leave output files uncompressed [default: %(default)s]',
                         action='store_true', dest='uncompressed', default=False)
     preprocess_parser.add_argument('-v', '--silent', help='verbose output [default: %(default)s]',
                         action='store_true', dest='verbose', default=False)
-    preprocess_parser.add_argument('-s', '--samples_file', help='file with primers',
+    preprocess_parser.add_argument('-S', '--samples_file', help='file with primers',
                         action='store', type=str, dest='samples_file',metavar='sampleFile', default=None, required=True)
-    preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq four file set',
+    preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq two file set',
                         action='store',type=str, required=True, nargs='+')
-    preprocess_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq four file set',
+    preprocess_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq two file set',
                         action='store',type=str, required=True, nargs='+')
     preprocess_parser.add_argument('--debug', help='show traceback on error',
                         action='store_true', dest="debug", default = False)
@@ -212,9 +212,9 @@ def joinApp(subparsers):
     # Parse options
     #
     preprocess_parser = subparsers.add_parser('join', help = 'join reads using flash')
-    preprocess_parser.add_argument('-o', '--output_path', help='path for output files [default: %(default)s]',
+    preprocess_parser.add_argument('-O', '--output_path', help='path for output files [default: %(default)s]',
                         action='store', type=str, dest='output_base', metavar='PREFIX', default=".")
-    preprocess_parser.add_argument('-U', '--uncompressed', help='leave output files uncompressed [default: %(default)s]',
+    preprocess_parser.add_argument('-u', '--uncompressed', help='leave output files uncompressed [default: %(default)s]',
                         action='store_true', dest='uncompressed', default=False)
     preprocess_parser.add_argument('-x', '--max-mismatch-density', help=' Maximum allowed ratio between the number of \
                           mismatched base pairs and the overlap length. \
@@ -228,9 +228,9 @@ def joinApp(subparsers):
                         type=int, dest='threads',default=1)
     preprocess_parser.add_argument('-p', '--flash_path', help='path to the application flash',
                         action='store', type=str, dest='flash_path',metavar='path', default='flash', required=False)
-    preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq four file set',
+    preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq two file set',
                         action='store',type=str, required=True)
-    preprocess_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq four file set',
+    preprocess_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq two file set',
                         action='store',type=str, required=True)
     return preprocess_parser 
 
@@ -267,20 +267,20 @@ def classifyApp(subparsers):
     #
     # Parse options
     #
-    preprocess_parser = subparsers.add_parser('classify', help = 'classify reads using RDP')
-    preprocess_parser.add_argument('-B', '--batchsize', help='batch size to process reads in [default: %(default)s]',
+    preprocess_parser = subparsers.add_parser('classify', help = 'classify reads using RDP generating a fixrank formated file')
+    preprocess_parser.add_argument('-b', '--batchsize', help='batch size to process reads in [default: %(default)s]',
                         type=int, dest='batchsize', default=10000)    
     preprocess_parser.add_argument('-p', '--processors', help='number of processors to use, [default: %(default)s]',
                         type=int, dest='procs', default=1)
-    preprocess_parser.add_argument('-o', '--output_path', help='path for output files [default: %(default)s]',
-                        action='store', type=str, dest='output_base', metavar='outputPrefix', default='classify')
-    preprocess_parser.add_argument('-s', '--samples_file', help='file with primers',
-                        action='store', type=str, dest='samples_file',metavar='sampleFile', default=None, required=False)
     preprocess_parser.add_argument('--rdpPath',metavar='PATH', dest='rdpPath', help='path to the RDP classifyer',
                         action='store',type=str, default='classify.jar', required=False)
-    preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq four file set',
+    preprocess_parser.add_argument('-S', '--samples_file', help='file with primers',
+                        action='store', type=str, dest='samples_file',metavar='sampleFile', default=None, required=False)
+    preprocess_parser.add_argument('-O', '--output_path', help='path for output files [default: %(default)s]',
+                        action='store', type=str, dest='output_base', metavar='outputPrefix', default='classify')
+    preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq two file set',
                         action='store',type=str, default=None, required=False, nargs='+')
-    preprocess_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq four file set',
+    preprocess_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq two file set',
                         action='store',type=str, default=None, required=False, nargs='+')
     preprocess_parser.add_argument('-U', metavar="single", dest='fastq_file3', help='single-end amplicon, typically from joined paired reads',
                         action='store',type=str, default=None, required=False, nargs='+')
@@ -321,6 +321,63 @@ class classifyCMD:
             return 255
         else:
             return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, rdpPath, batchsize, procs, verbose, debug)
+
+#####################################################################################
+## Compute an abundance table from classified reads in fixrank format
+def abundanceApp(subparsers):
+    """
+    abundanceApp parser parameters
+    """
+    #
+    # Parse options
+    #
+    preprocess_parser = subparsers.add_parser('abundance', help = 'Generate an abundance table from a fixrank formated file')
+    preprocess_parser.add_argument('-p', '--processors', help='number of processors to use, [default: %(default)s]',
+                        type=int, dest='procs', default=1)
+    preprocess_parser.add_argument('-r', '--rank', help='taxonomic rank to build table from, allowable values are (domain, phylum, class, order, family, genus, and species{if performed}, [default: %(default)s]',
+                        action='store', type=str, dest='rank', metavar='FILE', default='genus', required=False, choices=['domain', 'phylum', 'class', 'order', 'family', 'genus', 'species'])
+    preprocess_parser.add_argument('-S', '--samples_file', help='file with primers',
+                        action='store', type=str, dest='samples_file',metavar='FILE', default=None, required=False)
+    preprocess_parser.add_argument('-O', '--output_path', help='path for output files [default: %(default)s]',
+                        action='store', type=str, dest='output_base', metavar='FILE_PREFIX', default='table')
+    preprocess_parser.add_argument('-F', metavar="single", dest='fixrank_file', help='fixrank formated classification file generated by classify',
+                        action='store',type=str, default=None, required=True, nargs='+')
+    preprocess_parser.add_argument('-v', '--silent', help='verbose output [default: %(default)s]',
+                        action='store_true', dest='verbose', default=False)
+    preprocess_parser.add_argument('--debug', help='show traceback on error',
+                        action='store_true', dest="debug", default = False)
+    return preprocess_parser 
+
+class abundanceCMD:
+    """
+    validate abundanceApp parser parameters and launch the app
+    """
+    def __init__(self):
+        pass
+    def execute (self,args):
+        # ----------------------- options input files -----------------------
+        sFile = args.samples_file
+        # ----------------------- options output prefix -----------------------
+        output_prefix = args.output_base
+        # ----------------------- other options ------------
+        debug = args.debug
+        verbose = not args.verbose
+        procs = args.procs
+
+        if (procs > cpu_count()):
+            print("The number of processors specified [%s] is greater than the number available [%s], exiting application" % (str(procs),str(cpu_count())))
+            sys.exit()
+
+        from dbcAmplicons import abundanceApp
+        app = abundanceApp()
+
+        if profile:
+            import cProfile
+            cProfile.runctx('app.start(args.fixrank_file, sFile, output_prefix, args.rank, procs, verbose, debug)', globals(), locals())
+            return 255
+        else:
+            return app.start(args.fixrank_file, sFile, output_prefix, args.rank, procs, verbose, debug)
+
 
 #
 #####################################################################################
