@@ -143,7 +143,7 @@ class abundanceApp:
             if evalSample:
                 ab_name = output_prefix + '.abundance.txt'
                 prop_name = output_prefix + '.proportions.txt'
-                sampleList = sTable.getSampleList()
+#                sampleList = sTable.getSampleList()
             else:
                 ab_name = output_prefix + '.abundance.txt'
                 prop_name = output_prefix + '.proportions.txt'
@@ -159,13 +159,17 @@ class abundanceApp:
             propFile.write(txt)
             taxa_keys = sorted(abundanceTable.keys())
             for taxa in taxa_keys:
-                txt1 = str(taxa.replace('|', '\t')) + '\t' + str(round(bootscore[taxa]/sum(abundanceTable[taxa].values()),3))
-                txt2 = str(taxa.replace('|', '\t')) + '\t' + str(round(bootscore[taxa]/sum(abundanceTable[taxa].values()),3))
+                txt1 = txt2 = str(taxa.replace('|', '\t')) + '\t' + str(round(bootscore[taxa]/sum(abundanceTable[taxa].values()),3))
+                #txt2 = str(taxa.replace('|', '\t')) + '\t' + str(round(bootscore[taxa]/sum(abundanceTable[taxa].values()),3))
                 for sample in sampleList:
                     txt1 = '\t'.join([txt1,str(abundanceTable[taxa][sample])])
-                    txt2 = '\t'.join([txt1,str(round(abundanceTable[taxa][sample]/sampleCounts[sample],3))])
+                    txt2 = '\t'.join([txt2,str(round(abundanceTable[taxa][sample]/sampleCounts[sample],3))])
                 abFile.write(txt1  + '\n')
                 propFile.write(txt2 + '\n')
+            txt = "Sample Counts\tNA\tNA"           
+            for sample in sampleList:
+                    txt = '\t'.join(txt,str(sampleCounts[sample]))
+            propFile.write(txt + '\n')
             cntFile = open(output_prefix + '.taxa_counts.txt', 'w')
             cntFile.write("Taxon_Name\tCount\n")
             for abt in abundanceTable:
