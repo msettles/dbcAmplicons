@@ -163,12 +163,15 @@ class abundanceApp:
                 #txt2 = str(taxa.replace('|', '\t')) + '\t' + str(round(bootscore[taxa]/sum(abundanceTable[taxa].values()),3))
                 for sample in sampleList:
                     txt1 = '\t'.join([txt1,str(abundanceTable[taxa][sample])])
-                    txt2 = '\t'.join([txt2,str(round(abundanceTable[taxa][sample]/sampleCounts[sample],3))])
+                    if sampleCounts[sample] > 0:
+                        txt2 = '\t'.join([txt2,str(round(abundanceTable[taxa][sample]/sampleCounts[sample],3))])
+                    else:
+                        txt2 = '\t'.join([txt2,str(0.00)])
                 abFile.write(txt1  + '\n')
                 propFile.write(txt2 + '\n')
             txt = "Sample Counts\tNA\tNA"           
             for sample in sampleList:
-                    txt = '\t'.join([txt,str(sampleCounts[sample]]))
+                    txt = '\t'.join([txt,str(sampleCounts[sample])])
             propFile.write(txt + '\n')
             cntFile = open(output_prefix + '.taxa_counts.txt', 'w')
             cntFile.write("Taxon_Name\tCount\n")
