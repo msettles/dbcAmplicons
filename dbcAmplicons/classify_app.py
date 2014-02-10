@@ -74,7 +74,7 @@ class classifyApp:
     	self.verbose=False
     def start(self, fastq_file1, fastq_file2, fastq_fileU, output_prefix, rdpPath='./classifier.jar', batchsize=10000, procs = 1, verbose=True, debug=False):
     	"""
-            Start preprocessing double barcoded Illumina sequencing run
+            Start classifying double barcoded Illumina sequencing run
         """
         self.verbose = verbose
         try:

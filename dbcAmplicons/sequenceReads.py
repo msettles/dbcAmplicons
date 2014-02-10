@@ -119,6 +119,7 @@ class FourSequenceReadSet:
         self.barcode = [bcTable.getMatch(bc1,bc2),bc1Mismatch,bc2Mismatch]
         if self.barcode[0] != None and bc1Mismatch <= max_diff and bc2Mismatch <= max_diff:
             self.goodRead = True
+        self.sample = self.barcode[0]
         return 0
     def assignPrimer(self, prTable, max_diff, endmatch):
         """
@@ -195,11 +196,11 @@ class FourSequenceReadSet:
         Create four line string ('\n' separator included) for the read pair, returning a length 2 vector (one for each read)
         """
         if self.primer[0] != None:
-            read1_name = "%s 1:N:0:%s:%s %s|%s|%s|%s %s|%s|%s" % (self.name, self.barcode[0], self.primer[0], self.bc_1, self.barcode[1], self.bc_2 , self.barcode[2], self.primer[1], self.primer[2], self.primer[3])
-            read2_name = "%s 2:N:0:%s:%s %s|%s|%s|%s %s|%s|%s" % (self.name, self.barcode[0], self.primer[0], self.bc_1, self.barcode[1], self.bc_2 , self.barcode[2], self.primer[4], self.primer[5], self.primer[6])
+            read1_name = "%s 1:N:0:%s:%s %s|%s|%s|%s %s|%s|%s" % (self.name, self.sample, self.primer[0], self.bc_1, self.barcode[1], self.bc_2 , self.barcode[2], self.primer[1], self.primer[2], self.primer[3])
+            read2_name = "%s 2:N:0:%s:%s %s|%s|%s|%s %s|%s|%s" % (self.name, self.sample, self.primer[0], self.bc_1, self.barcode[1], self.bc_2 , self.barcode[2], self.primer[4], self.primer[5], self.primer[6])
         else:
-            read1_name = "%s 1:N:0:%s %s|%s|%s|%s" % (self.name, self.barcode[0], self.bc_1, self.barcode[1], self.bc_2 , self.barcode[2])
-            read2_name = "%s 2:N:0:%s %s|%s|%s|%s" % (self.name, self.barcode[0], self.bc_1, self.barcode[1], self.bc_2 , self.barcode[2])
+            read1_name = "%s 1:N:0:%s %s|%s|%s|%s" % (self.name, self.sample, self.bc_1, self.barcode[1], self.bc_2 , self.barcode[2])
+            read2_name = "%s 2:N:0:%s %s|%s|%s|%s" % (self.name, self.sample, self.bc_1, self.barcode[1], self.bc_2 , self.barcode[2])
         r1 = '\n'.join([read1_name, self.read_1[self.primer[3]:self.trim_left],'+',self.qual_1[self.primer[3]:self.trim_left]])
         r2 = '\n'.join([read2_name, self.read_2[self.primer[6]:self.trim_right],'+',self.qual_2[self.primer[6]:self.trim_right]])
         return [r1,r2]
@@ -221,7 +222,7 @@ class TwoSequenceReadSet:
             self.name = split_name[0]
             self.barcode = split_name[1].split(":")[3]
             self.barcode_string = split_name[2]
-            self.sample = None
+            self.sample = self.barcode
             if (len(split_name) == 4):
                 self.primer_string1 = split_name[3]
                 self.primer_string2 = name_2.split(" ")[3]
@@ -255,11 +256,11 @@ class TwoSequenceReadSet:
         Create four line string ('\n' separator included) for the read pair, returning a length 2 vector (one for each read)
         """
         if self.primer != None:
-            read1_name = "%s 1:N:0:%s:%s %s %s" % (self.name, self.barcode, self.primer, self.barcode_string, self.primer_string1)
-            read2_name = "%s 2:N:0:%s:%s %s %s" % (self.name, self.barcode, self.primer, self.barcode_string, self.primer_string2)
+            read1_name = "%s 1:N:0:%s:%s %s %s" % (self.name, self.sample, self.primer, self.barcode_string, self.primer_string1)
+            read2_name = "%s 2:N:0:%s:%s %s %s" % (self.name, self.sample, self.primer, self.barcode_string, self.primer_string2)
         else:
-            read1_name = "%s 1:N:0:%s %s" % (self.name, self.barcode, self.barcode_string)
-            read2_name = "%s 2:N:0:%s %s" % (self.name, self.barcode, self.barcode_string)
+            read1_name = "%s 1:N:0:%s %s" % (self.name, self.sample, self.barcode_string)
+            read2_name = "%s 2:N:0:%s %s" % (self.name, self.sample, self.barcode_string)
         r1 = '\n'.join([read1_name, self.read_1,'+',self.qual_1])
         r2 = '\n'.join([read2_name, self.read_2,'+',self.qual_2])
         return [r1,r2]
@@ -269,11 +270,11 @@ class TwoSequenceReadSet:
         """
         name = '>' + self.name[1:]
         if self.primer != None:
-            read1_name = "%s 1:N:0:%s:%s" % (name, self.barcode, self.primer)
-            read2_name = "%s 2:N:0:%s:%s" % (name, self.barcode, self.primer)
+            read1_name = "%s 1:N:0:%s:%s" % (name, self.sample, self.primer)
+            read2_name = "%s 2:N:0:%s:%s" % (name, self.sample, self.primer)
         else:
-            read1_name = "%s 1:N:0:%s" % (name, self.barcode)
-            read2_name = "%s 1:N:0:%s" % (name, self.barcode)
+            read1_name = "%s 1:N:0:%s" % (name, self.sample)
+            read2_name = "%s 1:N:0:%s" % (name, self.sample)
         r1 = '\n'.join([read1_name, self.read_1])
         r2 = '\n'.join([read2_name, self.read_2])
         return [r1,r2]
@@ -283,9 +284,9 @@ class TwoSequenceReadSet:
         """
         name = '>' + self.name[1:]
         if self.primer != None:
-            read1_name = "%s|%s:%s" % (name, self.barcode, self.primer)
+            read1_name = "%s|%s:%s" % (name, self.sample, self.primer)
         else:
-            read1_name = "%s:%s" % (name, self.barcode)
+            read1_name = "%s:%s" % (name, self.sample)
         r1 = '\n'.join([read1_name, self.read_1 + misc.reverseComplement(self.read_2)])
         return [r1]
     
@@ -306,7 +307,7 @@ class OneSequenceReadSet:
         try:
             split_name = name_1.split(" ")
             self.name = split_name[0]
-            self.barcode = split_name[1].split(":")[3]
+            self.sample = split_name[1].split(":")[3]
             if (len(split_name) == 4):
                 self.primer = split_name[1].split(":")[4]
         except IndexError:
@@ -322,9 +323,9 @@ class OneSequenceReadSet:
         Create four line string ('\n' separator included) for the read, returning a length 1 vector (one read)
         """
         if self.primer != None:
-            read1_name = "%s 1:N:0:%s:%s" % (self.name, self.barcode, self.primer)
+            read1_name = "%s 1:N:0:%s:%s" % (self.name, self.sample, self.primer)
         else:
-            read1_name = "%s 1:N:0:%s" % (self.name, self.barcode)
+            read1_name = "%s 1:N:0:%s" % (self.name, self.sample)
         r1 = '\n'.join([read1_name, self.read_1,'+',self.qual_1])
         return [r1]
     def getFasta(self):
@@ -333,9 +334,9 @@ class OneSequenceReadSet:
         """
         name = '>' + self.name[1:]
         if self.primer != None:
-            read1_name = "%s|%s:%s" % (name, self.barcode, self.primer)
+            read1_name = "%s|%s:%s" % (name, self.sample, self.primer)
         else:
-            read1_name = "%s|%s" % (name, self.barcode)
+            read1_name = "%s|%s" % (name, self.sample)
         r1 = '\n'.join([read1_name, self.read_1])
         return [r1]
 

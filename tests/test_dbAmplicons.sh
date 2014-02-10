@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-dbcAmplicons preprocess -B 15001 -b barcodeLookupTable.txt -p primerLookupTable.txt -1 Amplicon_Raw_fastq/Test100K_16S_R1_001.fastq.gz Amplicon_Raw_fastq/test40k_R1_001.fastq.gz -2 Amplicon_Raw_fastq/Test100K_16S_R2_001.fastq.gz Amplicon_Raw_fastq/test40k_R2_001.fastq.gz -3 Amplicon_Raw_fastq/Test100K_16S_R3_001.fastq.gz Amplicon_Raw_fastq/test40k_R3_001.fastq.gz -4 Amplicon_Raw_fastq/Test100K_16S_R4_001.fastq.gz Amplicon_Raw_fastq/test40k_R4_001.fastq.gz -o preprocess/trimL --debug
+dbcAmplicons preprocess -b 15001 -B barcodeLookupTable.txt -P primerLookupTable.txt -1 Amplicon_Raw_fastq/Test100K_16S_R1_001.fastq.gz Amplicon_Raw_fastq/test40k_R1_001.fastq.gz -2 Amplicon_Raw_fastq/Test100K_16S_R2_001.fastq.gz Amplicon_Raw_fastq/test40k_R2_001.fastq.gz -3 Amplicon_Raw_fastq/Test100K_16S_R3_001.fastq.gz Amplicon_Raw_fastq/test40k_R3_001.fastq.gz -4 Amplicon_Raw_fastq/Test100K_16S_R4_001.fastq.gz Amplicon_Raw_fastq/test40k_R4_001.fastq.gz -O preprocess/trimL --debug
 
 # Current output should be
 
@@ -20,7 +20,7 @@ dbcAmplicons preprocess -B 15001 -b barcodeLookupTable.txt -p primerLookupTable.
 #140000 reads processed in 0.96 minutes
 #Cleaning up.
 
-dbcAmplicons splitreads -B 15001 -s sampleLookupTable.txt -1 preprocess/trimL_R1.fastq.gz -2 preprocess/trimL_R2.fastq.gz -o splitreads
+dbcAmplicons splitreads -b 15001 -S sampleLookupTable.txt -1 preprocess/trimL_R1.fastq.gz -2 preprocess/trimL_R2.fastq.gz -O splitreads
 
 # Current output should be
 
@@ -39,7 +39,7 @@ dbcAmplicons splitreads -B 15001 -s sampleLookupTable.txt -1 preprocess/trimL_R1
 #0	reads found for project	nomatch
 #Cleaning up.
 
-dbcAmplicons join -t 4 -x 0.25 -1 splitreads/match_twoprimer_R1.fastq.gz -2 splitreads/match_twoprimer_R2.fastq.gz -o join/match_twoprimer
+dbcAmplicons join -t 4 -x 0.25 -1 splitreads/match_twoprimer_R1.fastq.gz -2 splitreads/match_twoprimer_R2.fastq.gz -O join/match_twoprimer
 
 # Results should be
 
@@ -84,7 +84,7 @@ dbcAmplicons join -t 4 -x 0.25 -1 splitreads/match_twoprimer_R1.fastq.gz -2 spli
 #[FLASH] FLASH v1.2.8 complete!
 #[FLASH] 3.178 seconds elapsed
 
-dbcAmplicons classify -B 7500 -o join/classify -U join/match_twoprimer.extendedFrags.fastq.gz --debug  --rdpPath=/Users/msettles/opt/RDPTools/classifier.jar -p 4 -1 join/match_twoprimer.notCombined_1.fastq.gz -2 join/match_twoprimer.notCombined_2.fastq.gz
+dbcAmplicons classify -b 7500 -O join/classify -U join/match_twoprimer.extendedFrags.fastq.gz --debug  --rdpPath=/Users/msettles/opt/RDPTools/classifier.jar -p 4 -1 join/match_twoprimer.notCombined_1.fastq.gz -2 join/match_twoprimer.notCombined_2.fastq.gz
 
 # Result should be
 
