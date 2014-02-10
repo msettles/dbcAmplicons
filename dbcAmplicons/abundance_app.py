@@ -124,11 +124,11 @@ class abundanceApp:
                 with open(ffile, "rb") as infile:
                     for line in infile:
                         rank = fixrankLine(line.rstrip('\n'),rank,threshold)
-                        if rank.getSampleID() not in sampleList:
-                            sampleList.append(rank.getSampleID()) 
                         if evalSample:
                             rank.assignRead(sTable)
                         if rank.isOk():
+                            if rank.getSampleID() not in sampleList:
+                                sampleList.append(rank.getSampleID()) 
                             sampleCounts[rank.getSampleID()] +=1
                             tax = rank.getCall()
                             if tax[0] in abundanceTable.keys():
