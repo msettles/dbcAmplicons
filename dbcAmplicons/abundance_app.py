@@ -168,7 +168,7 @@ class abundanceApp:
                 propFile.write(txt2 + '\n')
             txt = "Sample Counts\tNA\tNA"           
             for sample in sampleList:
-                    txt = '\t'.join(txt,str(sampleCounts[sample]))
+                    txt = '\t'.join([txt,str(sampleCounts[sample]]))
             propFile.write(txt + '\n')
             cntFile = open(output_prefix + '.taxa_counts.txt', 'w')
             cntFile.write("Taxon_Name\tCount\n")
