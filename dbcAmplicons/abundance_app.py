@@ -164,7 +164,7 @@ class abundanceApp:
                 for sample in sampleList:
                     txt1 = '\t'.join([txt1,str(abundanceTable[taxa][sample])])
                     if sampleCounts[sample] > 0:
-                        txt2 = '\t'.join([txt2,str(round(float(abundanceTable[taxa][sample])/float(sampleCounts[sample]),3))])
+                        txt2 = '\t'.join([txt2,str(float(abundanceTable[taxa][sample])/float(sampleCounts[sample]))])
                     else:
                         txt2 = '\t'.join([txt2,str(0.0)])
                 abFile.write(txt1  + '\n')
