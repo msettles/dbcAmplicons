@@ -32,8 +32,8 @@
 
 //#include <sys/types.h>
 //#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
+//#include <string.h>
+//#include <stdio.h>
 
 #include "Python.h"
 
