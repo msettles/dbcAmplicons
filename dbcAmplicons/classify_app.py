@@ -78,7 +78,7 @@ class classifyApp:
         """
         self.verbose = verbose
         try:
-            if (gene != '16srrna' or gene != 'fungallsu'):
+            if (gene != '16srrna' and gene != 'fungallsu'):
                 print("parameter -g (--gene) must be one of 16srrna or fungallsu")
                 raise Exception
             ## establish and open the Illumin run

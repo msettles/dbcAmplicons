@@ -272,7 +272,7 @@ def classifyApp(subparsers):
                         type=int, dest='batchsize', default=10000)    
     preprocess_parser.add_argument('-p', '--processors', help='number of processors to use, [default: %(default)s]',
                         type=int, dest='procs', default=1)
-    preprocess_parser.add_argument('--rdpPath',metavar='PATH', dest='rdpPath', help='path to the RDP classifyer',
+    preprocess_parser.add_argument('--rdpPath',metavar='PATH', dest='rdpPath', help='path to the RDP classifier',
                         action='store',type=str, default='classify.jar', required=False)
     preprocess_parser.add_argument('-g','--gene',metavar='<arg>', dest='gene', help='16srrna or fungallsu [default: %(default)s]',
                         action='store',type=str, default='16srrna', required=False)
@@ -314,7 +314,7 @@ class classifyCMD:
             print("The number of processors specified [%s] is greater than the number available [%s], exiting application" % (str(procs),str(cpu_count())))
             sys.exit()
 
-        if (args.gene != '16srrna' or args.gene != 'fungallsu'):
+        if (args.gene != '16srrna' and args.gene != 'fungallsu'):
             print("parameter -g (--gene) must be one of 16srrna or fungallsu")
             sys.exit()
 
