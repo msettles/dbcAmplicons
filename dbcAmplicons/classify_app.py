@@ -72,12 +72,15 @@ class classifyApp:
     """ 
     def __init__(self):
     	self.verbose=False
-    def start(self, fastq_file1, fastq_file2, fastq_fileU, output_prefix, rdpPath='./classifier.jar', batchsize=10000, procs = 1, verbose=True, debug=False):
+    def start(self, fastq_file1, fastq_file2, fastq_fileU, output_prefix, rdpPath='./classifier.jar', gene='16srrna', batchsize=10000, procs = 1, verbose=True, debug=False):
     	"""
             Start classifying double barcoded Illumina sequencing run
         """
         self.verbose = verbose
         try:
+            if (gene != '16srrna' or gene != 'fungallsu'):
+                print("parameter -g (--gene) must be one of 16srrna or fungallsu")
+                raise Exception
             ## establish and open the Illumin run
             if fastq_file1 != None and fastq_file2 != None:
                 self.runPairs = TwoReadIlluminaRun(fastq_file1,fastq_file2)
@@ -110,7 +113,7 @@ class classifyApp:
                     ### Write out reads
                     run_out.writeReads()
                     rdp_out = output_prefix + "." + str(batch) + ".fixrank"
-                    results[rdp_out] = pool.apply_async(rdpCall, (run_out.output_prefix,rdp_out, '16srrna', rdpPath, self.verbose, ))
+                    results[rdp_out] = pool.apply_async(rdpCall, (run_out.output_prefix,rdp_out, gene, rdpPath, self.verbose, ))
             if (self.runPairs != None):
                 while 1:
                     ## get next batch of reads

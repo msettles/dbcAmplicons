@@ -123,20 +123,20 @@ class abundanceApp:
             for ffile in self.ffixrank:
                 with open(ffile, "rb") as infile:
                     for line in infile:
-                        rank = fixrankLine(line.rstrip('\n'),rank,threshold)
+                        lrank = fixrankLine(line.rstrip('\n'),rank,threshold)
                         if evalSample:
-                            rank.assignRead(sTable)
-                        if rank.isOk():
-                            if rank.getSampleID() not in sampleList:
-                                sampleList.append(rank.getSampleID()) 
-                            sampleCounts[rank.getSampleID()] +=1
-                            tax = rank.getCall()
+                            lrank.assignRead(sTable)
+                        if lrank.isOk():
+                            if lrank.getSampleID() not in sampleList:
+                                sampleList.append(lrank.getSampleID()) 
+                            sampleCounts[lrank.getSampleID()] +=1
+                            tax = lrank.getCall()
                             if tax[0] in abundanceTable.keys():
-                                abundanceTable[tax[0]][rank.getSampleID()] +=1
+                                abundanceTable[tax[0]][lrank.getSampleID()] +=1
                                 bootscore[tax[0]] += tax[1]
                             else:
                                 abundanceTable[tax[0]] = Counter()
-                                abundanceTable[tax[0]][rank.getSampleID()] +=1
+                                abundanceTable[tax[0]][lrank.getSampleID()] +=1
                                 bootscore[tax[0]] = tax[1]
                         lines += 1
             ## output file
