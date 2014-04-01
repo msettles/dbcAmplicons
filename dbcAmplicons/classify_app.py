@@ -77,9 +77,6 @@ class classifyApp:
             Start classifying double barcoded Illumina sequencing run
         """
         self.verbose = verbose
-        print "%s\n" % gene
-        print "%s\n" % batchsize
-        print "%s\n" % procs
         try:
             if (gene != '16srrna' and gene != 'fungallsu'):
                 print("parameter -g (--gene) must be one of 16srrna or fungallsu")
