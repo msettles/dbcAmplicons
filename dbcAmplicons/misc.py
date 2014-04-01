@@ -18,7 +18,7 @@ def reverseComplement(s):
     """
     given a seqeucne with 'A', 'C', 'T', and 'G' return the reverse complement
     """
-    basecomplement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
+    basecomplement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A', 'N': 'N'}
     letters = list(s)
     try:
         letters = [basecomplement[base] for base in letters]

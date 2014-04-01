@@ -213,7 +213,7 @@ def joinApp(subparsers):
     #
     preprocess_parser = subparsers.add_parser('join', help = 'join reads using flash')
     preprocess_parser.add_argument('-O', '--output_path', help='path for output files [default: %(default)s]',
-                        action='store', type=str, dest='output_base', metavar='PREFIX', default=".")
+                        action='store', type=str, dest='output_base', metavar='PREFIX', default="joined")
     preprocess_parser.add_argument('-u', '--uncompressed', help='leave output files uncompressed [default: %(default)s]',
                         action='store_true', dest='uncompressed', default=False)
     preprocess_parser.add_argument('-x', '--max-mismatch-density', help=' Maximum allowed ratio between the number of \
@@ -224,13 +224,13 @@ def joinApp(subparsers):
                           "N" in either read is ignored and not counted \
                           towards the mismatches or overlap length. [default:%(default)s]', type=float, dest='max_mixmatch_density', metavar='NUM',
                           default=0.25)
-    preprocess_parser.add_argument('-t', '--threads',metavar='NTHREADS', help='Set the number of worker threads.',
+    preprocess_parser.add_argument('-t', '--threads',metavar='NTHREADS', help='Set the number of worker threads. [default: %(default)s]',
                         type=int, dest='threads',default=1)
-    preprocess_parser.add_argument('-p', '--flash_path', help='path to the application flash',
+    preprocess_parser.add_argument('-p', '--flash_path', help='path to the application flash [default: %(default)s]',
                         action='store', type=str, dest='flash_path',metavar='path', default='flash', required=False)
-    preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq two file set',
+    preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq (or fastq.gz) two file set',
                         action='store',type=str, required=True)
-    preprocess_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq two file set',
+    preprocess_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq (or fastq.gz)  two file set',
                         action='store',type=str, required=True)
     return preprocess_parser 
 
@@ -272,8 +272,10 @@ def classifyApp(subparsers):
                         type=int, dest='batchsize', default=10000)    
     preprocess_parser.add_argument('-p', '--processors', help='number of processors to use, [default: %(default)s]',
                         type=int, dest='procs', default=1)
-    preprocess_parser.add_argument('--rdpPath',metavar='PATH', dest='rdpPath', help='path to the RDP classifyer',
+    preprocess_parser.add_argument('--rdpPath',metavar='PATH', dest='rdpPath', help='path to the RDP classifier',
                         action='store',type=str, default='classify.jar', required=False)
+    preprocess_parser.add_argument('-g','--gene',metavar='<arg>', dest='gene', help='16srrna or fungallsu [default: %(default)s]',
+                        action='store',type=str, default='16srrna', required=False)
     preprocess_parser.add_argument('-S', '--samples_file', help='file with primers',
                         action='store', type=str, dest='samples_file',metavar='sampleFile', default=None, required=False)
     preprocess_parser.add_argument('-O', '--output_path', help='path for output files [default: %(default)s]',
@@ -312,15 +314,19 @@ class classifyCMD:
             print("The number of processors specified [%s] is greater than the number available [%s], exiting application" % (str(procs),str(cpu_count())))
             sys.exit()
 
+        if (args.gene != '16srrna' and args.gene != 'fungallsu'):
+            print("parameter -g (--gene) must be one of 16srrna or fungallsu")
+            sys.exit()
+
         from dbcAmplicons import classifyApp
         app = classifyApp()
 
         if profile:
             import cProfile
-            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, rdpPath, batchsize, procs, verbose, debug)', globals(), locals())
+            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, rdpPath, args.gene, batchsize,  procs, verbose, debug)', globals(), locals())
             return 255
         else:
-            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, rdpPath, batchsize, procs, verbose, debug)
+            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, rdpPath, args.gene, batchsize, procs, verbose, debug)
 
 #####################################################################################
 ## Compute an abundance table from classified reads in fixrank format
@@ -332,15 +338,15 @@ def abundanceApp(subparsers):
     # Parse options
     #
     preprocess_parser = subparsers.add_parser('abundance', help = 'Generate an abundance table from a fixrank formated file')
-    preprocess_parser.add_argument('-p', '--processors', help='number of processors to use, [default: %(default)s]',
-                        type=int, dest='procs', default=1)
     preprocess_parser.add_argument('-r', '--rank', help='taxonomic rank to build table from, allowable values are (domain, phylum, class, order, family, genus, and species{if performed}, [default: %(default)s]',
-                        action='store', type=str, dest='rank', metavar='FILE', default='genus', required=False, choices=['domain', 'phylum', 'class', 'order', 'family', 'genus', 'species'])
+                        action='store', type=str, dest='rank', metavar='<arg>', default='genus', required=False, choices=['domain', 'phylum', 'class', 'order', 'family', 'genus', 'species'])
+    preprocess_parser.add_argument('-t', '--threshold', help='Threshold bootstrap value to use for assignment, first taxon level greater than threshold',
+                        type=float, dest='threshold', metavar="VALUE", default=0.5,required=False)
     preprocess_parser.add_argument('-S', '--samples_file', help='file with primers',
                         action='store', type=str, dest='samples_file',metavar='FILE', default=None, required=False)
     preprocess_parser.add_argument('-O', '--output_path', help='path for output files [default: %(default)s]',
                         action='store', type=str, dest='output_base', metavar='FILE_PREFIX', default='table')
-    preprocess_parser.add_argument('-F', metavar="single", dest='fixrank_file', help='fixrank formated classification file generated by classify',
+    preprocess_parser.add_argument('-F', metavar="FILE", dest='fixrank_file', help='fixrank formated classification file generated by classify',
                         action='store',type=str, default=None, required=True, nargs='+')
     preprocess_parser.add_argument('-v', '--silent', help='verbose output [default: %(default)s]',
                         action='store_true', dest='verbose', default=False)
@@ -362,21 +368,16 @@ class abundanceCMD:
         # ----------------------- other options ------------
         debug = args.debug
         verbose = not args.verbose
-        procs = args.procs
-
-        if (procs > cpu_count()):
-            print("The number of processors specified [%s] is greater than the number available [%s], exiting application" % (str(procs),str(cpu_count())))
-            sys.exit()
 
         from dbcAmplicons import abundanceApp
         app = abundanceApp()
 
         if profile:
             import cProfile
-            cProfile.runctx('app.start(args.fixrank_file, sFile, output_prefix, args.rank, procs, verbose, debug)', globals(), locals())
+            cProfile.runctx('app.start(args.fixrank_file, sFile, output_prefix, args.rank, args.threshold, verbose, debug)', globals(), locals())
             return 255
         else:
-            return app.start(args.fixrank_file, sFile, output_prefix, args.rank, procs, verbose, debug)
+            return app.start(args.fixrank_file, sFile, output_prefix, args.rank, args.threshold, verbose, debug)
 
 
 #
@@ -396,6 +397,7 @@ def parseArgs():
     splitreadsApp(subparsers)
     joinApp(subparsers)
     classifyApp(subparsers)
+    abundanceApp(subparsers)
 
     args = parser.parse_args() 
 
@@ -410,8 +412,9 @@ def main():
     splitreads = splitreadsCMD()
     join = joinCMD()
     classify = classifyCMD()
+    abundance = abundanceCMD()
 
-    commands = {'preprocess': preprocess, 'splitreads':splitreads, 'join':join, 'classify':classify}
+    commands = {'preprocess': preprocess, 'splitreads':splitreads, 'join':join, 'classify':classify, 'abundance':abundance}
 
     args = parseArgs()
     lib_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../')

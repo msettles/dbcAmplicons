@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-#include <sys/types.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
+//#include <sys/types.h>
+//#include <stdlib.h>
+//#include <string.h>
+//#include <stdio.h>
 
 #include "Python.h"
 
@@ -49,7 +49,7 @@ trim_sequence(const char *qual1, int q1len, const char *qual2, int q2len, int mi
 
     Tuple val = { q1len , q2len }; // initialize to the read lengths
 
-    if (q1len == 0 | q2len == 0)
+    if ((q1len == 0) | (q2len == 0))
         return (val);
 
     for (i = q1len-1; i > 0 ; i--) {
