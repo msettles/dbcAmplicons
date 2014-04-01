@@ -49,6 +49,7 @@ class sampleTable:
         self.sampleCount = 0
         self.sampleTable = {}
         projects = []
+        samples = []
         try:
             sfile = open(samplefile, 'r')
         except IOError:
@@ -89,6 +90,7 @@ class sampleTable:
                 sid = re.sub(r'[\\/:"\' ]+', ".",row[sampleID_index]) # replace unsafe characters from sampleID with '.'
                 pid = re.sub(r'[:"\'*?<>| ]+', ".",row[projectID_index]) # replace unsafe characters from projectID with '.'
                 projects.append(pid)
+                samples.append(sid)
                 for primer in row[primerID_index].split(','):
                     primer = primer.strip()
                     if primer == '*' and barcode in self.sampleTable.keys():
@@ -102,6 +104,7 @@ class sampleTable:
                         self.sampleTable[barcode] = {}
                         self.sampleTable[barcode][primer] = [sid,pid]
                 self.projectList = sorted(set(projects))
+                self.samplesList = sorted(set(samples))
                 self.sampleCount += 1
         except KeyFoundError as e:
             print 'ERROR:[Samples] Error in sample sheet: Barcode [%s] and Primer [%s] pair previously specified' % (e.getBarcode(), e.getPrimer())
@@ -122,6 +125,11 @@ class sampleTable:
         Get the list of projects the samples represent
         """
         return self.projectList
+    def getSampleList(self):
+        """
+        Get the list of projects the samples represent
+        """
+        return self.samplesList
     def getSampleID(self,barcode,primer):
         """
         Given a barcode and primer, return the associated sampleID, "*" is allowed in the primer for 'any' primer match

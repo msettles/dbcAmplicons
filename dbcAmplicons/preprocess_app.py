@@ -27,7 +27,7 @@ class preprocessApp:
     """ 
     def __init__(self):
         self.verbose = False
-    def start(self, fastq_file1, fastq_file2, fastq_file3, fastq_file4, output_prefix, barcodesFile, primerFile, samplesFile, barcodeMaxDiff=1, primerMaxDiff=4, primerEndMatch=4, batchsize=10000, uncompressed=False, output_unidentified=False, verbose=True, debug=False):
+    def start(self, fastq_file1, fastq_file2, fastq_file3, fastq_file4, output_prefix, barcodesFile, primerFile, samplesFile, barcodeMaxDiff=1, primerMaxDiff=4, primerEndMatch=4, batchsize=10000, uncompressed=False, output_unidentified=False, minQ=None, minL = 0, verbose=True, debug=False):
         """
         Start preprocessing double barcoded Illumina sequencing run, perform 
         """
@@ -79,12 +79,14 @@ class preprocessApp:
                         read.assignPrimer(prTable,primerMaxDiff,primerEndMatch)
                     if evalSample and read.goodRead: ## sample
                         read.assignRead(sTable) ## barcode
+                    if minQ != None:
+                        read.trimRead(minQ, minL)
                     if read.goodRead == True:
                         identified_count += 1
                         if evalSample:
-                            self.run_out[read.getProject()].addRead(read.getRead())
+                            self.run_out[read.getProject()].addRead(read.getFastq())
                         else:
-                            self.run_out["Identified"].addRead(read.getRead())
+                            self.run_out["Identified"].addRead(read.getFastq())
                         # Record data for final barcode table
                         if read.getBarcode() in barcode_counts:
                             if evalPrimer:
@@ -103,7 +105,7 @@ class preprocessApp:
                     else:
                         unidentified_count += 1
                         if output_unidentified:
-                            self.run_out["Unidentified"].addRead(read.getRead())
+                            self.run_out["Unidentified"].addRead(read.getFastq())
                 ### Write out reads
                 for key in self.run_out:
                     self.run_out[key].writeReads()

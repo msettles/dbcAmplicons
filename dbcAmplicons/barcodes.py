@@ -28,19 +28,7 @@
 barcodes.py parses and stores barcode information associated with a double barcoded illumina amplicon project
 """
 import sys
-
-def reverseComplement(s):
-    """
-    given a seqeucne with 'A', 'C', 'T', and 'G' return the reverse complement
-    """
-    basecomplement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
-    letters = list(s)
-    try:
-        letters = [basecomplement[base] for base in letters]
-    except:
-        raise
-    return ''.join(letters[::-1])
-
+from dbcAmplicons import misc
 # ---------------- barcodes class ----------------
 class barcodeTable:
     """
@@ -70,7 +58,7 @@ class barcodeTable:
             try:
                 ID, P5BC, P7BC = row.split('\t')
                 # P7 barcode shows up as the reverse complement in the sequencing run
-                P7BC = reverseComplement(P7BC)
+                P7BC = misc.reverseComplement(P7BC)
             except ValueError as e:
                 print 'ERROR:[Barcodes] Error reading line %s of barcode file: %s' % (str(line), str(e))
                 raise

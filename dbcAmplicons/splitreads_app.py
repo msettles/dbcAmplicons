@@ -54,12 +54,12 @@ class splitreadsApp:
                 for read in reads:
                     read.assignRead(sTable) ## barcode
                     if read.goodRead == True:
-                        self.run_out[read.project].addRead(read.getRead())
+                        self.run_out[read.project].addRead(read.getFastq())
                         identified_count +=1
                     else:
                         unidentified_count += 1
                         if output_unidentified:
-                            self.run_out["Unidentified"].addRead(read.getRead())
+                            self.run_out["Unidentified"].addRead(read.getFastq())
                 ### Write out reads
                 for key in self.run_out:
                     self.run_out[key].writeReads()

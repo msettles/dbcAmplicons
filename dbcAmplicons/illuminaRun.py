@@ -484,7 +484,7 @@ class IlluminaOneReadOutput:
         self.R1 = []
     def open(self):
         """
-        Open the two read files for writing, appending .fastq to the output_prefix.
+        Open the read file for writing, appending .fastq to the output_prefix.
         Create directories as needed.
         """
         if self.isOpen:
@@ -521,7 +521,7 @@ class IlluminaOneReadOutput:
         self.mcount +=1
     def writeReads(self):
         """
-        Write the paired reads in the queue to the output files
+        Write the reads in the queue to the output files
         """
         if (len(self.R1) == 0):
             pass
@@ -539,6 +539,73 @@ class IlluminaOneReadOutput:
                 print('ERROR:[IlluminaOneReadOutput] Cannot write read to file with prefix: %s' % self.output_prefix)
                 raise
             self.R1 = []
-            self.R2 = []
+
+
+class IlluminaFastaOutput:
+    """ 
+    Given single reads, output them to a fasta file (possibly gzipped) 
+    """
+    def __init__(self,output_prefix):
+        """
+        Initialize an IlluminaFastaOutput object with output_prefix
+        """
+        self.isOpen = False
+        self.output_prefix = output_prefix + '.fasta'
+        self.mcount=0
+        self.R1 = []
+    def open(self):
+        """
+        Open the read files for writing, appending .fastq to the output_prefix.
+        Create directories as needed.
+        """
+        if self.isOpen:
+            self.close()
+        try:
+            misc.make_sure_path_exists(os.path.dirname(self.output_prefix))
+            self.R1f = open(self.output_prefix, 'w')
+        except:
+            print('ERROR:[IlluminaFastaOutput] Cannot write reads to file with prefix: %s' % self.output_prefix)
+            raise
+        self.isOpen = True
+        return 0
+    def close(self):
+        """
+        Close an IlluminaFastaOutput file set
+        """
+        self.R1.close()
+        self.isOpen = False
+    def count(self):
+        """
+        Provide the current read count for the file output
+        """
+        return self.mcount
+    def addRead(self,read):
+        """
+        Add a pair of reads to the output queue
+        """
+        if self.isOpen is False:
+            self.open()
+        self.R1.append(read[0])
+        self.mcount +=1
+    def writeReads(self):
+        """
+        Write the reads in the queue to the output files
+        """
+        if (len(self.R1) == 0):
+            pass
+        else:
+            if not self.isOpen:
+                try:
+                    if self.open() == 1:
+                        print('ERROR:[IlluminaFastaOutput] ERROR Opening file for writing')
+                        raise
+                except:
+                    raise
+            try:
+                self.R1f.write('\n'.join(self.R1) + '\n')
+            except:
+                print('ERROR:[IlluminaFastaOutput] Cannot write read to file with prefix: %s' % self.output_prefix)
+                raise
+            self.R1 = []
 
 

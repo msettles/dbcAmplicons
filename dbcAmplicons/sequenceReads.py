@@ -16,6 +16,9 @@
 """
 sequenceReads.py stores and processes individual DNA sequence reads.
 """
+
+from dbcAmplicons import misc
+
 try: 
     from dbcAmplicons import editdist
     editdist_loaded = True
@@ -23,6 +26,12 @@ except ImportError:
     print("Warning: editdist library not loaded, Insertion/Deletion detetion in barcodes and primers will not be performed")
     editdist_loaded = False 
 
+try: 
+    from dbcAmplicons import trim 
+    trim_loaded = True
+except ImportError:
+    print("Warning: trim library not loaded, trimming using python")
+    trim_loaded = False 
 
 #------------------- calculate distance between two barcode sequences ------------------------------
 def barcodeDist(b_1, b_2):
@@ -58,7 +67,6 @@ def primerDist(primer,read, max_diff, end_match):
                     return [dist,len(primer)]
         return [dist,len(primer)]
 
-
 # ---------------- Class for 4 read sequence data with double barcode set ----------------
 class FourSequenceReadSet:
     """ 
@@ -83,6 +91,8 @@ class FourSequenceReadSet:
         self.qual_2 = qual_2
         self.bc_1 = bc_1
         self.bc_2 = bc_2
+        self.trim_left = len(read_1)
+        self.trim_right = len(read_2)
         self.goodRead = False
     def assignBarcode(self, bcTable, max_diff):
         """
@@ -109,6 +119,7 @@ class FourSequenceReadSet:
         self.barcode = [bcTable.getMatch(bc1,bc2),bc1Mismatch,bc2Mismatch]
         if self.barcode[0] != None and bc1Mismatch <= max_diff and bc2Mismatch <= max_diff:
             self.goodRead = True
+        self.sample = self.barcode[0]
         return 0
     def assignPrimer(self, prTable, max_diff, endmatch):
         """
@@ -150,6 +161,16 @@ class FourSequenceReadSet:
         if self.project == None:
             self.goodRead = False
         return 0
+    def trimRead(self, minQ, minL):
+        """
+        Trim the read by a minQ score
+        """
+        if (trim_loaded):
+            trim_points = trim.trim(self.qual_1,self.qual_2,minQ)
+            self.trim_left = trim_points["left_trim"]
+            self.trim_right = trim_points["right_trim"]
+            if ((self.trim_left-self.primer[3]) < minL or (self.trim_right-self.primer[6]) < minL):
+                self.goodRead=False
     def getBarcode(self):
         """
         Return the reads barcode pair ID
@@ -170,20 +191,18 @@ class FourSequenceReadSet:
         Return the reads project ID
         """
         return self.project
-    def getRead(self):
+    def getFastq(self):
         """ 
         Create four line string ('\n' separator included) for the read pair, returning a length 2 vector (one for each read)
         """
         if self.primer[0] != None:
-            read1_name = "%s 1:N:0:%s:%s %s|%s|%s|%s %s|%s|%s" % (self.name, self.barcode[0], self.primer[0], self.bc_1, self.barcode[1], self.bc_2 , self.barcode[2], self.primer[1], self.primer[2], self.primer[3])
-            read2_name = "%s 2:N:0:%s:%s %s|%s|%s|%s %s|%s|%s" % (self.name, self.barcode[0], self.primer[0], self.bc_1, self.barcode[1], self.bc_2 , self.barcode[2], self.primer[4], self.primer[5], self.primer[6])
-            r1 = '\n'.join([read1_name, self.read_1[self.primer[3]:],'+',self.qual_1[self.primer[3]:]])
-            r2 = '\n'.join([read2_name, self.read_2[self.primer[6]:],'+',self.qual_2[self.primer[6]:]])
+            read1_name = "%s 1:N:0:%s:%s %s|%s|%s|%s %s|%s|%s" % (self.name, self.sample, self.primer[0], self.bc_1, self.barcode[1], self.bc_2 , self.barcode[2], self.primer[1], self.primer[2], self.primer[3])
+            read2_name = "%s 2:N:0:%s:%s %s|%s|%s|%s %s|%s|%s" % (self.name, self.sample, self.primer[0], self.bc_1, self.barcode[1], self.bc_2 , self.barcode[2], self.primer[4], self.primer[5], self.primer[6])
         else:
-            read1_name = "%s 1:N:0:%s %s|%s|%s|%s" % (self.name, self.barcode[0], self.bc_1, self.barcode[1], self.bc_2 , self.barcode[2])
-            read2_name = "%s 2:N:0:%s %s|%s|%s|%s" % (self.name, self.barcode[0], self.bc_1, self.barcode[1], self.bc_2 , self.barcode[2])
-            r1 = '\n'.join([read1_name, self.read_1,'+',self.qual_1])
-            r2 = '\n'.join([read2_name, self.read_2,'+',self.qual_2])
+            read1_name = "%s 1:N:0:%s %s|%s|%s|%s" % (self.name, self.sample, self.bc_1, self.barcode[1], self.bc_2 , self.barcode[2])
+            read2_name = "%s 2:N:0:%s %s|%s|%s|%s" % (self.name, self.sample, self.bc_1, self.barcode[1], self.bc_2 , self.barcode[2])
+        r1 = '\n'.join([read1_name, self.read_1[self.primer[3]:self.trim_left],'+',self.qual_1[self.primer[3]:self.trim_left]])
+        r2 = '\n'.join([read2_name, self.read_2[self.primer[6]:self.trim_right],'+',self.qual_2[self.primer[6]:self.trim_right]])
         return [r1,r2]
 
 # ---------------- Class for 2 read sequence data processed with dbcAmplicons preprocess ----------------
@@ -203,7 +222,7 @@ class TwoSequenceReadSet:
             self.name = split_name[0]
             self.barcode = split_name[1].split(":")[3]
             self.barcode_string = split_name[2]
-            self.sample = None
+            self.sample = self.barcode
             if (len(split_name) == 4):
                 self.primer_string1 = split_name[3]
                 self.primer_string2 = name_2.split(" ")[3]
@@ -232,19 +251,45 @@ class TwoSequenceReadSet:
         if self.project != None:
             self.goodRead = True
         return 0
-    def getRead(self):
+    def getFastq(self):
         """ 
         Create four line string ('\n' separator included) for the read pair, returning a length 2 vector (one for each read)
         """
         if self.primer != None:
-            read1_name = "%s 1:N:0:%s:%s %s %s" % (self.name, self.barcode, self.primer, self.barcode_string, self.primer_string1)
-            read2_name = "%s 2:N:0:%s:%s %s %s" % (self.name, self.barcode, self.primer, self.barcode_string, self.primer_string2)
+            read1_name = "%s 1:N:0:%s:%s %s %s" % (self.name, self.sample, self.primer, self.barcode_string, self.primer_string1)
+            read2_name = "%s 2:N:0:%s:%s %s %s" % (self.name, self.sample, self.primer, self.barcode_string, self.primer_string2)
         else:
-            read1_name = "%s 1:N:0:%s %s" % (self.name, self.barcode, self.barcode_string)
-            read2_name = "%s 2:N:0:%s %s" % (self.name, self.barcode, self.barcode_string)
+            read1_name = "%s 1:N:0:%s %s" % (self.name, self.sample, self.barcode_string)
+            read2_name = "%s 2:N:0:%s %s" % (self.name, self.sample, self.barcode_string)
         r1 = '\n'.join([read1_name, self.read_1,'+',self.qual_1])
         r2 = '\n'.join([read2_name, self.read_2,'+',self.qual_2])
         return [r1,r2]
+    def getFasta(self):
+        """ 
+        Create two line string ('\n' separator included) for the read pair, returning a length 1 vector (one read)
+        """
+        name = '>' + self.name[1:]
+        if self.primer != None:
+            read1_name = "%s 1:N:0:%s:%s" % (name, self.sample, self.primer)
+            read2_name = "%s 2:N:0:%s:%s" % (name, self.sample, self.primer)
+        else:
+            read1_name = "%s 1:N:0:%s" % (name, self.sample)
+            read2_name = "%s 1:N:0:%s" % (name, self.sample)
+        r1 = '\n'.join([read1_name, self.read_1])
+        r2 = '\n'.join([read2_name, self.read_2])
+        return [r1,r2]
+    def getJoinedFasta(self):
+        """ 
+        Create two line string ('\n' separator included) for the read pair, concatenating the two reads into a single returning length 1 vector (one read)
+        """
+        name = '>' + self.name[1:]
+        if self.primer != None:
+            read1_name = "%s|%s:%s" % (name, self.sample, self.primer)
+        else:
+            read1_name = "%s:%s" % (name, self.sample)
+        r1 = '\n'.join([read1_name, self.read_1 + misc.reverseComplement(self.read_2)])
+        return [r1]
+    
 
 # ---------------- Class for 2 read sequence data processed with dbcAmplicons preprocess ----------------
 class OneSequenceReadSet:
@@ -262,7 +307,7 @@ class OneSequenceReadSet:
         try:
             split_name = name_1.split(" ")
             self.name = split_name[0]
-            self.barcode = split_name[1].split(":")[3]
+            self.sample = split_name[1].split(":")[3]
             if (len(split_name) == 4):
                 self.primer = split_name[1].split(":")[4]
         except IndexError:
@@ -273,15 +318,26 @@ class OneSequenceReadSet:
             raise            
         self.read_1 = read_1
         self.qual_1 = qual_1
-    def getRead(self):
+    def getFastq(self):
         """ 
-        Create four line string ('\n' separator included) for the read pair, returning a length 1 vector (one read)
+        Create four line string ('\n' separator included) for the read, returning a length 1 vector (one read)
         """
         if self.primer != None:
-            read1_name = "%s 1:N:0:%s:%s" % (self.name, self.barcode, self.primer)
+            read1_name = "%s 1:N:0:%s:%s" % (self.name, self.sample, self.primer)
         else:
-            read1_name = "%s 1:N:0:%s" % (self.name, self.barcode)
+            read1_name = "%s 1:N:0:%s" % (self.name, self.sample)
         r1 = '\n'.join([read1_name, self.read_1,'+',self.qual_1])
+        return [r1]
+    def getFasta(self):
+        """ 
+        Create two line string ('\n' separator included) for the read, returning a length 1 vector (one read)
+        """
+        name = '>' + self.name[1:]
+        if self.primer != None:
+            read1_name = "%s|%s:%s" % (name, self.sample, self.primer)
+        else:
+            read1_name = "%s|%s" % (name, self.sample)
+        r1 = '\n'.join([read1_name, self.read_1])
         return [r1]
 
 
