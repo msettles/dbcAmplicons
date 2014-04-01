@@ -36,7 +36,9 @@ profile = False
 # reconfigure repository and interface
 # version 0.5.1
 # added support for rdp classification
-version_num = "v0.5.1"
+# version 0.5.2
+# rdp classification and abundance table generation available
+version_num = "v0.5.2"
 
 
 def make_sure_path_exists(path):
