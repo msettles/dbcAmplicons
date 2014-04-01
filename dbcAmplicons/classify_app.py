@@ -78,6 +78,9 @@ class classifyApp:
         """
         self.verbose = verbose
         try:
+            if (gene != '16srrna' and gene != 'fungallsu'):
+                print("parameter -g (--gene) must be one of 16srrna or fungallsu")
+                raise Exception
             ## establish and open the Illumin run
             if fastq_file1 != None and fastq_file2 != None:
                 self.runPairs = TwoReadIlluminaRun(fastq_file1,fastq_file2)
