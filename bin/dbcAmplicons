@@ -323,10 +323,10 @@ class classifyCMD:
 
         if profile:
             import cProfile
-            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, rdpPath, args.gene, batchsize, procs, verbose, debug)', globals(), locals())
+            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, rdpPath, args.gene,batchsize=batchsize, procs=procs, verbose, debug)', globals(), locals())
             return 255
         else:
-            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, rdpPath, batchsize, procs, verbose, debug)
+            return 0 # app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, rdpPath, batchsize, procs, verbose, debug)
 
 #####################################################################################
 ## Compute an abundance table from classified reads in fixrank format
