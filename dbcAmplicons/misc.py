@@ -26,3 +26,36 @@ def reverseComplement(s):
         raise
     return ''.join(letters[::-1])
 
+iupacdict = {
+    'A':['A'],
+    'C':['C'],
+    'G':['G'],
+    'T':['T'],
+    'M':['A','C'],
+    'R':['A','G'],
+    'W':['A','T'],
+    'S':['C','G'],
+    'Y':['C','T'],
+    'K':['G','T'],
+    'V':['A','C','G'],
+    'H':['A','C','T'],
+    'D':['A','G','T'],
+    'B':['C','G','T'],
+    'X':['A','C','G','T'],
+    'N':['A','C','G','T']}
+
+
+def expand_iupac(seq):
+    res = ['']
+    for m in seq:
+        newres = []
+        for i in res:
+            for j in iupacdict.get(m):
+                newres.append(i + j)
+        res = newres
+    return res
+
+#test = 'NNGATARNG'
+#expand_iupac(test)
+#test2 = 'AGGATAATG'
+#expand_iupac(test2)
