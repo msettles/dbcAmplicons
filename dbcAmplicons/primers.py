@@ -67,7 +67,7 @@ class primerTable:
                 print "ERROR:[Primers] Unexpected error on line %s of the primers file: %s" % (line,sys.exc_info()[0])
                 raise
             self.primers.extend([PAIR])
-            pseqs = expand_iupac(SEQ.upper())
+            pseqs = misc.expand_iupac(SEQ.upper())
             if READ in ["P5","R1","READ1"]:
                 for pseq in pseqs:
                     if pseq in self.P5sequences:
