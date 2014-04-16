@@ -136,8 +136,10 @@ class sampleTable:
         """
         try:
             sid = self.sampleTable[barcode]
-            if sid.keys() == ["*"]:
+            if sid.keys() == ["*"] and primer != None:
                 return sid["*"][0]
+            elif sid.keys() == ["-"] and primer == None:
+                return sid["-"][0]
             else:
                 return(sid[primer][0])
         except KeyError:
@@ -151,8 +153,10 @@ class sampleTable:
         """
         try:
             sid = self.sampleTable[barcode]
-            if sid.keys() == ["*"]:
+            if sid.keys() == ["*"] and primer != None:
                 return sid["*"][1]
+            elif sid.keys() == ["-"] and primer == None:
+                return sid["-"][1]
             else:
                 return(sid[primer][1])
         except KeyError:
