@@ -39,7 +39,7 @@ def barcodeDist(b_1, b_2):
     gets edit distnace between two equal-length barcode strings
     """
     if editdist_loaded :
-        return editdist.distance(b_1,b_2)
+        return editdist.hamming_distance(b_1,b_2)
     elif len(b_1) == len(b_2) and len(b_1) > 0:
         return sum(map(lambda x: x[0] != x[1], zip(b_1, b_2) ))
     else:
@@ -158,8 +158,9 @@ class FourSequenceReadSet:
         """
         self.project = sTable.getProjectID(self.barcode[0],self.primer[0])
         self.sample = sTable.getSampleID(self.barcode[0],self.primer[0])
-        if self.project == None:
-            self.goodRead = False
+        self.goodRead = False
+        if self.project != None:
+            self.goodRead = True
         return 0
     def trimRead(self, minQ, minL):
         """
@@ -198,11 +199,13 @@ class FourSequenceReadSet:
         if self.primer[0] != None:
             read1_name = "%s 1:N:0:%s:%s %s|%s|%s|%s %s|%s|%s" % (self.name, self.sample, self.primer[0], self.bc_1, self.barcode[1], self.bc_2 , self.barcode[2], self.primer[1], self.primer[2], self.primer[3])
             read2_name = "%s 2:N:0:%s:%s %s|%s|%s|%s %s|%s|%s" % (self.name, self.sample, self.primer[0], self.bc_1, self.barcode[1], self.bc_2 , self.barcode[2], self.primer[4], self.primer[5], self.primer[6])
+            r1 = '\n'.join([read1_name, self.read_1[self.primer[3]:self.trim_left],'+',self.qual_1[self.primer[3]:self.trim_left]])
+            r2 = '\n'.join([read2_name, self.read_2[self.primer[6]:self.trim_right],'+',self.qual_2[self.primer[6]:self.trim_right]])
         else:
             read1_name = "%s 1:N:0:%s %s|%s|%s|%s" % (self.name, self.sample, self.bc_1, self.barcode[1], self.bc_2 , self.barcode[2])
             read2_name = "%s 2:N:0:%s %s|%s|%s|%s" % (self.name, self.sample, self.bc_1, self.barcode[1], self.bc_2 , self.barcode[2])
-        r1 = '\n'.join([read1_name, self.read_1[self.primer[3]:self.trim_left],'+',self.qual_1[self.primer[3]:self.trim_left]])
-        r2 = '\n'.join([read2_name, self.read_2[self.primer[6]:self.trim_right],'+',self.qual_2[self.primer[6]:self.trim_right]])
+            r1 = '\n'.join([read1_name, self.read_1[0:self.trim_left],'+',self.qual_1[0:self.trim_right]])
+            r2 = '\n'.join([read2_name, self.read_2[0:self.trim_left],'+',self.qual_2[0:self.trim_right]])
         return [r1,r2]
 
 # ---------------- Class for 2 read sequence data processed with dbcAmplicons preprocess ----------------

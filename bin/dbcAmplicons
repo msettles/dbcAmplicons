@@ -38,7 +38,9 @@ profile = False
 # added support for rdp classification
 # version 0.5.2
 # rdp classification and abundance table generation available
-version_num = "v0.5.2"
+# version 0.5.3
+# added support for project with no primers
+version_num = "v0.5.3-4172014"
 
 
 def make_sure_path_exists(path):
