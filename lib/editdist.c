@@ -280,7 +280,7 @@ static PyMethodDef editdist_methods[] = {
         METH_VARARGS,   editdist_distance_doc       },
     {   "bounded_distance", (PyCFunction)bounded_editdist_distance,
         METH_VARARGS,   bounded_editdist_distance_doc       },
-    {   "hamming_distamce", (PyCFunction)hamming_distance,
+    {   "hamming_distance", (PyCFunction)hamming_distance,
         METH_VARARGS,    hamming_distance_doc       },
     {NULL, NULL, 0, NULL }  /* sentinel */
 };
