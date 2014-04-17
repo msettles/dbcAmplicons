@@ -156,6 +156,7 @@ class sampleTable:
             if sid.keys() == ['*'] and primer != None:
                 return sid['*'][1]
             elif sid.keys() == ['-'] and primer == None:
+                print "Made it into dash", sid['-'][1]
                 return sid['-'][1]
             else:
                 return(sid[primer][1])
