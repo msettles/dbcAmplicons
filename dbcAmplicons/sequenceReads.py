@@ -117,8 +117,7 @@ class FourSequenceReadSet:
                 bc2Mismatch = bcdist
         ### Barcode Pair Matching ###
         self.barcode = [bcTable.getMatch(bc1,bc2),bc1Mismatch,bc2Mismatch]
-        if self.barcode[0] != None and bc1Mismatch <= max_diff and bc2Mismatch <= max_diff:
-            self.goodRead = True
+        self.goodRead = self.barcode[0] != None and bc1Mismatch <= max_diff and bc2Mismatch <= max_diff
         self.sample = self.barcode[0]
         return 0
     def assignPrimer(self, prTable, max_diff, endmatch):
@@ -156,6 +155,7 @@ class FourSequenceReadSet:
         """
         Given a samplesTable object, assign a sample ID and project ID using the reads barcode and primer designation
         """
+        print self.barcode[0], self.primer[0]
         self.project = sTable.getProjectID(self.barcode[0],self.primer[0])
         self.sample = sTable.getSampleID(self.barcode[0],self.primer[0])
         self.goodRead = False
