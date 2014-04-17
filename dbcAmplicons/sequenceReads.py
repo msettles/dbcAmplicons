@@ -155,7 +155,6 @@ class FourSequenceReadSet:
         """
         Given a samplesTable object, assign a sample ID and project ID using the reads barcode and primer designation
         """
-        print self.barcode[0], self.primer[0]
         self.project = sTable.getProjectID(self.barcode[0],self.primer[0])
         self.sample = sTable.getSampleID(self.barcode[0],self.primer[0])
         self.goodRead = False

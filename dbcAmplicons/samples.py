@@ -153,8 +153,6 @@ class sampleTable:
         """
         try:
             sid = self.sampleTable[barcode]
-            if barcode == "SE1":
-                print sid.keys(), primer
             if sid.keys() == ['*'] and primer != None:
                 return sid['*'][1]
             elif sid.keys() == ['-'] and primer == None:

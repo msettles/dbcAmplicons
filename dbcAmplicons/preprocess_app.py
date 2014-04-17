@@ -77,7 +77,7 @@ class preprocessApp:
                     read.assignBarcode(bcTable,barcodeMaxDiff) ## barcode
                     if evalPrimer and read.goodRead: ## primer
                         read.assignPrimer(prTable,primerMaxDiff,primerEndMatch)
-                    if evalSample and read.goodRead: ## sample
+                    if evalSample: ## sample
                         read.assignRead(sTable) ## barcode
                     if minQ != None:
                         read.trimRead(minQ, minL)
