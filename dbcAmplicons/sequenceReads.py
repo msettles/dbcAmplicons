@@ -251,6 +251,7 @@ class TwoSequenceReadSet:
         """
         self.project = sTable.getProjectID(self.barcode,self.primer)
         self.sample = sTable.getSampleID(self.barcode,self.primer)
+        self.goodRead = False
         if self.project != None:
             self.goodRead = True
         return 0
