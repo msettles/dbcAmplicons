@@ -131,7 +131,7 @@ class preprocessApp:
                     print ("Can't open file %s for writing" % file_name)
                 # write out header line
                 if evalPrimer:
-                    txt = 'Barcode\t'+ '\t'.join(prTable.getPrimers()) + '\n'
+                    txt = 'Barcode\t'+ '\t'.join(prTable.getPrimers()) + '\tNone' + '\n'
                 else:
                     txt = 'Barcode\tTotal\n'
                 bcFile.write(txt)
@@ -141,6 +141,7 @@ class preprocessApp:
                         txt = str(bc)
                         for pr in prTable.getPrimers():
                             txt = '\t'.join([txt,str(barcode_counts[bc][pr])])
+                        txt = "\t".join([txt,str(barcode_counts[bc]['-'])])
                     elif bc in bckeys:
                         txt = "\t".join([str(bc),str(barcode_counts[bc]["Total"])])
                     else:
