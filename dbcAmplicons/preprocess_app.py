@@ -101,6 +101,7 @@ class preprocessApp:
                             if evalPrimer:
                                 for pr in prTable.getPrimers():
                                     barcode_counts[read.getBarcode()][pr] = 0
+                                    barcode_counts[read.getBarcode()]['-'] = 0
                                 if read.getPrimer() == None:
                                     barcode_counts[read.getBarcode()]['-'] += 1
                                 else:
