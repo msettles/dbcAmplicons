@@ -41,7 +41,9 @@ profile = False
 # rdp classification and abundance table generation available
 # version 0.5.3
 # added support for project with no primers
-version_num = "v0.5.3-4172014"
+# version 0.5.4
+# added convert2ReadTo4Read.py script in scripts folder, minor edits to main dbcAmplicons application
+version_num = "v0.5.4-6172014"
 
 
 def make_sure_path_exists(path):

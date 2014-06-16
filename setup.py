@@ -16,7 +16,7 @@ config = {
     'version': 'v0.5.3-4172014',
     'install_requires': [],
     'packages': ['dbcAmplicons'],
-    'scripts': ['bin/dbcAmplicons'],
+    'scripts': ['bin/dbcAmplicons', 'scripts/convert2ReadTo4Read.py'],
     'name': 'dbcAmplicons',
     "ext_package":'dbcAmplicons',
     'ext_modules': [editdist,trim]
