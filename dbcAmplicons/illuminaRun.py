@@ -271,7 +271,7 @@ class TwoReadIlluminaRun:
             try:
                 #process read_1 (Read1)
                 name_1 = self.R1.next().rstrip() # name
-                read_1 = self.R1.next().rstrip()    # read
+                read_1 = self.R1.next().rstrip() # read
                 self.R1.next()  # '+'
                 qual_1 = self.R1.next().rstrip() # qual
                 #process read _2 (Read2)
@@ -389,6 +389,99 @@ class OneReadIlluminaRun:
             i +=1
         return reads
 
+class IlluminaFourReadOutput:
+    """ 
+    Given Paired-end reads with dual barocdes, output them to a four read file set (possibly gzipped) 
+    """
+    def __init__(self,output_prefix, uncompressed):
+        """
+        Initialize an IlluminaFourReadOutput object with output_prefix and whether or not 
+        output should be compressed with gzip [uncompressed True/False]
+        """
+        self.isOpen = False
+        self.output_prefix = output_prefix
+        self.uncompressed = uncompressed
+        self.R1 = []
+        self.R2 = []
+        self.B1 = []
+        self.B2 = []
+        self.mcount=0
+    def open(self):
+        """
+        Open the four read files for writing, appending _R1_001.fastq and _R2_001.fastq (mimic illumina file format) to the output_prefix.
+        Create directories as needed.
+        """
+        if self.isOpen:
+            self.close()
+        try:
+            misc.make_sure_path_exists(os.path.dirname(self.output_prefix))
+            if self.uncompressed is True:
+                self.R1f = open(self.output_prefix + '_R1_001.fastq', 'w')
+                self.R2f = open(self.output_prefix + '_R2_001.fastq', 'w')
+                self.R3f = open(self.output_prefix + '_R3_001.fastq', 'w')
+                self.R4f = open(self.output_prefix + '_R4_001.fastq', 'w')
+            else:
+                self.R1f = gzip.open(self.output_prefix + '_R1_001.fastq.gz', 'wb')
+                self.R2f = gzip.open(self.output_prefix + '_R2_001.fastq.gz', 'wb')
+                self.R3f = gzip.open(self.output_prefix + '_R3_001.fastq.gz', 'wb')
+                self.R4f = gzip.open(self.output_prefix + '_R4_001.fastq.gz', 'wb')
+        except:
+            print('ERROR:[IlluminaFourReadOutput] Cannot write reads to file with prefix: %s' % self.output_prefix)
+            raise
+        self.isOpen = True
+        return 0
+    def close(self):
+        """
+        Close an IlluminaFourReadOutput file set
+        """
+        self.R1f.close()
+        self.R2f.close() 
+        self.R3f.close()
+        self.R4f.close() 
+        self.isOpen = False
+    def count(self):
+        """
+        Provide the current read count for the file output
+        """
+        return self.mcount
+    def addRead(self,read):
+        """
+        Add a pair of reads to the output queue
+        """
+        if self.isOpen is False:
+            self.open()
+        self.R1.append(read[0])
+        self.R2.append(read[3])
+        self.B1.append(read[2])
+        self.B2.append(read[1])
+        self.mcount +=1
+    def writeReads(self):
+        """
+        Write the paired reads in the queue to the output files
+        """
+        if (len(self.R1) == 0):
+            pass
+        else:
+            if not self.isOpen:
+                try:
+                    if self.open() == 1:
+                        print('ERROR:[IlluminaTwoReadOutput] ERROR Opening files for writing')
+                        raise
+                except:
+                    raise
+            try:
+                self.R1f.write('\n'.join(self.R1) + '\n')
+                self.R4f.write('\n'.join(self.R2) + '\n')
+                self.R2f.write('\n'.join(self.B1) + '\n')
+                self.R3f.write('\n'.join(self.B2) + '\n')
+            except:
+                print('ERROR:[IlluminaTwoReadOutput] Cannot write reads to file with prefix: %s' % self.output_prefix)
+                raise
+            self.R1 = []
+            self.R2 = []
+            self.B1 = []
+            self.B2 = []
+
 class IlluminaTwoReadOutput:
     """ 
     Given Paired-end reads, output them to a paired files (possibly gzipped) 
@@ -428,8 +521,8 @@ class IlluminaTwoReadOutput:
         """
         Close an IlluminaTwoReadOutput file set
         """
-        self.R1.close()
-        self.R2.close() 
+        self.R1f.close()
+        self.R2f.close() 
         self.isOpen = False
     def count(self):
         """
@@ -504,7 +597,7 @@ class IlluminaOneReadOutput:
         """
         Close an IlluminaOneReadOutput file set
         """
-        self.R1.close()
+        self.R1f.close()
         self.isOpen = False
     def count(self):
         """

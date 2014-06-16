@@ -77,7 +77,7 @@ class preprocessApp:
                     read.assignBarcode(bcTable,barcodeMaxDiff) ## barcode
                     if evalPrimer and read.goodRead: ## primer
                         read.assignPrimer(prTable,primerMaxDiff,primerEndMatch)
-                    if evalSample and read.goodRead: ## sample
+                    if evalSample: ## sample
                         read.assignRead(sTable) ## barcode
                     if minQ != None:
                         read.trimRead(minQ, minL)
@@ -89,7 +89,9 @@ class preprocessApp:
                             self.run_out["Identified"].addRead(read.getFastq())
                         # Record data for final barcode table
                         if read.getBarcode() in barcode_counts:
-                            if evalPrimer:
+                            if evalPrimer and read.getPrimer() == None:
+                                barcode_counts[read.getBarcode()]['-'] += 1                                
+                            elif evalPrimer:
                                 barcode_counts[read.getBarcode()][read.getPrimer()] += 1
                             else:
                                 barcode_counts[read.getBarcode()]["Total"] += 1
@@ -99,7 +101,11 @@ class preprocessApp:
                             if evalPrimer:
                                 for pr in prTable.getPrimers():
                                     barcode_counts[read.getBarcode()][pr] = 0
-                                barcode_counts[read.getBarcode()][read.getPrimer()] += 1
+                                    barcode_counts[read.getBarcode()]['-'] = 0
+                                if read.getPrimer() == None:
+                                    barcode_counts[read.getBarcode()]['-'] += 1
+                                else:
+                                    barcode_counts[read.getBarcode()][read.getPrimer()] += 1
                             else:
                                 barcode_counts[read.getBarcode()]["Total"] = 1
                     else:
@@ -125,7 +131,7 @@ class preprocessApp:
                     print ("Can't open file %s for writing" % file_name)
                 # write out header line
                 if evalPrimer:
-                    txt = 'Barcode\t'+ '\t'.join(prTable.getPrimers()) + '\n'
+                    txt = 'Barcode\t'+ '\t'.join(prTable.getPrimers()) + '\tNone' + '\n'
                 else:
                     txt = 'Barcode\tTotal\n'
                 bcFile.write(txt)
@@ -135,6 +141,7 @@ class preprocessApp:
                         txt = str(bc)
                         for pr in prTable.getPrimers():
                             txt = '\t'.join([txt,str(barcode_counts[bc][pr])])
+                        txt = "\t".join([txt,str(barcode_counts[bc]['-'])])
                     elif bc in bckeys:
                         txt = "\t".join([str(bc),str(barcode_counts[bc]["Total"])])
                     else:

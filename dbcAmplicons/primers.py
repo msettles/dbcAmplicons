@@ -28,6 +28,7 @@
 primer.py parses and stores primer information associated with a double barcoded illumina amplicon project
 """
 import sys
+from dbcAmplicons import misc
 # ---------------- primer class ----------------
 class primerTable:
     """
@@ -66,22 +67,25 @@ class primerTable:
                 print "ERROR:[Primers] Unexpected error on line %s of the primers file: %s" % (line,sys.exc_info()[0])
                 raise
             self.primers.extend([PAIR])
+            pseqs = misc.expand_iupac(SEQ.upper())
             if READ in ["P5","R1","READ1"]:
-                if SEQ in self.P5sequences:
-                    self.P5id[SEQ].extend([ID])
-                    self.P5pair[SEQ].extend([PAIR])
-                else:
-                    self.P5sequences.extend([SEQ])
-                    self.P5id[SEQ] = [ID]
-                    self.P5pair[SEQ] = [PAIR]
+                for pseq in pseqs:
+                    if pseq in self.P5sequences:
+                        self.P5id[pseq].extend([ID])
+                        self.P5pair[pseq].extend([PAIR])
+                    else:
+                        self.P5sequences.extend([pseq])
+                        self.P5id[pseq] = [ID]
+                        self.P5pair[pseq] = [PAIR]
             if READ in ["P7","R2","READ2"]:
-                if SEQ in self.P7sequences:
-                    self.P7id[SEQ].extend([ID])
-                    self.P7pair[SEQ].extend([PAIR])
-                else:
-                    self.P7sequences.extend([SEQ])
-                    self.P7id[SEQ] = [ID]
-                    self.P7pair[SEQ] = [PAIR]
+                for pseq in pseqs:
+                    if pseq in self.P7sequences:
+                        self.P7id[pseq].extend([ID])
+                        self.P7pair[pseq].extend([PAIR])
+                    else:
+                        self.P7sequences.extend([pseq])
+                        self.P7id[pseq] = [ID]
+                        self.P7pair[pseq] = [PAIR]
         self.primers = sorted(list(set(self.primers)))
         prfile.close()
     def getPrimers(self):

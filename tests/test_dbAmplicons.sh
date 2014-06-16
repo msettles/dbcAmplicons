@@ -102,3 +102,10 @@ dbcAmplicons classify -b 7500 -O join/classify -U join/match_twoprimer.extendedF
 #31438 reads processed in 3.43 minutes
 #Cleaning up.
 
+
+/mnt/home/msettles/Code_Projects/dbcAmplicons/scripts/python/convert2ReadTo4Read.py -O test -1 Amplicon_Raw_fastq/Hkates_R1.40k.fastq.gz -2 Amplicon_Raw_fastq/Hkates_R2.40k.fastq.gz
+
+
+dbcAmplicons preprocess -B ../BarcodePrimerTables/barcodeLookupTable.txt -O test2 -1 test_R1_001.fastq.gz -2 test_R2_001.fastq.gz -3 test_R3_001.fastq.gz -4 test_R4_001.fastq.gz
+
+## 100% should be identified

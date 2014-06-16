@@ -41,10 +41,11 @@
 typedef unsigned __int8 u_int8_t;
 #endif
 
-#define EDITDIST_VERSION    "0.4"
+#define EDITDIST_VERSION    "0.5"
 
 /* $Id: editdist.c,v 1.5 2007/05/03 23:36:36 djm Exp $ */
 /* $Id: editdist.c,v 0.4 2013/12/31 mls $ */
+/* $Id: editdist.c,v 0.4 2014/4/17 mls added hamming distnace */
 
 #ifndef MIN
 # define MIN(a, b) (((a) < (b)) ? (a) : (b))
@@ -72,15 +73,18 @@ bounded_edit_distance(const char *a, int alen, const char *b, int blen, int k, i
         return (val);
     }
 
-    if (alen == 0)
+    if (alen == 0){
+        val.dist = -2;
         return (val);
-
+    }
     if ((previous = calloc(alen + 1, sizeof(*previous))) == NULL) {
         free(previous);
+        val.dist = -1;
         return (val);
     }
     if ((current = calloc(alen + 1, sizeof(*current))) == NULL) {
         free(current);
+        val.dist = -1;
         return (val);
     }
 
@@ -139,6 +143,10 @@ bounded_editdist_distance(PyObject *self, PyObject *args)
     r = bounded_edit_distance(a, alen, b, blen, k, m);
     if (r.dist== -1) {
         PyErr_SetString(PyExc_MemoryError, "Out of memory");
+        return NULL;
+    }
+    if (r.dist== -2) {
+        PyErr_SetString(PyExc_SystemError, "Bad Arguments");
         return NULL;
     }
     return Py_BuildValue("ii", r.dist, r.pos);
@@ -222,15 +230,62 @@ editdist_distance(PyObject *self, PyObject *args)
     return PyInt_FromLong(r);
 }
 
+/*
+Compute the Levenstein distance between a and b 
+*/
+static int
+hammingdist_distance(const char *a, int alen, const char *b, int blen)
+{
+    int i, diff;
+
+    /* a and b should be same length, otherwise return error */
+    if (alen != blen){
+        return (-2);
+    }
+    /* length should not be 0, otherwise return error */
+    if (alen == 0)
+        return (-2);
+
+    diff = 0;
+    for (i = 0; i < alen; i++){
+        if (a[i] != b[i])
+            diff++;
+    }
+    return (diff);
+}
+
+PyDoc_STRVAR(hamming_distance_doc,
+"distance(a, b) -> int\n\
+    Calculates hamming distance between two equal length strings \"a\" and \"b\"\n");
+
+static PyObject *
+hamming_distance(PyObject *self, PyObject *args)
+{
+    char *a, *b;
+    int alen, blen, r;
+
+    if (!PyArg_ParseTuple(args, "s#s#", &a, &alen, &b, &blen))
+                return NULL;
+    r = hammingdist_distance(a, alen, b, blen);
+    if (r == -2) {
+        PyErr_SetString(PyExc_SystemError, "Bad Arguments");
+        return NULL;
+    }
+    return PyInt_FromLong(r);
+}
+
+
 static PyMethodDef editdist_methods[] = {
     {   "distance", (PyCFunction)editdist_distance,
         METH_VARARGS,   editdist_distance_doc       },
     {   "bounded_distance", (PyCFunction)bounded_editdist_distance,
         METH_VARARGS,   bounded_editdist_distance_doc       },
+    {   "hamming_distance", (PyCFunction)hamming_distance,
+        METH_VARARGS,    hamming_distance_doc       },
     {NULL, NULL, 0, NULL }  /* sentinel */
 };
 
-PyDoc_STRVAR(module_doc, "Calculate Levenshtein's edit distance.\n");
+PyDoc_STRVAR(module_doc, "Calculate Hamming distance, Levenshtein's edit distance, and a edge bounded Levenshtein's edit distance.\n");
 
 PyMODINIT_FUNC
 initeditdist(void)

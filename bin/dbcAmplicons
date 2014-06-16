@@ -26,6 +26,7 @@ import errno
 import argparse 
 from subprocess import call
 from multiprocessing import cpu_count
+
 profile = False
 
 # version 0.3.0
@@ -38,12 +39,16 @@ profile = False
 # added support for rdp classification
 # version 0.5.2
 # rdp classification and abundance table generation available
-version_num = "v0.5.2"
+# version 0.5.3
+# added support for project with no primers
+# version 0.5.4
+# added convert2ReadTo4Read.py script in scripts folder, minor edits to main dbcAmplicons application
+version_num = "v0.5.4-6172014"
 
 
 def make_sure_path_exists(path):
     """
-    Make the path
+    Try and create a path, if not error
     """
     if path != '':
         try:
@@ -51,6 +56,8 @@ def make_sure_path_exists(path):
         except OSError as exception:
             if exception.errno != errno.EEXIST:
                 raise
+
+
 #####################################################################################
 ## Preprocess four read raw amplicon data set
 def preprocessApp(subparsers):
@@ -128,10 +135,8 @@ class preprocessCMD:
             output_prefix = "."
         elif args.output_base is not None and sFile is None:
             output_prefix = args.output_base
-#            make_sure_path_exists(os.path.dirname(output_prefix))
         elif args.output_base is not None and sFile is not None:
             output_prefix = args.output_base
-#            make_sure_path_exists(output_prefix)
 
         from dbcAmplicons import preprocessApp
         app = preprocessApp()
@@ -184,8 +189,6 @@ class splitreadsCMD:
         sFile = args.samples_file
         # ----------------------- options output prefix -----------------------
         output_prefix = args.output_base
-#        make_sure_path_exists(output_prefix)
-#        make_sure_path_exists(os.path.dirname(output_prefix))
         uncompressed = args.uncompressed
         output_unidentified = args.unidentified
         # ----------------------- other options ------------
@@ -250,7 +253,7 @@ class joinCMD:
             compress=""
         else:
             compress='-z'
-        # System call
+        # System call, try adding Popen and CString to capture output
         call_string = [args.flash_path,"-t",str(args.threads),"-x",str(args.max_mixmatch_density),"-o",output_prefix,compress,args.fastq_file1,args.fastq_file2]
         if profile:
             import cProfile
@@ -410,6 +413,10 @@ def main():
     """
     main function
     """
+    lib_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../')
+    if lib_path not in sys.path:
+        sys.path.insert(0, lib_path)
+    
     preprocess = preprocessCMD()
     splitreads = splitreadsCMD()
     join = joinCMD()
@@ -419,10 +426,6 @@ def main():
     commands = {'preprocess': preprocess, 'splitreads':splitreads, 'join':join, 'classify':classify, 'abundance':abundance}
 
     args = parseArgs()
-    lib_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../')
-    if lib_path not in sys.path:
-        sys.path.insert(0, lib_path)
-
 
     commands[args.command].execute(args)
 
