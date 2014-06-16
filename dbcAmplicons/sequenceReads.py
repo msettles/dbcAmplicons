@@ -207,10 +207,11 @@ class FourSequenceReadSet:
             r2 = '\n'.join([read2_name, self.read_2[0:self.trim_left],'+',self.qual_2[0:self.trim_right]])
         return [r1,r2]
 
+
 # ---------------- Class for 2 read sequence data processed with dbcAmplicons preprocess ----------------
 class TwoSequenceReadSet:
     """ 
-    Class to hold one Illumina two read set, assumed to have already been preprocessed with Barocode and Primers already
+    Class to hold one Illumina two read set, assumed to have already been preprocessed with Barcodes and Primers already
     identified. Class processes a read by defining sample and project ids. Finally class returns a paired read set for output.
     """
     def __init__(self,name_1,read_1,qual_1,name_2,read_2,qual_2):
@@ -223,16 +224,22 @@ class TwoSequenceReadSet:
             split_name = name_1.split(" ")
             self.name = split_name[0]
             self.barcode = split_name[1].split(":")[3]
-            self.barcode_string = split_name[2]
             self.sample = self.barcode
             if (len(split_name) == 4):
                 self.primer_string1 = split_name[3]
                 self.primer_string2 = name_2.split(" ")[3]
                 self.primer = split_name[1].split(":")[4]
+                self.barcode_string = split_name[2]
+            elif (len(split_name) == 3):
+                self.primer_string1 = None
+                self.primer_string2 = None
+                self.primer = None
+                self.barcode_string = split_name[2]
             else:
                 self.primer_string1 = None
                 self.primer_string2 = None
                 self.primer = None
+                self.barcode_string = None                
             self.read_1 = read_1
             self.qual_1 = qual_1
             self.read_2 = read_2
@@ -267,6 +274,24 @@ class TwoSequenceReadSet:
         r1 = '\n'.join([read1_name, self.read_1,'+',self.qual_1])
         r2 = '\n'.join([read2_name, self.read_2,'+',self.qual_2])
         return [r1,r2]
+    def getFourReads(self):
+        """ 
+        Create four line string ('\n' separator included) for the read set, returning a length 4 vector (one for each read)
+        """
+        try:
+            bc1 = self.barcode_string.split('|')[0]
+            bc2 = self.barcode_string.split('|')[2]
+            r1 = '\n'.join([self.name + ' 1:N:0:', self.read_1, '+',self.qual_1])
+            r2 = '\n'.join([self.name + ' 2:N:0:', bc1, '+', 'C' * len(bc1) ]) ## Give barcodes and arbitary quality of Cs
+            r3 = '\n'.join([self.name + ' 3:N:0:', bc2, '+', 'C' * len(bc2) ])
+            r4 = '\n'.join([self.name + ' 4:N:0:', self.read_2, '+', self.qual_2])
+            return [r1,r2,r3,r4]
+        except IndexError:
+            print 'ERROR:[TwoSequenceReadSet] unable to exract barocode sequence from the read names'
+            raise
+        except:
+            print 'ERROR:[TwoSequenceReadSet] Unknown error occured generating four read set'
+            raise
     def getFasta(self):
         """ 
         Create two line string ('\n' separator included) for the read pair, returning a length 1 vector (one read)

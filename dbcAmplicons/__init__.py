@@ -13,7 +13,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import misc
+from misc import expand_iupac
+from misc import reverseComplement
+from misc import infer_read_file_name
+from misc import make_sure_path_exists
+
 from barcodes import barcodeTable
 from primers import primerTable
 from samples import sampleTable
@@ -25,6 +29,7 @@ from sequenceReads import OneSequenceReadSet
 from illuminaRun import FourReadIlluminaRun
 from illuminaRun import TwoReadIlluminaRun
 from illuminaRun import OneReadIlluminaRun
+from illuminaRun import IlluminaFourReadOutput
 from illuminaRun import IlluminaTwoReadOutput
 from illuminaRun import IlluminaOneReadOutput
 from illuminaRun import IlluminaFastaOutput
