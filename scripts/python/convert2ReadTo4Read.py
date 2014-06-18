@@ -22,6 +22,7 @@ import traceback
 from dbcAmplicons import TwoReadIlluminaRun
 from dbcAmplicons import IlluminaFourReadOutput
 from dbcAmplicons import infer_read_file_name
+from dbcAmplicons import expand_path
 
 profile = False
 
@@ -100,20 +101,15 @@ class convertCMD:
         debug = args.debug
         verbose = not args.verbose
         batchsize = args.batchsize
-        fastq_file1 = args.fastq_file1
-        if args.fastq_file2 is None:
-            fastq_file2 = infer_read_file_name(fastq_file1,"2")
-        else:
-            fastq_file2 = args.fastq_file2
 
         app = convertApp()
 
         if profile:
             import cProfile
-            cProfile.runctx('app.start(fastq_file1, fastq_file2, output_prefix, batchsize, uncompressed, verbose, debug)', globals(), locals())
+            cProfile.runctx('app.start(args.fastq_file1, arg.fastq_file2, output_prefix, batchsize, uncompressed, verbose, debug)', globals(), locals())
             return 255
         else:
-            return app.start(fastq_file1, fastq_file2, output_prefix, batchsize, uncompressed, verbose, debug)
+            return app.start(args.fastq_file1, args.fastq_file2, output_prefix, batchsize, uncompressed, verbose, debug)
 
 #
 #####################################################################################
@@ -152,16 +148,9 @@ def main():
     lib_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../')
     if lib_path not in sys.path:
         sys.path.insert(0, lib_path)
-    
-    from dbcAmplicons import make_sure_path_exists
-
-    convert = convertCMD()
-
     args = parseArgs()
-    lib_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../')
-    if lib_path not in sys.path:
-        sys.path.insert(0, lib_path)
-
+    
+    convert = convertCMD()
     convert.execute(args)
 
 if __name__ == '__main__':

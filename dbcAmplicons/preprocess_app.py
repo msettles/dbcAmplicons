@@ -118,7 +118,7 @@ class preprocessApp:
                 if self.verbose:
                     print "processed %s total reads, %s Reads/second, %s identified reads, %s unidentified reads" % (self.run.count(), round(self.run.count()/(time.time() - lasttime),0), identified_count,unidentified_count)
             if self.verbose:
-                print "%s reads processed in %s minutes" % (self.run.count(),round((time.time()-lasttime)/(60),2))
+                print "%s reads processed in %s minutes, %s%% identified" % (self.run.count(),round((time.time()-lasttime)/(60),2),round((float(identified_count)/float(self.run.count()))*100,1))
             # Write out barcode and primer table
             if (identified_count > 0):
                 if evalSample:
