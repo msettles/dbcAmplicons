@@ -68,7 +68,7 @@ def check_status(results):
 class classifyApp:
     """
     Classify preprocessed Illumina Reads using RDP
-    Takes fastq files (possibly gzipped) and outputs batched fasta files that are each processed by rdp in parrallel
+    Takes fastq files and outputs batched fasta files that are each processed by rdp in parrallel
     """ 
     def __init__(self):
     	self.verbose=False

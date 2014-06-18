@@ -3,12 +3,17 @@
 import os, errno
 from subprocess import Popen, PIPE
 import glob
+import gzip
+import shlex
 
 '''
 Gzip utilities, run gzip in a subprocess
 '''
+
+### Add try Popen except try gzip.open except
 def sp_gzip_read(file):
-    p = Popen(['gzip', '--decompress', '--to-stdout', file], stdout = PIPE, stderr = PIPE)
+    p = Popen(shlex.split('gzip --decompress --to-stdout') + [file], stdout = PIPE, stderr = PIPE)
+## gzip.open(read2, 'rb')
     return p.stdout
 
 def sp_gzip_write(file):
@@ -33,24 +38,25 @@ def infer_read_file_name(baseread, seakread):
     testname = glob.glob(path + '/*' + os.path.splitext(baseread)[1])
     count = 0
     pos = -1
-    read = ''
+    read = []
     for name in testname:
         count = 0
-        if os.path.basename(name) == basename:
+        if os.path.basename(name) == basename:  ## ignore the same file
             continue
-        elif len(os.path.basename(name)) != len(basename):
+        elif len(os.path.basename(name)) != len(basename): ## must be the same length
             continue
         else:
-            for i, (ch1, ch2) in enumerate(zip(os.path.basename(name), basename)):
-                if ch1 != ch2:
+            for i, (ch1, ch2) in enumerate(zip(os.path.basename(name), basename)): ## calculate the hamming distance
+                if ch1 != ch2 and ch2 == '1' and ch1 == seakread:
                     count += 1
-                    if ch2 == '1' and ch1 == seakread:
-                        pos = i
-                    print str(i) + '\t' + ch1 + '\t' +  ch2
-            if count == 1 and pos != -1:
-                read = path + '/' + basename[0:pos] + seakread + basename[pos+1:]
-                break
-    return read
+                    pos = i
+            if count == 1:
+                read.append(path + '/' + basename[0:pos] + seakread + basename[pos+1:])
+                continue
+    if len(read) == 1:
+        return read[0]
+    else:
+        raise Exception("Error inferring read " + seakread + " from read 1, found " + str(len(read)) + " suitable matches.")
 
 
 def make_sure_path_exists(path):
@@ -64,6 +70,11 @@ def make_sure_path_exists(path):
             if exception.errno != errno.EEXIST:
                 raise
 
+def expand_path(list):
+    newlist = []
+    for file in list:
+        newlist.append(os.path.realpath(file))
+    return newlist
 
 def reverseComplement(s):
     """

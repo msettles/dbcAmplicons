@@ -22,7 +22,6 @@
 ######################################################################
 import sys
 import os
-import errno
 import argparse 
 from subprocess import call
 from multiprocessing import cpu_count
@@ -44,18 +43,6 @@ profile = False
 # version 0.5.4
 # added convert2ReadTo4Read.py script in scripts folder, minor edits to main dbcAmplicons application
 version_num = "v0.5.4-6172014"
-
-
-def make_sure_path_exists(path):
-    """
-    Try and create a path, if not error
-    """
-    if path != '':
-        try:
-            os.makedirs(path)
-        except OSError as exception:
-            if exception.errno != errno.EEXIST:
-                raise
 
 
 #####################################################################################
@@ -97,11 +84,11 @@ def preprocessApp(subparsers):
     preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq four file set',
                         action='store',type=str, required=True, nargs='+')
     preprocess_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq four file set',
-                        action='store',type=str, required=True, nargs='+')
+                        action='store',type=str, required=False, nargs='+')
     preprocess_parser.add_argument('-3', metavar="read3", dest='fastq_file3', help='read3 of an amplicon fastq four file set',
-                        action='store',type=str, required=True, nargs='+')
+                        action='store',type=str, required=False, nargs='+')
     preprocess_parser.add_argument('-4', metavar="read4", dest='fastq_file4', help='read4 of an amplicon fastq four file set',
-                        action='store',type=str, required=True, nargs='+')
+                        action='store',type=str, required=False, nargs='+')
     preprocess_parser.add_argument('--debug', help='show traceback on error',
                         action='store_true', dest="debug", default = False)
     return preprocess_parser 
@@ -173,7 +160,7 @@ def splitreadsApp(subparsers):
     preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq two file set',
                         action='store',type=str, required=True, nargs='+')
     preprocess_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq two file set',
-                        action='store',type=str, required=True, nargs='+')
+                        action='store',type=str, required=False, nargs='+')
     preprocess_parser.add_argument('--debug', help='show traceback on error',
                         action='store_true', dest="debug", default = False)
     return preprocess_parser 
@@ -236,7 +223,7 @@ def joinApp(subparsers):
     preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq (or fastq.gz) two file set',
                         action='store',type=str, required=True)
     preprocess_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq (or fastq.gz)  two file set',
-                        action='store',type=str, required=True)
+                        action='store',type=str, required=False)
     return preprocess_parser 
 
 class joinCMD:
@@ -248,13 +235,24 @@ class joinCMD:
     def execute (self,args):
         # ----------------------- options output prefix -----------------------
         output_prefix = args.output_base
-        make_sure_path_exists(os.path.dirname(output_prefix))
+
+        from dbcAmplicons import misc
+        misc.make_sure_path_exists(os.path.dirname(output_prefix))
         if args.uncompressed:
             compress=""
         else:
             compress='-z'
+
+        fastq_file1 = os.path.realpath(args.fastq_file1)
+        print(fastq_file1)
+        if args.fastq_file2 is None:
+            fastq_file2 = misc.infer_read_file_name(fastq_file1,"2")
+        else:
+            fastq_file2 = args.fastq_file2
+
+
         # System call, try adding Popen and CString to capture output
-        call_string = [args.flash_path,"-t",str(args.threads),"-x",str(args.max_mixmatch_density),"-o",output_prefix,compress,args.fastq_file1,args.fastq_file2]
+        call_string = [args.flash_path,"-t",str(args.threads),"-x",str(args.max_mixmatch_density),"-o",output_prefix,compress,fastq_file1,fastq_file2]
         if profile:
             import cProfile
             cProfile.runctx('call(call_string)', globals(), locals())

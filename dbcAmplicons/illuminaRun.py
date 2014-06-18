@@ -44,25 +44,37 @@ class FourReadIlluminaRun:
         self.fread2 = []
         try:
             for fread in read1:
-                self.fread1.extend(glob.glob(fread))
+                self.fread1.extend(glob.glob(os.path.realpath(fread)))
                 if len(self.fread1) == 0 or not all(os.path.exists(f) for f in self.fread1):
                     print ('ERROR:[FourReadIlluminaRun] read1 file(s) not found')
                     raise
-            for fread in read2:
-                self.fbc1.extend(glob.glob(fread))
-                if len(self.fbc1) == 0 or not all(os.path.exists(f) for f in self.fbc1):
-                    print ('ERROR:[FourReadIlluminaRun] read2 (BC1) file not found')
-                    raise
-            for fread in read3:
-                self.fbc2.extend(glob.glob(fread))
-                if len(self.fbc2) == 0 or not all(os.path.exists(f) for f in self.fbc2):
-                    print ('ERROR:[FourReadIlluminaRun] read3 (BC2) file not found')
-                    raise
-            for fread in read4:
-                self.fread2.extend(glob.glob(fread))
-                if len(self.fread2) == 0 or not all(os.path.exists(f) for f in self.fread2):
-                    print ('ERROR:[FourReadIlluminaRun] read4 file not found')
-                    raise
+            if read2 is None:
+                for fread in self.fread1:
+                    self.fbc1.append(misc.infer_read_file_name(fread,"2"))
+            else:
+                for fread in read2:
+                    self.fbc1.extend(glob.glob(fread))
+                    if len(self.fbc1) == 0 or not all(os.path.exists(f) for f in self.fbc1):
+                        print ('ERROR:[FourReadIlluminaRun] read2 (BC1) file not found')
+                        raise
+            if read3 is None:
+                for fread in self.fread1:
+                    self.fbc2.append(misc.infer_read_file_name(fread,"3"))
+            else:
+                for fread in read3:
+                    self.fbc2.extend(glob.glob(fread))
+                    if len(self.fbc2) == 0 or not all(os.path.exists(f) for f in self.fbc2):
+                        print ('ERROR:[FourReadIlluminaRun] read3 (BC2) file not found')
+                        raise
+            if read4 is None:
+                for fread in self.fread1:
+                    self.fread2.append(misc.infer_read_file_name(fread,"4"))
+            else:
+                for fread in read4:
+                    self.fread2.extend(glob.glob(fread))
+                    if len(self.fread2) == 0 or not all(os.path.exists(f) for f in self.fread2):
+                        print ('ERROR:[FourReadIlluminaRun] read4 file not found')
+                        raise
             if any(len(f) != len(self.fread1) for f in [self.fbc1,self.fbc2,self.fread2]):
                 print ('ERROR:[FourReadIlluminaRun] Inconsistant number of files for each read')
                 raise
@@ -80,22 +92,22 @@ class FourReadIlluminaRun:
             try:
                 read1 = self.fread1.pop()
                 if read1.split(".")[-1] == "gz":
-                    self.R1 = gzip.open(read1, 'rb')
+                    self.R1 = misc.sp_gzip_read(read1)
                 else:
                     self.R1 = open(read1, 'r')
                 bc1 = self.fbc1.pop()
                 if bc1.split(".")[-1] == "gz":
-                    self.BC1 = gzip.open(bc1, 'rb')
+                    self.BC1 = misc.sp_gzip_read(bc1)
                 else:
                     self.BC1 = open(bc1, 'r')
                 bc2 = self.fbc2.pop()
                 if bc2.split(".")[-1] == "gz":
-                    self.BC2 = gzip.open(bc2, 'rb')
+                    self.BC2 = misc.sp_gzip_read(bc2)
                 else:
                     self.BC2 = open(bc2, 'r')
                 read2 = self.fread2.pop()
                 if read2.split(".")[-1] == "gz":
-                    self.R2 = gzip.open(read2, 'rb')
+                    self.R2 = misc.sp_gzip_read(read2)
                 else:
                     self.R2 = open(read2, 'r')
             except:
@@ -202,14 +214,18 @@ class TwoReadIlluminaRun:
                 if len(self.fread1) == 0 or not all(os.path.exists(f) for f in self.fread1):
                     print('ERROR:[TwoReadIlluminaRun] read1 file(s) not found')
                     raise
-            for fread in read2:
-                self.fread2.extend(glob.glob(fread))
-                if len(self.fread2) == 0 or not all(os.path.exists(f) for f in self.fread2):
-                    print('ERROR:[TwoReadIlluminaRun] read2 file(s) not found')
-                    raise 
-                if len(self.fread1) != len(self.fread2):
-                    print('ERROR:[TwoReadIlluminaRun] Inconsistant number of files for each read')
-                    raise
+            if read2 is None:
+                for fread in self.fread1:
+                    self.fread2.append(misc.infer_read_file_name(fread,"2"))
+            else:
+                for fread in read2:
+                    self.fread2.extend(glob.glob(fread))
+                    if len(self.fread2) == 0 or not all(os.path.exists(f) for f in self.fread2):
+                        print ('ERROR:[TwoReadIlluminaRun] read2 file not found')
+                        raise
+            if len(self.fread1) != len(self.fread2):
+                print('ERROR:[TwoReadIlluminaRun] Inconsistant number of files for each read')
+                raise
         except:
             raise
         # record the number of files per read
@@ -224,12 +240,12 @@ class TwoReadIlluminaRun:
             try:
                 read1 = self.fread1.pop()
                 if read1.split(".")[-1] == "gz":
-                    self.R1 = gzip.open(read1, 'rb')
+                    self.R1 = misc.sp_gzip_read(read1)
                 else:
                     self.R1 = open(read1, 'r')
                 read2 = self.fread2.pop()
                 if read2.split(".")[-1] == "gz":
-                    self.R2 = gzip.open(read2, 'rb')
+                    self.R2 = misc.sp_gzip_read(read2)
                 else:
                     self.R2 = open(read2, 'r')
             except:
@@ -331,7 +347,7 @@ class OneReadIlluminaRun:
             try:
                 read1 = self.fread1.pop()
                 if read1.split(".")[-1] == "gz":
-                    self.R1 = gzip.open(read1, 'rb')
+                    self.R1 = misc.sp_gzip_read(read1)
                 else:
                     self.R1 = open(read1, 'r')
             except:
@@ -452,8 +468,8 @@ class IlluminaFourReadOutput:
             self.open()
         self.R1.append(read[0])
         self.R2.append(read[3])
-        self.B1.append(read[2])
-        self.B2.append(read[1])
+        self.B1.append(read[1])
+        self.B2.append(read[2])
         self.mcount +=1
     def writeReads(self):
         """
