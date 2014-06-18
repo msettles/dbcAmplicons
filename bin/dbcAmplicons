@@ -42,7 +42,9 @@ profile = False
 # added support for project with no primers
 # version 0.5.4
 # added convert2ReadTo4Read.py script in scripts folder, minor edits to main dbcAmplicons application
-version_num = "v0.5.4-6172014"
+# version 0.5.5
+# added support for gzip in a separate process and ability to infer read file names
+version_num = "v0.5.5-6182014"
 
 
 #####################################################################################
