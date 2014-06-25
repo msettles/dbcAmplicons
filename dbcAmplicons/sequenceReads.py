@@ -279,8 +279,14 @@ class TwoSequenceReadSet:
         Create four line string ('\n' separator included) for the read set, returning a length 4 vector (one for each read)
         """
         try:
-            bc1 = self.barcode_string.split('|')[0]
-            bc2 = self.barcode_string.split('|')[2]
+            if self.barcode_string is not None:
+                bc1 = self.barcode_string.split('|')[0]
+                bc2 = self.barcode_string.split('|')[2]
+            elif len(self.barcode) is 16: ## assume 8 bp barcodes for now
+                bc1 = self.barcode[0:8]
+                bc2 = self.barcode[8:16]
+            else:
+                raise Exception("string in the barcode is not 16 characters")
             r1 = '\n'.join([self.name + ' 1:N:0:', self.read_1, '+',self.qual_1])
             r2 = '\n'.join([self.name + ' 2:N:0:', bc1, '+', 'C' * len(bc1) ]) ## Give barcodes and arbitary quality of Cs
             r3 = '\n'.join([self.name + ' 3:N:0:', bc2, '+', 'C' * len(bc2) ])

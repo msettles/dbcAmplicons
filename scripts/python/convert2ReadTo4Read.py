@@ -21,8 +21,6 @@ import argparse
 import traceback
 from dbcAmplicons import TwoReadIlluminaRun
 from dbcAmplicons import IlluminaFourReadOutput
-from dbcAmplicons import infer_read_file_name
-from dbcAmplicons import expand_path
 
 profile = False
 
@@ -95,7 +93,10 @@ class convertCMD:
         pass
     def execute (self,args):
         # ----------------------- options output prefix -----------------------
-        output_prefix = args.output_base
+        if args.output_base is None:
+            output_prefix = "DBCreads"
+        elif args.output_base is not None:
+            output_prefix = args.output_base
         uncompressed = args.uncompressed
         # ----------------------- other options ------------
         debug = args.debug
@@ -125,7 +126,7 @@ def parseArgs():
     parser.add_argument('-b', '--batchsize', help='batch size to process reads in [default: %(default)s]',
                         type=int, dest='batchsize', default=10000)    
     parser.add_argument('-O', '--output_path', help='path for output files [default: %(default)s]',
-                        action='store', type=str, dest='output_base', metavar='PREFIX', default=".")
+                        action='store', type=str, dest='output_base', metavar='PREFIX', default=None)
     parser.add_argument('-u', '--uncompressed', help='leave output files uncompressed [default: %(default)s]',
                         action='store_true', dest='uncompressed', default=False)
     parser.add_argument('-v', '--silent', help='verbose output [default: %(default)s]',
