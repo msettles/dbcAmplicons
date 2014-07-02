@@ -24,16 +24,25 @@ from dbcAmplicons import IlluminaFastaOutput
 from subprocess import call
 from multiprocessing import Pool
 
-def rdpCall(query, output, gene, rdpPath, verbose):
+def rdpCall(query, output, gene=False, rdpPath, verbose, train=False): #train is an optional coustom RDP database
     '''
     rdpCall takes a query fasta and generates the rdp call for the file, gene should be one of 16srrna or fungallsu
     rdpPath should point to the classifier.jar as a part of RDPTools
     '''
+    if gene == False and train == False:
+        print ('ERROR:[rdpCall] no gene string or coustom traning set provided to rdp')
+        raise
     if gene != "16srrna" and gene != "fungallsu":
         print( 'ERROR:[rdpCall] incorrect gene string provided to rdp')
         raise
-    #rdp_call = "java -Xmx1g -jar %s classify -q %s -o %s -f fixrank -g %s" % (rdpPath, query, output, gene)
-    rdp_call = ['java', '-Xmx1024M', '-Xms128M', '-XX:+UseParallelGC', '-XX:ParallelGCThreads=2', '-jar', rdpPath, 'classify', '-q', query, '-o', output, '-f', 'fixrank', '-g', gene]
+
+    if train != False:
+        #java -Xmx1g -jar /path/to/classifier.jar classify -t mytrained/rRNAClassifier.properties -o Armatimonadetes_classified.txt samplefiles/Armatimonadetes.fasta
+        rdp_call = ['java', '-Xmx1024M', '-Xms128M', '-XX:+UseParallelGC', '-XX:ParallelGCThreads=2', '-jar', rdpPath, 'classify', '-q', query, '-o', output, '-f', 'fixrank', '-t', train]
+        
+    else:
+        #rdp_call = "java -Xmx1g -jar %s classify -q %s -o %s -f fixrank -g %s" % (rdpPath, query, output, gene)
+        rdp_call = ['java', '-Xmx1024M', '-Xms128M', '-XX:+UseParallelGC', '-XX:ParallelGCThreads=2', '-jar', rdpPath, 'classify', '-q', query, '-o', output, '-f', 'fixrank', '-g', gene]
     starttime = time.time()
     if verbose:
         print "Starting rdp for file %s" % query
@@ -72,7 +81,7 @@ class classifyApp:
     """ 
     def __init__(self):
     	self.verbose=False
-    def start(self, fastq_file1, fastq_file2, fastq_fileU, output_prefix, rdpPath='./classifier.jar', gene='16srrna', batchsize=10000, procs = 1, verbose=True, debug=False):
+    def start(self, fastq_file1, fastq_file2, fastq_fileU, output_prefix, rdpPath='./classifier.jar', gene='16srrna', batchsize=10000, procs = 1, verbose=True, debug=False, train=False):
     	"""
             Start classifying double barcoded Illumina sequencing run
         """

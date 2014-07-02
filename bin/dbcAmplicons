@@ -278,9 +278,9 @@ def classifyApp(subparsers):
     preprocess_parser.add_argument('-p', '--processors', help='number of processors to use, [default: %(default)s]',
                         type=int, dest='procs', default=1)
     preprocess_parser.add_argument('--rdpPath',metavar='PATH', dest='rdpPath', help='path to the RDP classifier',
-                        action='store',type=str, default='classify.jar', required=False)
+    #canged to required option
     preprocess_parser.add_argument('-g','--gene',metavar='<arg>', dest='gene', help='16srrna or fungallsu [default: %(default)s]',
-                        action='store',type=str, default='16srrna', required=False)
+                        action='store',type=str, required=True)#default='16srrna', required=False)
     preprocess_parser.add_argument('-S', '--samples_file', help='file with primers',
                         action='store', type=str, dest='samples_file',metavar='sampleFile', default=None, required=False)
     preprocess_parser.add_argument('-O', '--output_path', help='path for output files [default: %(default)s]',
@@ -295,6 +295,9 @@ def classifyApp(subparsers):
                         action='store_true', dest='verbose', default=False)
     preprocess_parser.add_argument('--debug', help='show traceback on error',
                         action='store_true', dest="debug", default = False)
+    #option to use coustom RDP database
+    preprocess_parser.add_argument('-t', '--train', help='RDP property file containing the mapping of the training files if not using the default.',
+            action='store_value', dest="train", default=False)
     return preprocess_parser 
 
 class classifyCMD:
@@ -318,11 +321,12 @@ class classifyCMD:
         if (procs > cpu_count()):
             print("The number of processors specified [%s] is greater than the number available [%s], exiting application" % (str(procs),str(cpu_count())))
             sys.exit()
-
-        if (args.gene != '16srrna' and args.gene != 'fungallsu'):
-            print("parameter -g (--gene) must be one of 16srrna or fungallsu")
-            sys.exit()
-
+        
+        #check if coustom RDP database is provided when 16S or LSU gene is not specified
+        if (args.gene != '16srrna' and args.gene != 'fungallsu' and args.train == False):
+                print("parameter -g (--gene) must be one of 16srrna or fungallsu or the -t flag must specify the location of an alternative RDP training file.")
+                sys.exit()
+            
         from dbcAmplicons import classifyApp
         app = classifyApp()
 
@@ -331,7 +335,7 @@ class classifyCMD:
             cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, rdpPath, args.gene, batchsize,  procs, verbose, debug)', globals(), locals())
             return 255
         else:
-            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, rdpPath, args.gene, batchsize, procs, verbose, debug)
+             return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, rdpPath, args.gene, batchsize, procs, verbose, debug, train)
 
 #####################################################################################
 ## Compute an abundance table from classified reads in fixrank format
