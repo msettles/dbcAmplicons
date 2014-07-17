@@ -77,12 +77,12 @@ bounded_edit_distance(const char *a, int alen, const char *b, int blen, int k, i
         val.dist = -2;
         return (val);
     }
-    if ((previous = calloc(alen + 1, sizeof(*previous))) == NULL) {
+    if ((*previous = calloc(alen + 1, sizeof(*previous))) == NULL) {
         free(previous);
         val.dist = -1;
         return (val);
     }
-    if ((current = calloc(alen + 1, sizeof(*current))) == NULL) {
+    if ((*current = calloc(alen + 1, sizeof(*current))) == NULL) {
         free(current);
         val.dist = -1;
         return (val);
