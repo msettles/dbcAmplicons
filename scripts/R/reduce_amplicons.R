@@ -26,8 +26,11 @@ option_list <- list(
     make_option(c("-2", "--trim-2"), type="integer", default=0,
                 help="number of bases to trim from the end of read 2 [default %default]",
                 dest="trimTwo"),   
+    make_option(c("-r", "--reuse"), action="store_true", default=FALSE,
+                help="Reuse the reads within the folder [default %default]",
+                dest="reuse"),
     make_option(c("-o", "--outputDir"), type="character", default=NULL,
-                help="directory name to place output files [default [basename].reduced",
+                help="directory name to place output files [default [basename].reduced]",
                 dest="output"),
     make_option(c("-c", "--cpus"), type="integer", default=0,
                 help="number of processors to use, choose 0 to use all available cores [default %default]",
@@ -38,7 +41,7 @@ option_list <- list(
 parser <- OptionParser(usage = "%prog [options] basename",option_list=option_list)
 arguments <- parse_args(parser, positional_arguments = 1)
 
-#arguments <- list(options = list(program="consensus,ambiguities",min_seq=5,min_freq=0.05,trimOne=0,trimTwo=0,output=NULL,procs=0),args="Maribeth_Chloroplast")
+#arguments <- list(options = list(program="consensus,ambiguities",min_seq=5,min_freq=0.05,trimOne=0,trimTwo=0,reuse=FALSE,output=NULL,procs=0),args="Maribeth_Chloroplast")
 
 opt <- arguments$options
 basename <- arguments$args
@@ -57,11 +60,11 @@ trimTwo = opt$trimTwo
 output = opt$output
 if (is.null(output)) output <- paste(basename,"reduced",sep=".")
 
-if(file.exists(output)){
+if(file.exists(output) & !opt$reuse){
     warning(paste("output directory '",output,"' already exists, deleting directory"),sep=" ")
     unlink(output,recursive=TRUE,force=TRUE)
 }
-dir.create(output,recursive=TRUE,mode="0777")
+if (!opt$reuse) dir.create(output,recursive=TRUE,mode="0777")
 
 suppressPackageStartupMessages(library("parallel"))
 suppressPackageStartupMessages(library("ggplot2"))
@@ -96,43 +99,48 @@ if (!file.exists(R1) | !file.exists(R2)){
     stop(paste("cannot find input files:\n",R1,"\n",R2))
 }
 
-if (trimOne != 0 | trimTwo != 0){    
-    write(paste("Trimming Sequences:\n",trimOne,"bases from Read1\n",trimTwo,"bases from Read2"),stdout())
-    write(paste("Reading input files:\n",R1,"\n",R2),stdout())
-    fq_r1 <- readFastq(R1)
-    fq_r2 <- readFastq(R2)
-    write(paste("Read in",length(fq_r1), " paired reads"),stdout())
+if (trimOne != 0 | trimTwo != 0){
+    if (!opt$reuse){
+        write(paste("Trimming Sequences:\n",trimOne,"bases from Read1\n",trimTwo,"bases from Read2"),stdout())
+        write(paste("Reading input files:\n",R1,"\n",R2),stdout())
+        fq_r1 <- readFastq(R1)
+        fq_r2 <- readFastq(R2)
+        write(paste("Read in",length(fq_r1), " paired reads"),stdout())
+        
+        trimSRQ <- function(sr, trimL, trimR){
+            ShortReadQ(sread=subseq(sread(sr),start=trimL,end=trimR),
+                             quality=new(Class=class(quality(sr)),quality=subseq(quality(quality(sr)),start=trimL,end=trimR)),
+                             id=id(sr))
+        }
+        tryCatch({
+        fq_r1 <- trimSRQ(fq_r1,1,width(fq_r1)-trimOne);
+        fq_r2 <- trimSRQ(fq_r2,1,width(fq_r2)-trimTwo);
+        R1 <- file.path(output,paste(basename,".trimmed_R1.fastq.gz",sep=""))
+        R2 <- file.path(output,paste(basename,".trimmed_R2.fastq.gz",sep=""))
+        write(paste("Writing trimmed input files:\n",R1,"\n",R2),stdout())
+        writeFastq(fq_r1,R1)
+        writeFastq(fq_r2,R2)
+        },error=function(e) {print("cannot trim reads, make sure bases to trim does not exceed read lengths")})
+        } else {
+            R1 <- file.path(output,paste(basename,".trimmed_R1.fastq.gz",sep=""))
+            R2 <- file.path(output,paste(basename,".trimmed_R2.fastq.gz",sep=""))            
+        }
+}
+
+if (!opt$reuse){
+    write(paste("Joining reads with flash"),stdout())
+    flash_prefix = "flash"
+    call <- paste("flash -t",procs,"-x 0.25 -z -o", file.path(output,flash_prefix),R1,R2,sep=" " )
+    flash_output <- system(call,intern = TRUE)
     
-    trimSRQ <- function(sr, trimL, trimR){
-        ShortReadQ(sread=subseq(sread(sr),start=trimL,end=trimR),
-                         quality=new(Class=class(quality(sr)),quality=subseq(quality(quality(sr)),start=trimL,end=trimR)),
-                         id=id(sr))
+    flash_data = rep(NA,4)
+    if(length(oflash <- which(flash_output=="[FLASH] Read combination statistics:")) != 0){
+        flash_res <- flash_output[(oflash+1):(oflash+4)]
+        flash_data <- as.numeric(sapply(strsplit(flash_res,split=" +|%"),"[[",4L))
+        flash_data <- paste("\nReads_Combined:\t\t",flash_data[2],"\nReads_Uncombined:\t",flash_data[3],"\nCombined_Percentage:\t",flash_data[4],"%",sep="")
     }
-    tryCatch({
-    fq_r1 <- trimSRQ(fq_r1,1,width(fq_r1)-trimOne);
-    fq_r2 <- trimSRQ(fq_r2,1,width(fq_r2)-trimTwo);
-    R1 <- file.path(output,paste(basename,".trimmed_R1.fastq.gz",sep=""))
-    R2 <- file.path(output,paste(basename,".trimmed_R2.fastq.gz",sep=""))
-    write(paste("Writing trimmed input files:\n",R1,"\n",R2),stdout())
-    writeFastq(fq_r1,R1)
-    writeFastq(fq_r2,R2)
-    },error=function(e) {print("cannot trim reads, make sure bases to trim does not exceed read lengths")})
+    write(flash_data,stdout())
 }
-
-write(paste("Joining reads with flash"),stdout())
-flash_prefix = "flash"
-call <- paste("flash -t",procs,"-x 0.25 -z -o", file.path(output,flash_prefix),R1,R2,sep=" " )
-flash_output <- system(call,intern = TRUE)
-
-    
-flash_data = rep(NA,4)
-if(length(oflash <- which(flash_output=="[FLASH] Read combination statistics:")) != 0){
-    flash_res <- flash_output[(oflash+1):(oflash+4)]
-    flash_data <- as.numeric(sapply(strsplit(flash_res,split=" +|%"),"[[",4L))
-    flash_data <- paste("\nReads_Combined:\t\t",flash_data[2],"\nReads_Uncombined:\t",flash_data[3],"\nCombined_Percentage:\t",flash_data[4],"%",sep="")
-}
-write(flash_data,stdout())
-
 write(paste("Reading merged read files:\n",file.path(output,"flash.extendedFrags.fastq.gz"),"\n",file.path(output,"flash.notCombined_1.fastq.gz"),"\n",file.path(output,"flash.notCombined_2.fastq.gz")),stdout())
 
 ### read in input files      
@@ -406,6 +414,7 @@ sapply(program_list,function(program){
         retry = retry+1
         write(paste("Retry number", retry,sep=" "),stdout())
     }
+    if (any(redo)) stop("Failed to complete all amplicons, try reducing the number of processors.")
     write(paste("Finished analyzing amplicons"),stdout())
         
     names(freq_seqs) <- anames
