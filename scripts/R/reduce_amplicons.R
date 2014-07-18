@@ -266,7 +266,7 @@ invisible(dev.off())
             consensus <- paste(rownames(abc)[apply(abc,2,which.max)],collapse="")
             error_rate=sum(1-apply(sweep(abc,MARGIN=2,STATS=colSums(abc),FUN="/"),2,max))/nchar(consensus)
             ssingle_str <- DNAStringSet(consensus)
-            names(ssingle_str) <- paste(name,"merged",length(wtmp), counts[[name]], round(length(wtmp)/counts[[name]],3),round(error_rate,3),sep="|")
+            names(ssingle_str) <- paste(name,"merged",length(wtmp), seq.int(1,length(single)), counts[[name]], round(length(wtmp)/counts[[name]],3),round(error_rate,3),sep="|")
             maxsize = length(wtmp)
             seqs <- ssingle_str
         }
@@ -281,7 +281,7 @@ invisible(dev.off())
             error_rate=sum(1-apply(sweep(abc,MARGIN=2,STATS=colSums(abc),FUN="/"),2,max))/(nchar(consensus)-5) ## - 5 for Ns
             spaired_str <- lapply(strsplit(consensus,split=".....",fixed = TRUE),DNAStringSet)
             spaired_str <- do.call("c",spaired_str)
-            names(spaired_str) <- paste(name,c("read1","read2"),length(wtmp), counts[[name]], round(length(wtmp)/counts[[name]],3),round(error_rate,3),sep="|")            
+            names(spaired_str) <- paste(name,c("read1","read2"),rep(seq.int(1,length(spaired)),each=2),length(wtmp), counts[[name]], round(length(wtmp)/counts[[name]],3),round(error_rate,3),sep="|")            
             maxsize = length(wtmp)
             seqs <- spaired_str
         }
@@ -316,7 +316,7 @@ invisible(dev.off())
             consensus = paste(consensus,collapse="")
             error_rate=sum(1-apply(sweep(abc,MARGIN=2,STATS=colSums(abc),FUN="/"),2,max))/nchar(consensus)
             ssingle_str <- DNAStringSet(consensus)
-            names(ssingle_str) <- paste(name,"merged",length(wtmp), counts[[name]], round(length(wtmp)/counts[[name]],3),round(error_rate,3),amb_bases,sep="|")
+            names(ssingle_str) <- paste(name,"merged",seq.int(1,length(single)),length(wtmp), counts[[name]], round(length(wtmp)/counts[[name]],3),round(error_rate,3),amb_bases,sep="|")
             maxsize = length(wtmp)
             seqs <- ssingle_str
         }
@@ -338,7 +338,7 @@ invisible(dev.off())
             error_rate=sum(1-apply(sweep(abc,MARGIN=2,STATS=colSums(abc),FUN="/"),2,max))/(nchar(consensus)-5) ## - 5 for Ns
             spaired_str <- lapply(strsplit(consensus,split=".....",fixed = TRUE),DNAStringSet)
             spaired_str <- do.call("c",spaired_str)
-            names(spaired_str) <- paste(name,c("read1","read2"),length(wtmp), counts[[name]], round(length(wtmp)/counts[[name]],3),round(error_rate,3),amb_bases,sep="|")            
+            names(spaired_str) <- paste(name,c("read1","read2"),rep(seq.int(1,length(spaired)),each=2),length(wtmp), counts[[name]], round(length(wtmp)/counts[[name]],3),round(error_rate,3),amb_bases,sep="|")            
             maxsize = length(wtmp)
             seqs <- spaired_str
         }
@@ -363,7 +363,7 @@ invisible(dev.off())
         ssingle <- table(splitfq[[name]])[table(splitfq[[name]])/counts[[name]] >=min_freq & table(splitfq[[name]])>= min_seq]
         if (length(ssingle) > 0){
             ssingle_str <- DNAStringSet(names(ssingle))
-            names(ssingle_str) <- paste(name,"merged",ssingle, counts[[name]], signif(ssingle/counts[[name]],3),sep="|")
+            names(ssingle_str) <- paste(name,"merged",seq.int(1,length(single)),ssingle, counts[[name]], signif(ssingle/counts[[name]],3),sep="|")
             seqs <- c(seqs,ssingle_str)
         }
     }
@@ -372,7 +372,7 @@ invisible(dev.off())
         if (length(spaired) > 0){
             spaired_str <- lapply(strsplit(names(spaired),split=".....",fixed = TRUE),DNAStringSet)
             spaired_str <- do.call("c",spaired_str)
-            names(spaired_str) <- paste(name,c("read1","read2"),rep(spaired,each=2), counts[[name]], rep(signif(spaired/counts[[name]],3),each=2),sep="|")
+            names(spaired_str) <- paste(name,c("read1","read2"),rep(seq.int(1,length(spaired)),each=2),rep(spaired,each=2), counts[[name]], rep(signif(spaired/counts[[name]],3),each=2),sep="|")
             seqs <- c(seqs,spaired_str)
         }
     }
@@ -444,19 +444,19 @@ sapply(program_list,function(program){
     
     write(paste("Producing final images"),stdout())
     #### PLOTTING RESULTS    
-    png(file.path(output,paste(program,"freq_most_occuring.png",sep=".")),height=8,width=10.5,units="in",res=300)
-    hist(as.numeric(sapply(strsplit(onms,split="|",fixed=TRUE),"[[",5L)),breaks=200,main="histogram of chosen amplicon frequency",xlab="read counts")
-    invisible(dev.off())
     png(file.path(output,paste(program,"freq_read_counts.png",sep=".")),height=8,width=10.5,units="in",res=300)
-    hist(as.numeric(sapply(strsplit(onms,split="|",fixed=TRUE),"[[",4L)),breaks=200,main="histogram of amplicon read counts",xlab="frequency")
+    hist(as.numeric(sapply(strsplit(onms,split="|",fixed=TRUE),"[[",5L)),breaks=200,main="histogram of amplicon read counts",xlab="frequency")
+    invisible(dev.off())
+    png(file.path(output,paste(program,"freq_most_occuring.png",sep=".")),height=8,width=10.5,units="in",res=300)
+    hist(as.numeric(sapply(strsplit(onms,split="|",fixed=TRUE),"[[",6L)),breaks=200,main="histogram of chosen amplicon frequency",xlab="read counts")
     invisible(dev.off())
     if (program %in% c("consensus","ambiguities")){
         png(file.path(output,paste(program,"error_rate.png",sep=".")),height=8,width=10.5,units="in",res=300)
-        hist(as.numeric(sapply(strsplit(onms,split="|",fixed=TRUE),"[[",6L)),breaks=200,main="histogram of error rate in amplicons",xlab="error rate")
+        hist(as.numeric(sapply(strsplit(onms,split="|",fixed=TRUE),"[[",7L)),breaks=200,main="histogram of error rate in amplicons",xlab="error rate")
         invisible(dev.off())
         if (program %in% c("ambiguities")){
             png(file.path(output,paste(program,"ambiguities.png",sep=".")),height=8,width=10.5,units="in",res=300)
-            hist(as.numeric(sapply(strsplit(onms,split="|",fixed=TRUE),"[[",7L)),breaks=200,main="histogram of number of ambiguites in amplicons",xlab="number of ambiguity bases")
+            hist(as.numeric(sapply(strsplit(onms,split="|",fixed=TRUE),"[[",8L)),breaks=200,main="histogram of number of ambiguites in amplicons",xlab="number of ambiguity bases")
             invisible(dev.off())
         }
     }
