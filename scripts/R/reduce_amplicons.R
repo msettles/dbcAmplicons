@@ -199,7 +199,7 @@ p <- ggplot(mratio, aes(x = PrimerID, y = SampleID, fill = value)) +
                          high = jRdGyPalette[paletteSize],
                          midpoint = 0,
                          name = "log10 Read Count") +
-    labs(title="Overlapping Read Bias\nPositive values indicate joined reads\nnegative values indecate unpaired reads")
+    labs(title=paste("Overlapping Read Bias\nPositive values indicate joined reads\nnegative values indecate unpaired reads\nCombined_Percentage:\t",flash_data[4],"%",sep=""))
 
 png(file.path(output,"merged_read_results.png"),width=8,height=10.5,units="in",res=300)
 print(p)
