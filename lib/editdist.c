@@ -175,11 +175,11 @@ edit_distance(const char *a, int alen, const char *b, int blen)
     if (alen == 0)
         return (blen);
 
-    if ((previous = calloc(alen + 1, sizeof(*previous))) == NULL) {
+    if ((*previous = calloc(alen + 1, sizeof(*previous))) == NULL) {
         free(previous);
         return (-1);
     }
-    if ((current = calloc(alen + 1, sizeof(*current))) == NULL) {
+    if ((*current = calloc(alen + 1, sizeof(*current))) == NULL) {
         free(current);
         return (-1);
     }
