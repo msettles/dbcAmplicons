@@ -455,18 +455,18 @@ sapply(program_list,function(program){
     write(paste("Producing final images"),stdout())
     #### PLOTTING RESULTS    
     png(file.path(output,paste(program,"freq_read_counts.png",sep=".")),height=8,width=10.5,units="in",res=300)
-    hist(as.numeric(sapply(strsplit(onms,split="|",fixed=TRUE),"[[",5L)),breaks=200,main="histogram of amplicon read counts\n",program," trimR1:",trimL," trimR2:",trimR,"\n",sep=""),xlab="frequency")
+    hist(as.numeric(sapply(strsplit(onms,split="|",fixed=TRUE),"[[",5L)),breaks=200,main=paste("histogram of amplicon read counts\n",program," trimR1:",trimOne," trimR2:",trimTwo,"\n",sep=""),xlab="frequency")
     invisible(dev.off())
     png(file.path(output,paste(program,"freq_most_occuring.png",sep=".")),height=8,width=10.5,units="in",res=300)
-    hist(as.numeric(sapply(strsplit(onms,split="|",fixed=TRUE),"[[",6L)),breaks=200,main="histogram of chosen amplicon frequency\n",program," trimR1:",trimL," trimR2:",trimR,"\n",sep=""),xlab="read counts")
+    hist(as.numeric(sapply(strsplit(onms,split="|",fixed=TRUE),"[[",6L)),breaks=200,main=paste("histogram of chosen amplicon frequency\n",program," trimR1:",trimOne," trimR2:",trimTwo,"\n",sep=""),xlab="read counts")
     invisible(dev.off())
     if (program %in% c("consensus","ambiguities")){
         png(file.path(output,paste(program,"error_rate.png",sep=".")),height=8,width=10.5,units="in",res=300)
-        hist(as.numeric(sapply(strsplit(onms,split="|",fixed=TRUE),"[[",7L)),breaks=200,main=paste("histogram of error rate in amplicons\n",program," trimR1:",trimL," trimR2:",trimR,"\n",sep=""),xlab="error rate")
+        hist(as.numeric(sapply(strsplit(onms,split="|",fixed=TRUE),"[[",7L)),breaks=200,main=paste("histogram of error rate in amplicons\n",program," trimR1:",trimOne," trimR2:",trimTwo,"\n",sep=""),xlab="error rate")
         invisible(dev.off())
         if (program %in% c("ambiguities")){
             png(file.path(output,paste(program,"ambiguities.png",sep=".")),height=8,width=10.5,units="in",res=300)
-            hist(as.numeric(sapply(strsplit(onms,split="|",fixed=TRUE),"[[",8L)),breaks=200,main=paste("histogram of number of ambiguites in amplicons\n",program," trimR1:",trimL," trimR2:",trimR,"\n",sep=""),xlab="number of ambiguity bases")
+            hist(as.numeric(sapply(strsplit(onms,split="|",fixed=TRUE),"[[",8L)),breaks=200,main=paste("histogram of number of ambiguites in amplicons\n",program," trimR1:",trimOne," trimR2:",trimTwo,"\n",sep=""),xlab="number of ambiguity bases")
             invisible(dev.off())
         }
     }
@@ -495,7 +495,7 @@ sapply(program_list,function(program){
         #                          high = jRdGyPalette[paletteSize],
         #                          midpoint = 0,
         #                          name = "Amplicon Count") +
-        labs(title=paste("Resulting number of amplicons\n",program," trimR1:",trimL," trimR2:",trimR,"\n",sep=""))
+        labs(title=paste("Resulting number of amplicons\n",program," trimR1:",trimOne," trimR2:",trimTwo,"\n",sep=""))
     
     png(file.path(output,paste(program,"Amplicons","Per","Sample","png",sep=".")),width=8,height=10.5,units="in",res=300)
     print(p)
