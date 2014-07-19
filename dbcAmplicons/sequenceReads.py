@@ -131,7 +131,9 @@ class FourSequenceReadSet:
         pr1Mismatch = max_diff+1
         pr1Position = 0
         for key in prTable.getP5sequences():
+            print 'assign primer'
             prdist = primerDist(key, self.read_1,max_diff,endmatch)
+            print 'assigned'
             if prdist[0] < pr1Mismatch:
                 pr1 = key
                 pr1Mismatch = prdist[0]
