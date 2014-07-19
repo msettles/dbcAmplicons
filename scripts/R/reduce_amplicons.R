@@ -291,7 +291,7 @@ invisible(dev.off())
             error_rate=sum(1-apply(sweep(abc,MARGIN=2,STATS=colSums(abc),FUN="/"),2,max))/(nchar(consensus)-5) ## - 5 for Ns
             spaired_str <- lapply(strsplit(consensus,split=".....",fixed = TRUE),DNAStringSet)
             spaired_str <- do.call("c",spaired_str)
-            names(spaired_str) <- paste(name,c("read1","read2"),rep(seq.int(1,length(spaired_str)),each=2),length(wtmp), counts[[name]], round(length(wtmp)/counts[[name]],3),round(error_rate,3),sep="|")            
+            names(spaired_str) <- paste(name,c("read1","read2"),rep(seq.int(1,length(spaired_str)/2),each=2),length(wtmp), counts[[name]], round(length(wtmp)/counts[[name]],3),round(error_rate,3),sep="|")            
             maxsize = length(wtmp)
             seqs <- spaired_str
         }
@@ -348,7 +348,7 @@ invisible(dev.off())
             error_rate=sum(1-apply(sweep(abc,MARGIN=2,STATS=colSums(abc),FUN="/"),2,max))/(nchar(consensus)-5) ## - 5 for Ns
             spaired_str <- lapply(strsplit(consensus,split=".....",fixed = TRUE),DNAStringSet)
             spaired_str <- do.call("c",spaired_str)
-            names(spaired_str) <- paste(name,c("read1","read2"),rep(seq.int(1,length(spaired_str)),each=2),length(wtmp), counts[[name]], round(length(wtmp)/counts[[name]],3),round(error_rate,3),amb_bases,sep="|")            
+            names(spaired_str) <- paste(name,c("read1","read2"),rep(seq.int(1,length(spaired_str)/2),each=2),length(wtmp), counts[[name]], round(length(wtmp)/counts[[name]],3),round(error_rate,3),amb_bases,sep="|")            
             maxsize = length(wtmp)
             seqs <- spaired_str
         }
@@ -382,7 +382,7 @@ invisible(dev.off())
         if (length(spaired) > 0){
             spaired_str <- lapply(strsplit(names(spaired),split=".....",fixed = TRUE),DNAStringSet)
             spaired_str <- do.call("c",spaired_str)
-            names(spaired_str) <- paste(name,c("read1","read2"),rep(seq.int(1,length(spaired_str)),each=2),rep(spaired,each=2), counts[[name]], rep(signif(spaired/counts[[name]],3),each=2),sep="|")
+            names(spaired_str) <- paste(name,c("read1","read2"),rep(seq.int(1,length(spaired_str)/2),each=2),rep(spaired,each=2), counts[[name]], rep(signif(spaired/counts[[name]],3),each=2),sep="|")
             seqs <- c(seqs,spaired_str)
         }
     }
