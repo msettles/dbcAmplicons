@@ -13,7 +13,7 @@ config = {
     'url': 'https://github.com/msettles/DBC_amplicons/py-dbcAmplicons',
     'download_url': 'https://github.com/msettles/DBC_amplicons/py-dbcAmplicons',
     'author_email': 'msettles@uidaho.edu',
-    'version': 'v0.5.5-6182014',
+    'version': 'v0.5.6-8102014',
     'install_requires': [],
     'packages': ['dbcAmplicons'],
     'scripts': ['bin/dbcAmplicons', 'scripts/python/convert2ReadTo4Read.py', 'scripts/R/reduce_amplicons.R'],
