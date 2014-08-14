@@ -31,7 +31,7 @@ class splitreadsApp:
             ## read in primer sequences
             sTable = sampleTable(samplesFile)
             if self.verbose:
-                print "sample table length: %s, and %s projects." % (sTable.getSampleNumber(),len(sTable.getProjectList()))
+                sys.stdout.write("sample table length: %s, and %s projects.\n" % (sTable.getSampleNumber(),len(sTable.getProjectList())))
             ## read in primer sequences if present
             ## setup output files
             identified_count = 0
@@ -64,31 +64,31 @@ class splitreadsApp:
                 for key in self.run_out:
                     self.run_out[key].writeReads()
                 if self.verbose:
-                    print "processed %s total reads, %s Reads/second, %s identified reads, %s unidentified reads" % (self.run.count(), round(self.run.count()/(time.time() - lasttime),0), identified_count,unidentified_count)
+                    sys.stderr.write("processed %s total reads, %s Reads/second, %s identified reads, %s unidentified reads (%s%%)\n" % (self.run.count(), round(self.run.count()/(time.time() - lasttime),0), identified_count,unidentified_count,round((float(identified_count)/float(self.run.count()))*100)))
             if self.verbose:
-                print "%s reads processed in %s minutes" % (self.run.count(),round((time.time()-lasttime)/(60),2))
+                sys.stdout.write("%s reads processed in %s minutes, %s (%s%%) identified\n\n" % (self.run.count(),round((time.time()-lasttime)/(60),2),identified_count,round((float(identified_count)/float(self.run.count()))*100,1)))
             for key in self.run_out:
-                print "%s\treads found for project\t%s" % (self.run_out[key].count(), key)
-
+                sys.stdout.write("%s (%s%%)\treads found for project\t%s\n" % (self.run_out[key].count(), round((float(self.run_out[key].count())/float(identified_count))*100,1), key))
             self.clean()
-            return 0    
-        except Exception:
-            self.clean()
-            print("A fatal error was encountered.")
-            if debug:
-                print "".join(traceback.format_exception(*sys.exc_info()))
-            return 1
+            return 0
         except (KeyboardInterrupt, SystemExit):
             self.clean()
-            print("%s unexpectedly terminated" % (__name__))
+            sys.stderr.write("%s unexpectedly terminated\n" % (__name__))
+            return 1
+        except:
+            self.clean()
+            sys.stderr.write("A fatal error was encountered. trying turning on debug\n")
+            if debug:
+                sys.stderr.write("".join(traceback.format_exception(*sys.exc_info())))
             return 1
 
     def clean(self):
         if self.verbose:
-            print("Cleaning up.")
+            sys.stderr.write("Cleaning up.\n")
         try:
             self.run.close()
-            for x in self.run_out:
-                x.close()
+            for key in self.run_out:
+                self.run_out[key].close()
         except:
             pass
+

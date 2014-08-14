@@ -38,7 +38,8 @@ class fixrankLine:
         self.taxon = OrderedDict()
         parse = line.split('\t')
         if len(parse) % 3 != 2:
-            print("ERROR:[fixrankline] incorrect number of columns in parseing the line, %s" % line)
+            sys.stderr.write("ERROR:[fixrankline] incorrect number of columns in parsing the line, %s\n" % line)
+            raise
         name = parse[0].split('|')
         name = name[1].split(':')
         self.sample = name[0] 
@@ -107,13 +108,13 @@ class abundanceApp:
             if evalSample:
                 sTable = sampleTable(samplesFile)
                 if verbose:
-                    print "sample table length: %s, and %s projects." % (sTable.getSampleNumber(),len(sTable.getProjectList()))
+                    sys.stdout.write("sample table length: %s, and %s projects.\n" % (sTable.getSampleNumber(),len(sTable.getProjectList())))
 
             ## check input fixrank files
             for ffile in fixrank_file:
                 self.ffixrank.extend(glob.glob(ffile))
                 if len(self.ffixrank) == 0 or not all(os.path.exists(f) for f in self.ffixrank):
-                    print ('ERROR:[abundance_app] fixrank file(s) not found')
+                    sys.stderr.write('ERROR:[abundance_app] fixrank file(s) not found\n')
                     raise
 
             abundanceTable = dict()
@@ -139,11 +140,15 @@ class abundanceApp:
                                 abundanceTable[tax[0]][lrank.getSampleID()] +=1
                                 bootscore[tax[0]] = tax[1]
                         lines += 1
+                        if lines%100000 is 0:
+                            sys.stderr.write("processed %s total lines, %s lines/second\n" % (lines, round(lines/(time.time() - lasttime),0)))
+            if self.verbose:
+                sys.stdout.write("%s lines processed in %s minutes\n" % (lines,round((time.time()-lasttime)/(60),2)))
+                sys.stderr.write("Writing output\n")
             ## output file
             if evalSample:
                 ab_name = output_prefix + '.abundance.txt'
                 prop_name = output_prefix + '.proportions.txt'
-#                sampleList = sTable.getSampleList()
             else:
                 ab_name = output_prefix + '.abundance.txt'
                 prop_name = output_prefix + '.proportions.txt'
@@ -151,7 +156,7 @@ class abundanceApp:
                 abFile = open(ab_name, 'w')
                 propFile = open(prop_name, 'w')
             except:
-                print ("Can't open files (%s,%s) for writing" % (ab_name,prop_name))
+                sys.stderr.write("ERROR:[abundance_app] Can't open files (%s,%s) for writing\n" % (ab_name,prop_name))
             # write out header line
             sampleList = sorted(sampleList)
             txt = 'Taxon_Name\tLevel\tMeanBootstraptValue\t'+ '\t'.join(sampleList) + '\n'
@@ -160,7 +165,6 @@ class abundanceApp:
             taxa_keys = sorted(abundanceTable.keys())
             for taxa in taxa_keys:
                 txt1 = txt2 = str(taxa.replace('|', '\t')) + '\t' + str(round(bootscore[taxa]/sum(abundanceTable[taxa].values()),3))
-                #txt2 = str(taxa.replace('|', '\t')) + '\t' + str(round(bootscore[taxa]/sum(abundanceTable[taxa].values()),3))
                 for sample in sampleList:
                     txt1 = '\t'.join([txt1,str(abundanceTable[taxa][sample])])
                     if sampleCounts[sample] > 0:
@@ -178,23 +182,23 @@ class abundanceApp:
             for abt in abundanceTable:
                 cntFile.write(str(abt) + '\t' + str(sum(abundanceTable[abt].values())) + '\n')
             if self.verbose:
-                print "%s lines processed in %s minutes" % (lines,round((time.time()-lasttime)/(60),2))
+                sys.stderr.write("finished in %s minutes\n" % (round((time.time()-lasttime)/(60),2)))
             self.clean()
             return 0    
         except (KeyboardInterrupt, SystemExit):
             self.clean()
-            print("%s unexpectedly terminated" % (__name__))
+            sys.stderr.write("%s unexpectedly terminated\n" % (__name__))
             return 1
         except:
             self.clean()
-            print("A fatal error was encountered.")
+            sys.stderr.write("A fatal error was encountered.\n")
             if debug:
-                print "".join(traceback.format_exception(*sys.exc_info()))
+                sys.stderr.write("".join(traceback.format_exception(*sys.exc_info())))
             return 1
 
     def clean(self):
         if self.verbose:
-            print("Cleaning up.")
+            sys.stderr.write("Cleaning up.\n")
         try:
             ## nothing to be done
             pass

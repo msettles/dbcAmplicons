@@ -46,7 +46,7 @@ class barcodeTable:
         try:
             bcfile = open(barcodefile, 'r')
         except IOError:
-            print 'ERROR:[Barcodes] Error cannot open', barcodefile
+            sys.stderr.write('ERROR:[Barcodes] Error cannot open %s\n' % barcodefile)
             raise
         f = bcfile.readlines()
         line = 0
@@ -60,13 +60,13 @@ class barcodeTable:
                 # P7 barcode shows up as the reverse complement in the sequencing run
                 P7BC = misc.reverseComplement(P7BC)
             except ValueError as e:
-                print 'ERROR:[Barcodes] Error reading line %s of barcode file: %s' % (str(line), str(e))
+                sys.stderr.write('ERROR:[Barcodes] Error reading line %s of barcode file: %s\n' % (str(line), str(e)))
                 raise
             except KeyError:
-                print 'ERROR:[Barcodes] Error reverse complementing P7 barcode %s, unknown character' % P7BC
+                sys.stderr.write('ERROR:[Barcodes] Error reverse complementing P7 barcode %s, unknown character\n' % P7BC)
                 raise
             except:
-                print 'ERROR:[Barcodes] Unexpected error on line %s of the barcodes file: %s' % (line,sys.exc_info()[0])
+                sys.stderr.write('ERROR:[Barcodes] Unexpected error on line %s of the barcodes file: %s\n' % (line,sys.exc_info()[0]))
                 raise
             if P5BC not in self.P5:
                 self.P5.extend([P5BC])

@@ -18,7 +18,7 @@ from misc import reverseComplement
 from misc import infer_read_file_name
 from misc import make_sure_path_exists
 from misc import expand_path
-
+from misc import parse_flash
 from misc import sp_gzip_read
 
 from barcodes import barcodeTable

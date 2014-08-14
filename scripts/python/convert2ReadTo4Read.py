@@ -59,26 +59,26 @@ class convertApp:
                 ### Write out reads
                 self.run_out.writeReads()
                 if self.verbose:
-                    print "processed %s total reads, %s Reads/second" % (self.run.count(), round(self.run.count()/(time.time() - lasttime),0))
+                    sys.stderr.write("processed %s total reads, %s Reads/second\n" % (self.run.count(), round(self.run.count()/(time.time() - lasttime),0)))
             if self.verbose:
-                print "%s reads processed in %s minutes" % (self.run.count(),round((time.time()-lasttime)/(60),2))
+                sys.stdout.write("%s reads processed in %s minutes\n" % (self.run.count(),round((time.time()-lasttime)/(60),2)))
             # write out project table
             self.clean()
             return 0    
         except (KeyboardInterrupt, SystemExit):
             self.clean()
-            print("%s unexpectedly terminated" % (__name__))
+            sys.stderr.write("%s unexpectedly terminated\n" % (__name__))
             return 1
         except:
             self.clean()
-            print("A fatal error was encountered.")
+            sys.stderr.write("A fatal error was encountered.\n")
             if debug:
-                print "".join(traceback.format_exception(*sys.exc_info()))
+                sys.stderr.write("".join(traceback.format_exception(*sys.exc_info())))
             return 1
 
     def clean(self):
         if self.verbose:
-            print("Cleaning up.")
+            sys.stderr.write("Cleaning up.\n")
         try:
             self.run.close()
             self.run_out.close()
@@ -124,7 +124,7 @@ def parseArgs():
         epilog ='For questions or comments, please contact Matt Settles <msettles@uidaho.edu>', add_help=True)
     parser.add_argument('--version', action='version', version="%(prog)s Version " + version_num)
     parser.add_argument('-b', '--batchsize', help='batch size to process reads in [default: %(default)s]',
-                        type=int, dest='batchsize', default=10000)    
+                        type=int, dest='batchsize', default=100000)    
     parser.add_argument('-O', '--output_path', help='path for output files [default: %(default)s]',
                         action='store', type=str, dest='output_base', metavar='PREFIX', default=None)
     parser.add_argument('-u', '--uncompressed', help='leave output files uncompressed [default: %(default)s]',

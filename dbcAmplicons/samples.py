@@ -53,7 +53,7 @@ class sampleTable:
         try:
             sfile = open(samplefile, 'r')
         except IOError:
-            print 'ERROR:[Samples] cannot open', samplefile
+            sys.stderr.write('ERROR:[Samples] cannot open\n', samplefile)
             raise
         f = sfile.next() ## read the file
         header = f.rstrip()
@@ -61,22 +61,22 @@ class sampleTable:
         try:
             sampleID_index = vheader.index("SampleID")
         except ValueError:
-            print 'ERROR:[Samples] Column "SampleID" was not found in the samples table'
+            sys.stderr.write('ERROR:[Samples] Column "SampleID" was not found in the samples table\n')
             raise
         try:
             barcodeID_index = vheader.index("BarcodeID")
         except ValueError:
-            print 'ERROR:[Samples] Column "BarcodeID" was not found in the samples table'
+            sys.stderr.write('ERROR:[Samples] Column "BarcodeID" was not found in the samples table\n')
             raise
         try:
             primerID_index = vheader.index("PrimerPairID")
         except ValueError:
-            print 'ERROR:[Samples] Column "PrimerPairID" was not found in the samples table'
+            sys.stderr.write('ERROR:[Samples] Column "PrimerPairID" was not found in the samples table\n')
             raise
         try:
             projectID_index = vheader.index("ProjectID")
         except ValueError:
-            print 'ERROR:[Samples] Column "ProjectID" was not found in the samples table'
+            sys.stderr.write('ERROR:[Samples] Column "ProjectID" was not found in the samples table\n')
             raise
         try:
             line=1
@@ -107,11 +107,11 @@ class sampleTable:
                 self.samplesList = sorted(set(samples))
                 self.sampleCount += 1
         except KeyFoundError as e:
-            print 'ERROR:[Samples] Error in sample sheet: Barcode [%s] and Primer [%s] pair previously specified' % (e.getBarcode(), e.getPrimer())
+            sys.stderr.write('ERROR:[Samples] Error in sample sheet: Barcode [%s] and Primer [%s] pair previously specified\n' % (e.getBarcode(), e.getPrimer()))
             sfile.close()
             raise
         except:
-            print 'ERROR:[Samples] Unexpected error on line %s of the samples file: %s' % (line,sys.exc_info()[0])
+            sys.stderr.write('ERROR:[Samples] Unexpected error on line %s of the samples file: %s\n' % (line,sys.exc_info()[0]))
             sfile.close()
             raise
         sfile.close()
@@ -145,7 +145,7 @@ class sampleTable:
         except KeyError:
             return(None)
         except:
-            print 'ERROR:[Samples] Unexpected error in getSampleID:', sys.exc_info()[0]
+            sys.stderr.write('ERROR:[Samples] Unexpected error in getSampleID:\n', sys.exc_info()[0])
             raise
     def getProjectID(self,barcode,primer):
         """
@@ -162,5 +162,5 @@ class sampleTable:
         except KeyError:
             return(None)
         except:
-            print 'ERROR:[Samples] Unexpected error getProjectID:', sys.exc_info()[0]
+            sys.stderr.write('ERROR:[Samples] Unexpected error getProjectID:\n', sys.exc_info()[0])
             raise

@@ -49,7 +49,7 @@ class primerTable:
         try:
             prfile = open(primerfile, 'r')
         except IOError:
-            print 'ERROR:[Primers] Error cannot open', primerfile
+            sys.stderr.write('ERROR:[Primers] Error cannot open\n', primerfile)
             raise
         f = prfile.readlines()
         line = 0
@@ -61,10 +61,10 @@ class primerTable:
             try:
                 READ, PAIR, ID, SEQ = row.split('\t')
             except ValueError as e:
-                print "ERROR:[Primers] Error reading line %s of primer file: %s" % (str(line), str(e))
+                sys.stderr.write("ERROR:[Primers] Error reading line %s of primer file: %s\n" % (str(line), str(e)))
                 raise
             except:
-                print "ERROR:[Primers] Unexpected error on line %s of the primers file: %s" % (line,sys.exc_info()[0])
+                sys.stderr.write("ERROR:[Primers] Unexpected error on line %s of the primers file: %s\n" % (line,sys.exc_info()[0]))
                 raise
             self.primers.extend([PAIR])
             pseqs = misc.expand_iupac(SEQ.upper())

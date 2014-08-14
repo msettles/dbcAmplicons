@@ -2,6 +2,7 @@
 
 # Copyright 2013, Institute for Bioninformatics and Evolutionary Studies
 #
+
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -38,16 +39,25 @@ class preprocessApp:
             ## read in primer sequences
             bcTable = barcodeTable(barcodesFile)
             if self.verbose:
-                print "barcode table length: %s" % bcTable.getLength()
+                sys.stdout.write("barcode table length: %s\n" % bcTable.getLength())
             ## read in primer sequences if present
             if evalPrimer:
                 prTable = primerTable(primerFile)
                 if verbose:
-                    print "primer table length P5 Primer Sequences:%s, P7 Primer Sequences:%s" % (len(prTable.getP5sequences()),len(prTable.getP7sequences()))
+                    sys.stdout.write("primer table length P5 Primer Sequences:%s, P7 Primer Sequences:%s\n" % (len(prTable.getP5sequences()),len(prTable.getP7sequences())))
             if evalSample:
                 sTable = sampleTable(samplesFile)
                 if verbose:
-                    print "sample table length: %s, and %s projects." % (sTable.getSampleNumber(),len(sTable.getProjectList()))
+                    sys.stdout.write("sample table length: %s, and %s projects.\n" % (sTable.getSampleNumber(),len(sTable.getProjectList())))
+            ## output table
+            if evalSample:
+                bctable_name = os.path.join(output_prefix,'Identified_Barcodes.txt')
+            else:
+                bctable_name = output_prefix + '_Identified_Barcodes.txt'
+            try:
+                bcFile = open(bctable_name, 'w')
+            except:
+                sys.stderr.write("ERROR: Can't open file %s for writing\n" % bctable_name)
             ## setup output files
             barcode_counts = {}
             identified_count = 0
@@ -116,19 +126,11 @@ class preprocessApp:
                 for key in self.run_out:
                     self.run_out[key].writeReads()
                 if self.verbose:
-                    print "processed %s total reads, %s Reads/second, %s identified reads, %s unidentified reads" % (self.run.count(), round(self.run.count()/(time.time() - lasttime),0), identified_count,unidentified_count)
+                    sys.stderr.write("processed %s total reads, %s Reads/second, %s identified reads, %s unidentified reads (%s%%)\n" % (self.run.count(), round(self.run.count()/(time.time() - lasttime),0), identified_count,unidentified_count,round((float(identified_count)/float(self.run.count()))*100)))
             if self.verbose:
-                print "%s reads processed in %s minutes, %s%% identified" % (self.run.count(),round((time.time()-lasttime)/(60),2),round((float(identified_count)/float(self.run.count()))*100,1))
+                    sys.stdout.write("%s reads processed in %s minutes, %s (%s%%) identified\n\n" % (self.run.count(),round((time.time()-lasttime)/(60),2),identified_count,round((float(identified_count)/float(self.run.count()))*100,1)))
             # Write out barcode and primer table
             if (identified_count > 0):
-                if evalSample:
-                    file_name = os.path.join(output_prefix,'Identified_Barcodes.txt')
-                else:
-                    file_name = output_prefix + '_Identified_Barcodes.txt'
-                try:
-                    bcFile = open(file_name, 'w')
-                except:
-                    print ("Can't open file %s for writing" % file_name)
                 # write out header line
                 if evalPrimer:
                     txt = 'Barcode\t'+ '\t'.join(prTable.getPrimers()) + '\tNone' + '\n'
@@ -150,23 +152,23 @@ class preprocessApp:
             # write out project table
             if evalSample and self.verbose:
                 for key in self.run_out:
-                    print "%s\treads found for project\t%s" % (self.run_out[key].count(), key)
+                    sys.stdout.write("%s reads processed in %s minutes, %s (%s%%) identified\n\n" % (self.run.count(),round((time.time()-lasttime)/(60),2),identified_count,round((float(identified_count)/float(self.run.count()))*100,1)))
             self.clean()
             return 0    
         except (KeyboardInterrupt, SystemExit):
             self.clean()
-            print("%s unexpectedly terminated" % (__name__))
+            sys.stderr.write("%s unexpectedly terminated\n" % (__name__))
             return 1
         except:
             self.clean()
-            print("A fatal error was encountered.")
+            sys.stderr.write("A fatal error was encountered. trying turning on debug\n")
             if debug:
-                print "".join(traceback.format_exception(*sys.exc_info()))
+                sys.stderr.write("".join(traceback.format_exception(*sys.exc_info())))
             return 1
 
     def clean(self):
         if self.verbose:
-            print("Cleaning up.")
+            sys.stderr.write("Cleaning up.\n")
         try:
             self.run.close()
             for key in self.run_out:

@@ -46,7 +46,7 @@ class FourReadIlluminaRun:
             for fread in read1:
                 self.fread1.extend(glob.glob(os.path.realpath(fread)))
                 if len(self.fread1) == 0 or not all(os.path.exists(f) for f in self.fread1):
-                    print ('ERROR:[FourReadIlluminaRun] read1 file(s) not found')
+                    sys.stderr.write('ERROR:[FourReadIlluminaRun] read1 file(s) not found\n')
                     raise
             if read2 is None:
                 for fread in self.fread1:
@@ -55,7 +55,7 @@ class FourReadIlluminaRun:
                 for fread in read2:
                     self.fbc1.extend(glob.glob(fread))
                     if len(self.fbc1) == 0 or not all(os.path.exists(f) for f in self.fbc1):
-                        print ('ERROR:[FourReadIlluminaRun] read2 (BC1) file not found')
+                        sys.stderr.write('ERROR:[FourReadIlluminaRun] read2 (BC1) file not found\n')
                         raise
             if read3 is None:
                 for fread in self.fread1:
@@ -64,7 +64,7 @@ class FourReadIlluminaRun:
                 for fread in read3:
                     self.fbc2.extend(glob.glob(fread))
                     if len(self.fbc2) == 0 or not all(os.path.exists(f) for f in self.fbc2):
-                        print ('ERROR:[FourReadIlluminaRun] read3 (BC2) file not found')
+                        sys.stderr.write('ERROR:[FourReadIlluminaRun] read3 (BC2) file not found\n')
                         raise
             if read4 is None:
                 for fread in self.fread1:
@@ -73,10 +73,10 @@ class FourReadIlluminaRun:
                 for fread in read4:
                     self.fread2.extend(glob.glob(fread))
                     if len(self.fread2) == 0 or not all(os.path.exists(f) for f in self.fread2):
-                        print ('ERROR:[FourReadIlluminaRun] read4 file not found')
+                        sys.stderr.write('ERROR:[FourReadIlluminaRun] read4 file not found\n')
                         raise
             if any(len(f) != len(self.fread1) for f in [self.fbc1,self.fbc2,self.fread2]):
-                print ('ERROR:[FourReadIlluminaRun] Inconsistant number of files for each read')
+                sys.stderr.write('ERROR:[FourReadIlluminaRun] Inconsistant number of files for each read\n')
                 raise
         except:
             raise
@@ -111,7 +111,7 @@ class FourReadIlluminaRun:
                 else:
                     self.R2 = open(read2, 'r')
             except:
-                print 'ERROR:[FourReadIlluminaRun] cannot open input files: READ1[%s]' % read1
+                sys.stderr.write('ERROR:[FourReadIlluminaRun] cannot open input files: READ1[%s]\n' % read1)
                 raise
             self.isOpen = True
             self.numberoffiles -= 1
@@ -141,7 +141,7 @@ class FourReadIlluminaRun:
         if not self.isOpen:
             try:
                 if self.open() == 1:
-                    print('ERROR:[FourReadIlluminaRun] ERROR Opening files for reading')
+                    sys.stderr.write('ERROR:[FourReadIlluminaRun] ERROR Opening files for reading\n')
                     raise
             except:
                 raise
@@ -156,21 +156,21 @@ class FourReadIlluminaRun:
                 qual_1 = self.R1.next().rstrip() # qual
                 #process read _2 (BC1)
                 if self.BC1.next().split(" ")[0] != name: # name
-                    print('ERROR:[FourReadIlluminaRun] Read names do not match each other')
+                    sys.stderr.write('ERROR:[FourReadIlluminaRun] Read names do not match each other\n')
                     raise
                 bc_1 = self.BC1.next().rstrip() # read 
                 self.BC1.next() # '+'
                 self.BC1.next() # qual
                 #process reed_3 (BC2)
                 if self.BC2.next().split(" ")[0] != name: # name
-                    print('ERROR:[FourReadIlluminaRun] Read names do not match each other')
+                    sys.stderr.write('ERROR:[FourReadIlluminaRun] Read names do not match each other\n')
                     raise
                 bc_2 = self.BC2.next().rstrip() # read
                 self.BC2.next() # '+'
                 self.BC2.next() # qual
                 #process read_4 (Read2)
                 if self.R2.next().split(" ")[0] != name: # name
-                    print('ERROR:[FourReadIlluminaRun] Read names do not match each other')
+                    sys.stderr.write('ERROR:[FourReadIlluminaRun] Read names do not match each other\n')
                     raise
                 read_2 = self.R2.next().rstrip() # read
                 self.R2.next() # '+'
@@ -182,14 +182,14 @@ class FourReadIlluminaRun:
                 if self.numberoffiles > 0:
                     try:
                         if self.open() == 1:
-                            print('ERROR:[FourReadIlluminaRun] ERROR Opening files for reading')
+                            sys.stderr.write('ERROR:[FourReadIlluminaRun] ERROR Opening files for reading\n')
                             raise
                     except:
                         raise
                     continue
                 break
             except:
-                print('ERROR:[FourReadIlluminaRun] Error reading next read')
+                sys.stderr.write('ERROR:[FourReadIlluminaRun] Error reading next read\n')
                 raise
             i += 1
         return reads
@@ -212,7 +212,7 @@ class TwoReadIlluminaRun:
             for fread in read1:
                 self.fread1.extend(glob.glob(fread))
                 if len(self.fread1) == 0 or not all(os.path.exists(f) for f in self.fread1):
-                    print('ERROR:[TwoReadIlluminaRun] read1 file(s) not found')
+                    sys.stderr.write('ERROR:[TwoReadIlluminaRun] read1 file(s) not found\n')
                     raise
             if read2 is None:
                 for fread in self.fread1:
@@ -221,10 +221,10 @@ class TwoReadIlluminaRun:
                 for fread in read2:
                     self.fread2.extend(glob.glob(fread))
                     if len(self.fread2) == 0 or not all(os.path.exists(f) for f in self.fread2):
-                        print ('ERROR:[TwoReadIlluminaRun] read2 file not found')
+                        sys.stderr.write('ERROR:[TwoReadIlluminaRun] read2 file not found\n')
                         raise
             if len(self.fread1) != len(self.fread2):
-                print('ERROR:[TwoReadIlluminaRun] Inconsistant number of files for each read')
+                sys.stderr.write('ERROR:[TwoReadIlluminaRun] Inconsistant number of files for each read\n')
                 raise
         except:
             raise
@@ -249,7 +249,7 @@ class TwoReadIlluminaRun:
                 else:
                     self.R2 = open(read2, 'r')
             except:
-                print 'ERROR:[TwoReadIlluminaRun] cannot open input files'
+                sys.stderr.write('ERROR:[TwoReadIlluminaRun] cannot open input files\n')
                 raise
             self.isOpen = True
             self.numberoffiles -= 1
@@ -277,7 +277,7 @@ class TwoReadIlluminaRun:
         if not self.isOpen:
             try:
                 if self.open() == 1:
-                    print('ERROR:[TwoReadIlluminaRun] ERROR Opening files for reading')
+                    sys.stderr.write('ERROR:[TwoReadIlluminaRun] ERROR Opening files for reading\n')
                     raise
             except:
                 raise
@@ -297,7 +297,7 @@ class TwoReadIlluminaRun:
                 qual_2 = self.R2.next().rstrip() # qual
                 #add it to the stack
                 if name_1.split(" ")[0] != name_2.split(" ")[0]: # check name
-                    print('ERROR:[TwoReadIlluminaRun] Read names do not match each other')
+                    sys.stderr.write('ERROR:[TwoReadIlluminaRun] Read names do not match each other\n')
                     raise
                 reads.append(TwoSequenceReadSet(name_1=name_1,read_1=read_1,qual_1=qual_1,name_2=name_2,read_2=read_2,qual_2=qual_2))
                 self.mcount += 1
@@ -305,14 +305,14 @@ class TwoReadIlluminaRun:
                 if self.numberoffiles > 0:
                     try:
                         if self.open() == 1:
-                            print('ERROR:[TwoReadIlluminaRun] ERROR Opening files for reading')
+                            sys.stderr.write('ERROR:[TwoReadIlluminaRun] ERROR Opening files for reading\n')
                             raise
                     except: 
                         raise
                     continue
                 break
             except:
-                print('ERROR:[TwoReadIlluminaRun] Error reading next read')
+                sys.stderr.write('ERROR:[TwoReadIlluminaRun] Error reading next read\n')
                 raise
             i +=1
         return reads
@@ -331,7 +331,7 @@ class OneReadIlluminaRun:
             for fread in read1:
                 self.fread1.extend(glob.glob(fread))
                 if len(self.fread1) == 0 or not all(os.path.exists(f) for f in self.fread1):
-                    print('ERROR:[OneReadIlluminaRun] read1 file(s) not found')
+                    sys.stderr.write('ERROR:[OneReadIlluminaRun] read1 file(s) not found\n')
                     raise
         except:
             raise
@@ -351,7 +351,7 @@ class OneReadIlluminaRun:
                 else:
                     self.R1 = open(read1, 'r')
             except:
-                print 'ERROR:[OneReadIlluminaRun] cannot open input files'
+                sys.stderr.write('ERROR:[OneReadIlluminaRun] cannot open input files\n')
                 raise
             self.isOpen = True
             self.numberoffiles -= 1
@@ -373,7 +373,7 @@ class OneReadIlluminaRun:
         if not self.isOpen:
             try:
                 if self.open() == 1:
-                    print('ERROR:[OneReadIlluminaRun] ERROR Opening files for reading')
+                    sys.stderr.write('ERROR:[OneReadIlluminaRun] ERROR Opening files for reading\n')
                     raise
             except:
                 raise
@@ -393,14 +393,14 @@ class OneReadIlluminaRun:
                 if self.numberoffiles > 0:
                     try:
                         if self.open() == 1:
-                            print('ERROR:[OneReadIlluminaRun] ERROR Opening files for reading')
+                            sys.stderr.write('ERROR:[OneReadIlluminaRun] ERROR Opening files for reading')
                             raise
                     except:
                         raise
                     continue
                 break
             except:
-                print('ERROR:[OneReadIlluminaRun] Error reading next read')
+                sys.stderr.write('ERROR:[OneReadIlluminaRun] Error reading next read')
                 raise
             i +=1
         return reads
@@ -442,7 +442,7 @@ class IlluminaFourReadOutput:
                 self.R3f = gzip.open(self.output_prefix + '_R3_001.fastq.gz', 'wb')
                 self.R4f = gzip.open(self.output_prefix + '_R4_001.fastq.gz', 'wb')
         except:
-            print('ERROR:[IlluminaFourReadOutput] Cannot write reads to file with prefix: %s' % self.output_prefix)
+            sys.stderr.write('ERROR:[IlluminaFourReadOutput] Cannot write reads to file with prefix: %s\n' % self.output_prefix)
             raise
         self.isOpen = True
         return 0
@@ -481,7 +481,7 @@ class IlluminaFourReadOutput:
             if not self.isOpen:
                 try:
                     if self.open() == 1:
-                        print('ERROR:[IlluminaTwoReadOutput] ERROR Opening files for writing')
+                        sys.stderr.write('ERROR:[IlluminaTwoReadOutput] ERROR Opening files for writing\n')
                         raise
                 except:
                     raise
@@ -491,7 +491,7 @@ class IlluminaFourReadOutput:
                 self.R2f.write('\n'.join(self.B1) + '\n')
                 self.R3f.write('\n'.join(self.B2) + '\n')
             except:
-                print('ERROR:[IlluminaTwoReadOutput] Cannot write reads to file with prefix: %s' % self.output_prefix)
+                sys.stderr.write('ERROR:[IlluminaTwoReadOutput] Cannot write reads to file with prefix: %s\n' % self.output_prefix)
                 raise
             self.R1 = []
             self.R2 = []
@@ -529,7 +529,7 @@ class IlluminaTwoReadOutput:
                 self.R1f = gzip.open(self.output_prefix + '_R1.fastq.gz', 'wb')
                 self.R2f = gzip.open(self.output_prefix + '_R2.fastq.gz', 'wb')
         except:
-            print('ERROR:[IlluminaTwoReadOutput] Cannot write reads to file with prefix: %s' % self.output_prefix)
+            sys.stderr.write('ERROR:[IlluminaTwoReadOutput] Cannot write reads to file with prefix: %s\n' % self.output_prefix)
             raise
         self.isOpen = True
         return 0
@@ -564,7 +564,7 @@ class IlluminaTwoReadOutput:
             if not self.isOpen:
                 try:
                     if self.open() == 1:
-                        print('ERROR:[IlluminaTwoReadOutput] ERROR Opening files for writing')
+                        sys.stderr.write('ERROR:[IlluminaTwoReadOutput] ERROR Opening files for writing\n')
                         raise
                 except:
                     raise
@@ -572,7 +572,7 @@ class IlluminaTwoReadOutput:
                 self.R1f.write('\n'.join(self.R1) + '\n')
                 self.R2f.write('\n'.join(self.R2) + '\n')
             except:
-                print('ERROR:[IlluminaTwoReadOutput] Cannot write reads to file with prefix: %s' % self.output_prefix)
+                sys.stderr.write('ERROR:[IlluminaTwoReadOutput] Cannot write reads to file with prefix: %s\n' % self.output_prefix)
                 raise
             self.R1 = []
             self.R2 = []
@@ -605,7 +605,7 @@ class IlluminaOneReadOutput:
             else:
                 self.R1f = gzip.open(self.output_prefix + '.fastq.gz', 'wb')
         except:
-            print('ERROR:[IlluminaOneReadOutput] Cannot write reads to file with prefix: %s' % self.output_prefix)
+            sys.stderr.write('ERROR:[IlluminaOneReadOutput] Cannot write reads to file with prefix: %s\n' % self.output_prefix)
             raise
         self.isOpen = True
         return 0
@@ -638,14 +638,14 @@ class IlluminaOneReadOutput:
             if not self.isOpen:
                 try:
                     if self.open() == 1:
-                        print('ERROR:[IlluminaOneReadOutput] ERROR Opening file for writing')
+                        sys.stderr.write('ERROR:[IlluminaOneReadOutput] ERROR Opening file for writing\n')
                         raise
                 except:
                     raise
             try:
                 self.R1f.write('\n'.join(self.R1) + '\n')
             except:
-                print('ERROR:[IlluminaOneReadOutput] Cannot write read to file with prefix: %s' % self.output_prefix)
+                sys.stderr.write('ERROR:[IlluminaOneReadOutput] Cannot write read to file with prefix: %s\n' % self.output_prefix)
                 raise
             self.R1 = []
 
@@ -673,7 +673,7 @@ class IlluminaFastaOutput:
             misc.make_sure_path_exists(os.path.dirname(self.output_prefix))
             self.R1f = open(self.output_prefix, 'w')
         except:
-            print('ERROR:[IlluminaFastaOutput] Cannot write reads to file with prefix: %s' % self.output_prefix)
+            sys.stderr.write('ERROR:[IlluminaFastaOutput] Cannot write reads to file with prefix: %s\n' % self.output_prefix)
             raise
         self.isOpen = True
         return 0
@@ -706,14 +706,14 @@ class IlluminaFastaOutput:
             if not self.isOpen:
                 try:
                     if self.open() == 1:
-                        print('ERROR:[IlluminaFastaOutput] ERROR Opening file for writing')
+                        sys.stderr.write('ERROR:[IlluminaFastaOutput] ERROR Opening file for writing\n')
                         raise
                 except:
                     raise
             try:
                 self.R1f.write('\n'.join(self.R1) + '\n')
             except:
-                print('ERROR:[IlluminaFastaOutput] Cannot write read to file with prefix: %s' % self.output_prefix)
+                sys.stderr.write('ERROR:[IlluminaFastaOutput] Cannot write read to file with prefix: %s\n' % self.output_prefix)
                 raise
             self.R1 = []
 

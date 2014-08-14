@@ -1,10 +1,56 @@
 #### Misc functions
 
-import os, errno
+import sys, os, errno
 from subprocess import Popen, PIPE
 import glob
 import gzip
 import shlex
+
+import re
+
+
+def parse_flash(fileinput_stream,verbose=False):
+    skip = 4
+    for i, line in enumerate(fileinput_stream):
+        if skip == 4:
+            ### parse version
+            sys.stdout.write('Using Flash_version:' + re.split(r' +',line.rstrip())[3] + '\n')
+            skip = 3
+            continue
+        if skip == 3 and not "Parameters" in line:
+            continue
+        elif skip == 3 and "Parameters" in line:
+            skip = 2
+            continue
+        elif skip == 2 and not "Starting FASTQ readers and writer threads" in line:
+            ### parse Parameters
+            data = re.split(': +', re.sub(r'\[FLASH\] +','',line.rstrip()))
+            if len(data) == 2:
+                name = re.sub(r' ','_',data[0])
+                if verbose:
+                    sys.stdout.write(name + ':' + data[1] + '\n')
+            continue
+        elif skip == 2 and "Starting FASTQ readers and writer threads" in line:
+            skip = 1
+            continue
+        elif skip == 1 and not "Read combination statistics" in line:
+            # ADD CODE FOR PRINTING OUT PROGRESS
+            # [FLASH] Processed 2500 read pairs
+            sys.stderr.write(re.sub(r'\[FLASH\] +','',line))
+            continue
+        elif skip == 1 and  "Read combination statistics" in line:
+            skip =  0
+            continue
+        elif skip == 0 and not "Writing histogram files" in line:
+            ### parse read combination statistics
+            data = re.split(': +', re.sub(r'\[FLASH\] +','',line.rstrip()))
+            if len(data) == 2:
+                name = re.sub(r' ','_',data[0])
+                sys.stdout.write(name + ':' + data[1] + '\n')
+            continue
+        elif skip == 0 and "Writing histogram files" in line:
+            return(0)
+
 
 '''
 Gzip utilities, run gzip in a subprocess
@@ -106,7 +152,6 @@ iupacdict = {
     'X':['A','C','G','T'],
     'N':['A','C','G','T']}
 
-
 def expand_iupac(seq):
     res = ['']
     for m in seq:
@@ -116,8 +161,3 @@ def expand_iupac(seq):
                 newres.append(i + j)
         res = newres
     return res
-
-#test = 'NNGATARNG'
-#expand_iupac(test)
-#test2 = 'AGGATAATG'
-#expand_iupac(test2)
