@@ -72,7 +72,7 @@ class classifyApp:
     """ 
     def __init__(self):
     	self.verbose=False
-    def start(self, fastq_file1, fastq_file2, fastq_fileU, output_prefix, rdpPath='./classifier.jar', gene='16srrna', batchsize=10000, procs = 1, verbose=True, debug=False):
+    def start(self, fastq_file1, fastq_file2, fastq_fileU, output_prefix, rdpPath='./classifier.jar', gene='16srrna', batchsize=10000, minQ=None, minL = 0, procs = 1, verbose=True, debug=False):
     	"""
             Start classifying double barcoded Illumina sequencing run
         """
@@ -124,6 +124,9 @@ class classifyApp:
                     run_out = IlluminaFastaOutput(output_prefix + "." + str(batch))
                     ## process individual reads
                     for read in reads:
+#                        if minQ != None: # TODO: add trim read to TwoSequenceReadSet
+#                            read.trimRead(minQ, minL)
+#                        if read.goodRead == True:
                         run_out.addRead(read.getJoinedFasta())
                     ### Write out reads
                     run_out.writeReads()

@@ -93,10 +93,10 @@ class sampleTable:
                 samples.append(sid)
                 for primer in row[primerID_index].split(','):
                     primer = primer.strip()
-                    if (primer == '*' or primer == '-') and barcode in self.sampleTable.keys():
+                    if (primer == '*') and barcode in self.sampleTable.keys():
                         raise KeyFoundError(barcode,primer)
                     elif barcode in self.sampleTable.keys():
-                        if primer in self.sampleTable[barcode].keys():
+                        if primer in self.sampleTable[barcode].keys() or '*' in self.sampleTable[barcode].keys():
                             raise KeyFoundError(barcode,primer)
                         else:
                             self.sampleTable[barcode][primer] = [sid,pid]
@@ -136,10 +136,10 @@ class sampleTable:
         """
         try:
             sid = self.sampleTable[barcode]
-            if sid.keys() == ['*'] and primer != None:
-                return sid['*'][0]
-            elif sid.keys() == ['-'] and primer == None:
-                return sid['-'][0]
+            if primer != None and ['*'] in sid.keys():
+                return sid['*'][1]
+            elif primer == None and ['-'] in sid.keys():
+                return sid['-'][1]
             else:
                 return(sid[primer][0])
         except KeyError:
@@ -153,9 +153,9 @@ class sampleTable:
         """
         try:
             sid = self.sampleTable[barcode]
-            if sid.keys() == ['*'] and primer != None:
+            if primer != None and ['*'] in sid.keys():
                 return sid['*'][1]
-            elif sid.keys() == ['-'] and primer == None:
+            elif primer == None and ['-'] in sid.keys():
                 return sid['-'][1]
             else:
                 return(sid[primer][1])

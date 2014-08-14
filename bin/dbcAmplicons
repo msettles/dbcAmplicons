@@ -281,7 +281,11 @@ def classifyApp(subparsers):
     #
     preprocess_parser = subparsers.add_parser('classify', help = 'classify reads using RDP generating a fixrank formated file')
     preprocess_parser.add_argument('-b', '--batchsize', help='batch size to process reads in [default: %(default)s]',
-                        type=int, dest='batchsize', default=100000)    
+                        type=int, dest='batchsize', default=100000)
+    preprocess_parser.add_argument('-q', '--minQ', help="trim 3' end of sequences to minQ (paired-end reads only) [default: %(default)s]",
+                        type=int, dest='minQ', default=None),
+    preprocess_parser.add_argument('-l', '--minL', help='if minQ is not None, only keep reads that are at least minL length (paired-end reads only) [default: %(default)s]',
+                        type=int, dest='minL', default=0),
     preprocess_parser.add_argument('-p', '--processors', help='number of processors to use, [default: %(default)s]',
                         type=int, dest='procs', default=1)
     preprocess_parser.add_argument('--rdpPath',metavar='PATH', dest='rdpPath', help='path to the RDP classifier',
@@ -335,10 +339,10 @@ class classifyCMD:
 
         if profile:
             import cProfile
-            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, rdpPath, args.gene, batchsize,  procs, verbose, debug)', globals(), locals())
+            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, rdpPath, args.gene, batchsize, args.minQ, args.minL, procs, verbose, debug)', globals(), locals())
             return 255
         else:
-            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, rdpPath, args.gene, batchsize, procs, verbose, debug)
+            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, rdpPath, args.gene, batchsize, args.minQ, args.minL, procs, verbose, debug)
 
 #####################################################################################
 ## Compute an abundance table from classified reads in fixrank format
