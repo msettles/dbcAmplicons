@@ -62,7 +62,8 @@ def sp_gzip_read(file):
     return p.stdout
 
 def sp_gzip_write(file):
-    p = Popen(shlex.split('gzip -f >') + [file],stdin=PIPE, shell=True)
+    filep = open(file,'wb')
+    p = Popen('gzip',stdin=PIPE, stdout=filep shell=True)
     return p.stdin
 
 
