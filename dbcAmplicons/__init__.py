@@ -20,6 +20,7 @@ from misc import make_sure_path_exists
 from misc import expand_path
 from misc import parse_flash
 from misc import sp_gzip_read
+from misc import sp_gzip_write
 
 from barcodes import barcodeTable
 from primers import primerTable
