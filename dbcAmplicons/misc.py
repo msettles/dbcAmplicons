@@ -1,7 +1,7 @@
 #### Misc functions
 
 import sys, os, errno
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, STDOUT
 import glob
 import gzip
 import shlex
@@ -58,12 +58,11 @@ Gzip utilities, run gzip in a subprocess
 
 ### Add try Popen except try gzip.open except
 def sp_gzip_read(file):
-    p = Popen(shlex.split('gzip --decompress --to-stdout') + [file], stdout = PIPE, stderr = PIPE)
-## gzip.open(read2, 'rb')
+    p = Popen(shlex.split('gzip --decompress --to-stdout') + [file], stdout = PIPE, stderr = STDOUT)
     return p.stdout
 
 def sp_gzip_write(file):
-    p = Popen('gzip > ' + file,stdin=PIPE,shell=True)
+    p = Popen(shlex.split('gzip -c >') + [file],stdin=PIPE, shell=True)
     return p.stdin
 
 
