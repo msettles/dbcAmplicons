@@ -21,6 +21,7 @@ is in 2 and 1 reads setss
 import os
 import glob
 import gzip
+import sys
 from dbcAmplicons import FourSequenceReadSet
 from dbcAmplicons import TwoSequenceReadSet
 from dbcAmplicons import OneSequenceReadSet
