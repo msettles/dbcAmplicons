@@ -17,6 +17,7 @@
 sequenceReads.py stores and processes individual DNA sequence reads.
 """
 
+import sys
 from dbcAmplicons import misc
 
 try: 
