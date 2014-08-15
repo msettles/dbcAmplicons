@@ -23,6 +23,7 @@ from dbcAmplicons import misc
 try: 
     from dbcAmplicons import editdist
     editdist_loaded = True
+    sys.stderr.write("Using C editdist\n")
 except ImportError:
     sys.stderr.write("Warning: editdist library not loaded, Insertion/Deletion detetion in barcodes and primers will not be performed\n")
     editdist_loaded = False 
@@ -30,6 +31,7 @@ except ImportError:
 try: 
     from dbcAmplicons import trim 
     trim_loaded = True
+    sys.stderr.write("Using C editdist\n")
 except ImportError:
     sys.stderr.write("Warning: trim library not loaded, trimming using python\n")
     trim_loaded = False 
