@@ -27,6 +27,7 @@ from dbcAmplicons import TwoSequenceReadSet
 from dbcAmplicons import OneSequenceReadSet
 from dbcAmplicons import misc
 
+
 class FourReadIlluminaRun:
     """
     Class to open/close and read a four read illumin sequencing run (double barcoded),
@@ -528,7 +529,7 @@ class IlluminaTwoReadOutput:
                 self.R2f = open(self.output_prefix + '_R2.fastq', 'w')
             else:
                 self.R1f = misc.sp_gzip_write(self.output_prefix + '_R1.fastq.gz')
-                self.R1f = misc.sp_gzip_write(self.output_prefix + '_R2.fastq.gz')
+                self.R2f = misc.sp_gzip_write(self.output_prefix + '_R2.fastq.gz')
                 #self.R1f = gzip.open(self.output_prefix + '_R1.fastq.gz', 'wb')
                 #self.R2f = gzip.open(self.output_prefix + '_R2.fastq.gz', 'wb')
         except:
