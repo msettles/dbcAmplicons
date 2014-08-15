@@ -136,9 +136,9 @@ class sampleTable:
         """
         try:
             sid = self.sampleTable[barcode]
-            if primer != None and ['*'] in sid.keys():
+            if primer != None and '*' in sid.keys():
                 return sid['*'][1]
-            elif primer == None and ['-'] in sid.keys():
+            elif primer == None and '-' in sid.keys():
                 return sid['-'][1]
             else:
                 return(sid[primer][0])
@@ -153,9 +153,9 @@ class sampleTable:
         """
         try:
             sid = self.sampleTable[barcode]
-            if primer != None and ['*'] in sid.keys():
+            if primer != None and '*' in sid.keys():
                 return sid['*'][1]
-            elif primer == None and ['-'] in sid.keys():
+            elif primer == None and '-' in sid.keys():
                 return sid['-'][1]
             else:
                 return(sid[primer][1])
