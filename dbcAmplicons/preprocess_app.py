@@ -21,7 +21,7 @@ from dbcAmplicons import primerTable
 from dbcAmplicons import sampleTable
 from dbcAmplicons import FourReadIlluminaRun
 from dbcAmplicons import IlluminaTwoReadOutput
-
+from dbcAmplicons import misc
 class preprocessApp:
     """
     Preprocess raw Illumina four read amplicon data
@@ -50,14 +50,16 @@ class preprocessApp:
                 if verbose:
                     sys.stdout.write("sample table length: %s, and %s projects.\n" % (sTable.getSampleNumber(),len(sTable.getProjectList())))
             ## output table
-            if evalSample:
-                bctable_name = os.path.join(output_prefix,'Identified_Barcodes.txt')
-            else:
-                bctable_name = output_prefix + '_Identified_Barcodes.txt'
             try:
+                if evalSample:
+                    bctable_name = os.path.join(output_prefix,'Identified_Barcodes.txt')
+                else:
+                    bctable_name = output_prefix + '_Identified_Barcodes.txt'
+                misc.make_sure_path_exists(os.path.dirname(bctable_name))
                 bcFile = open(bctable_name, 'w')
             except:
                 sys.stderr.write("ERROR: Can't open file %s for writing\n" % bctable_name)
+                raise
             ## setup output files
             barcode_counts = {}
             identified_count = 0
@@ -152,6 +154,7 @@ class preprocessApp:
             # write out project table
             if evalSample and self.verbose:
                 for key in self.run_out:
+                    sys.stdout.write("%s (%s%%)\treads found for project\t%s\n" % (self.run_out[key].count(), round((float(self.run_out[key].count())/float(identified_count))*100,1), key))
                     sys.stdout.write("%s reads processed in %s minutes, %s (%s%%) identified\n\n" % (self.run.count(),round((time.time()-lasttime)/(60),2),identified_count,round((float(identified_count)/float(self.run.count()))*100,1)))
             self.clean()
             return 0    

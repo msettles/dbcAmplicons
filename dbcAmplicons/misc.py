@@ -34,8 +34,6 @@ def parse_flash(fileinput_stream,verbose=False):
             skip = 1
             continue
         elif skip == 1 and not "Read combination statistics" in line:
-            # ADD CODE FOR PRINTING OUT PROGRESS
-            # [FLASH] Processed 2500 read pairs
             sys.stderr.write(re.sub(r'\[FLASH\] +','',line))
             continue
         elif skip == 1 and  "Read combination statistics" in line:

@@ -159,7 +159,7 @@ def splitreadsApp(subparsers):
                         action='store_true', dest='uncompressed', default=False)
     preprocess_parser.add_argument('-v', '--silent', help='verbose output [default: %(default)s]',
                         action='store_true', dest='verbose', default=False)
-    preprocess_parser.add_argument('-S', '--samples_file', help='file with primers',
+    preprocess_parser.add_argument('-S', '--samples_file', help='file with sample ids',
                         action='store', type=str, dest='samples_file',metavar='sampleFile', default=None, required=True)
     preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq two file set',
                         action='store',type=str, required=True, nargs='+')
