@@ -164,7 +164,8 @@ class preprocessApp:
             return 1
         except:
             self.clean()
-            sys.stderr.write("A fatal error was encountered. trying turning on debug\n")
+            if not debug:
+                sys.stderr.write("A fatal error was encountered. trying turning on debug\n")
             if debug:
                 sys.stderr.write("".join(traceback.format_exception(*sys.exc_info())))
             return 1

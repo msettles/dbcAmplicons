@@ -528,10 +528,10 @@ class IlluminaTwoReadOutput:
                 self.R1f = open(self.output_prefix + '_R1.fastq', 'w')
                 self.R2f = open(self.output_prefix + '_R2.fastq', 'w')
             else:
-                self.R1f = misc.sp_gzip_write(self.output_prefix + '_R1.fastq.gz')
-                self.R2f = misc.sp_gzip_write(self.output_prefix + '_R2.fastq.gz')
-                #self.R1f = gzip.open(self.output_prefix + '_R1.fastq.gz', 'wb')
-                #self.R2f = gzip.open(self.output_prefix + '_R2.fastq.gz', 'wb')
+                #self.R1f = misc.sp_gzip_write(self.output_prefix + '_R1.fastq.gz')
+                #self.R2f = misc.sp_gzip_write(self.output_prefix + '_R2.fastq.gz')
+                self.R1f = gzip.open(self.output_prefix + '_R1.fastq.gz', 'wb')
+                self.R2f = gzip.open(self.output_prefix + '_R2.fastq.gz', 'wb')
         except:
             sys.stderr.write('ERROR:[IlluminaTwoReadOutput] Cannot write reads to file with prefix: %s\n' % self.output_prefix)
             raise
