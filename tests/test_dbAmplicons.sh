@@ -107,6 +107,7 @@ dbcAmplicons classify -b 7500 -O join/classify -U join/match_twoprimer.extendedF
 #31438 reads processed in 3.43 minutes
 #Cleaning up.
 
+dbcAmplicons abundance -O join/abundance -F join/classify.fixrank --debug
 
 #convert2ReadTo4Read.py -O test -1 Amplicon_Raw_fastq/Hkates_R1.40k.fastq.gz -2 Amplicon_Raw_fastq/Hkates_R2.40k.fastq.gz
 convert2ReadTo4Read.py -O backtest/test -1 Amplicon_Raw_fastq/Hkates_R1.40k.fastq.gz 

@@ -1,10 +1,14 @@
 #### Misc functions
 
-import os, errno
-from subprocess import Popen, PIPE
+import sys, os, errno
+from subprocess import Popen, PIPE, STDOUT
 import glob
 import gzip
 import shlex
+
+import re
+
+
 
 '''
 Gzip utilities, run gzip in a subprocess
@@ -12,12 +16,12 @@ Gzip utilities, run gzip in a subprocess
 
 ### Add try Popen except try gzip.open except
 def sp_gzip_read(file):
-    p = Popen(shlex.split('gzip --decompress --to-stdout') + [file], stdout = PIPE, stderr = PIPE)
-## gzip.open(read2, 'rb')
+    p = Popen(shlex.split('gzip --decompress --to-stdout') + [file], stdout = PIPE, stderr = STDOUT, bufsize=-1)
     return p.stdout
 
 def sp_gzip_write(file):
-    p = Popen('gzip > ' + file,stdin=PIPE,shell=True)
+    filep = open(file,'wb')
+    p = Popen('gzip',stdin=PIPE, stdout=filep, shell=True, bufsize=-1)
     return p.stdin
 
 
@@ -30,6 +34,48 @@ def sp_gzip_write(file):
 #    line = ifile.readline()
 #    ofile.write(line)
 
+
+
+
+def parse_flash(fileinput_stream,verbose=False):
+    skip = 4
+    for i, line in enumerate(fileinput_stream):
+        if skip == 4:
+            ### parse version
+            sys.stdout.write('Using Flash_version:' + re.split(r' +',line.rstrip())[3] + '\n')
+            skip = 3
+            continue
+        if skip == 3 and not "Parameters" in line:
+            continue
+        elif skip == 3 and "Parameters" in line:
+            skip = 2
+            continue
+        elif skip == 2 and not "Starting FASTQ readers and writer threads" in line:
+            ### parse Parameters
+            data = re.split(': +', re.sub(r'\[FLASH\] +','',line.rstrip()))
+            if len(data) == 2:
+                name = re.sub(r' ','_',data[0])
+                if verbose:
+                    sys.stdout.write(name + ':' + data[1] + '\n')
+            continue
+        elif skip == 2 and "Starting FASTQ readers and writer threads" in line:
+            skip = 1
+            continue
+        elif skip == 1 and not "Read combination statistics" in line:
+            sys.stderr.write(re.sub(r'\[FLASH\] +','',line))
+            continue
+        elif skip == 1 and  "Read combination statistics" in line:
+            skip =  0
+            continue
+        elif skip == 0 and not "Writing histogram files" in line:
+            ### parse read combination statistics
+            data = re.split(': +', re.sub(r'\[FLASH\] +','',line.rstrip()))
+            if len(data) == 2:
+                name = re.sub(r' ','_',data[0])
+                sys.stdout.write(name + ':' + data[1] + '\n')
+            continue
+        elif skip == 0 and "Writing histogram files" in line:
+            return(0)
 
 def infer_read_file_name(baseread, seakread):
     ''' Find other read filenames (ex. R1, R2, R3, R4) in the directory based on Read 1 filename '''
@@ -106,7 +152,6 @@ iupacdict = {
     'X':['A','C','G','T'],
     'N':['A','C','G','T']}
 
-
 def expand_iupac(seq):
     res = ['']
     for m in seq:
@@ -116,8 +161,3 @@ def expand_iupac(seq):
                 newres.append(i + j)
         res = newres
     return res
-
-#test = 'NNGATARNG'
-#expand_iupac(test)
-#test2 = 'AGGATAATG'
-#expand_iupac(test2)

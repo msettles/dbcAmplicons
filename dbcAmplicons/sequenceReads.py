@@ -17,20 +17,21 @@
 sequenceReads.py stores and processes individual DNA sequence reads.
 """
 
+import sys
 from dbcAmplicons import misc
 
 try: 
     from dbcAmplicons import editdist
     editdist_loaded = True
 except ImportError:
-    print("Warning: editdist library not loaded, Insertion/Deletion detetion in barcodes and primers will not be performed")
+    sys.stderr.write("Warning: editdist library not loaded, Insertion/Deletion detetion in barcodes and primers will not be performed\n")
     editdist_loaded = False 
 
 try: 
     from dbcAmplicons import trim 
     trim_loaded = True
 except ImportError:
-    print("Warning: trim library not loaded, trimming using python")
+    sys.stderr.write("Warning: trim library not loaded, trimming using python\n")
     trim_loaded = False 
 
 #------------------- calculate distance between two barcode sequences ------------------------------
@@ -43,9 +44,9 @@ def barcodeDist(b_1, b_2):
     elif len(b_1) == len(b_2) and len(b_1) > 0:
         return sum(map(lambda x: x[0] != x[1], zip(b_1, b_2) ))
     else:
-        print "ERROR:[barcodeDist] lengths of barcodes and index read do not match!"
-        print "Target", b_1
-        print "Index read:", b_2
+        sys.stderr.write("ERROR:[barcodeDist] lengths of barcodes and index read do not match!\n")
+        sys.stderr.write("Target: %s" % b_1)
+        sys.stderr.write("Index read: %s" % b_2)
         raise Exception
 
 #------------------- calculate distance between primer sequence and first part of read ------------------------------
@@ -246,10 +247,10 @@ class TwoSequenceReadSet:
             self.qual_2 = qual_2
             self.goodRead = False
         except IndexError:
-            print 'ERROR:[TwoSequenceReadSet] Read names are not formatted in the expected manner'
+            sys.stderr.write('ERROR:[TwoSequenceReadSet] Read names are not formatted in the expected manner\n')
             raise
         except:
-            print 'ERROR:[TwoSequenceReadSet] Unknown error occured initiating read'
+            sys.stderr.write('ERROR:[TwoSequenceReadSet] Unknown error occured initiating read\n')
             raise
     def assignRead(self, sTable):
         """
@@ -293,10 +294,10 @@ class TwoSequenceReadSet:
             r4 = '\n'.join([self.name + ' 4:N:0:', self.read_2, '+', self.qual_2])
             return [r1,r2,r3,r4]
         except IndexError:
-            print 'ERROR:[TwoSequenceReadSet] unable to exract barocode sequence from the read names'
+            sys.stderr.write('ERROR:[TwoSequenceReadSet] unable to exract barocode sequence from the read names\n')
             raise
         except:
-            print 'ERROR:[TwoSequenceReadSet] Unknown error occured generating four read set'
+            sys.stderr.write('ERROR:[TwoSequenceReadSet] Unknown error occured generating four read set\n')
             raise
     def getFasta(self):
         """ 
@@ -345,10 +346,10 @@ class OneSequenceReadSet:
             if (len(split_name) == 4):
                 self.primer = split_name[1].split(":")[4]
         except IndexError:
-            print 'ERROR:[OneSequenceReadSet] Read names are not formatted in the expected manner'
+            sys.stderr.write('ERROR:[OneSequenceReadSet] Read names are not formatted in the expected manner\n')
             raise
         except:
-            print 'ERROR:[OneSequenceReadSet] Unknown error occured initiating read'
+            sys.stderr.write('ERROR:[OneSequenceReadSet] Unknown error occured initiating read\n')
             raise            
         self.read_1 = read_1
         self.qual_1 = qual_1

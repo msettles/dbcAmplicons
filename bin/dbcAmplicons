@@ -23,7 +23,7 @@
 import sys
 import os
 import argparse 
-from subprocess import call
+from subprocess import Popen, PIPE, STDOUT
 from multiprocessing import cpu_count
 
 profile = False
@@ -46,7 +46,9 @@ profile = False
 # added support for gzip in a separate process and ability to infer read file names
 # version 0.5.6
 # added support for Fluidgm down stream processing of samples, in scripts/R
-version_num = "v0.5.6-8102014"
+# version 0.5.7
+# increased speed in gzip read, and bug fixes
+version_num = "v0.5.7-8212014"
 
 
 #####################################################################################
@@ -76,7 +78,7 @@ def preprocessApp(subparsers):
     preprocess_parser.add_argument('-l', '--minL', help='if minQ is not None, only keep reads that are at least minL length [default: %(default)s]',
                         type=int, dest='minL', default=0),
     preprocess_parser.add_argument('-b', '--batchsize', help='batch size to process reads in [default: %(default)s]',
-                        type=int, dest='batchsize', default=10000)    
+                        type=int, dest='batchsize', default=100000)    
     preprocess_parser.add_argument('-O', '--output_prefix', help='output file basename [default: fastq_prefix]',
                         action='store', type=str, dest='output_base', metavar='PREFIX', default=None)
     preprocess_parser.add_argument('-U', '--output_unidentified', help='output unidentified reads [default: %(default)s]',
@@ -110,13 +112,13 @@ class preprocessCMD:
         if args.samples_file == None:
             sFile = None
             if verbose:
-                print "No sample file identified"
+                sys.stderr.write("No sample file identified\n")
         else:
             sFile = args.samples_file
         if args.primer_file == None:
             prFile = None
             if verbose:
-                print "No primer file identified"
+                sys.stderr.write("No primer file identified\n")
         else:
             prFile = args.primer_file
         # ----------------------- options output prefix -----------------------
@@ -150,7 +152,7 @@ def splitreadsApp(subparsers):
     #
     preprocess_parser = subparsers.add_parser('splitreads', help = 'Split reads from a preprocessed four read illumina run by project id')
     preprocess_parser.add_argument('-b', '--batchsize', help='batch size to process reads in [default: %(default)s]',
-                        type=int, dest='batchsize', default=10000)    
+                        type=int, dest='batchsize', default=100000)    
     preprocess_parser.add_argument('-O', '--output_path', help='path for output files [default: %(default)s]',
                         action='store', type=str, dest='output_base', metavar='PREFIX', default=".")
     preprocess_parser.add_argument('-U', '--output_unidentified', help='output unidentified reads [default: %(default)s]',
@@ -159,7 +161,7 @@ def splitreadsApp(subparsers):
                         action='store_true', dest='uncompressed', default=False)
     preprocess_parser.add_argument('-v', '--silent', help='verbose output [default: %(default)s]',
                         action='store_true', dest='verbose', default=False)
-    preprocess_parser.add_argument('-S', '--samples_file', help='file with primers',
+    preprocess_parser.add_argument('-S', '--samples_file', help='file with sample ids',
                         action='store', type=str, dest='samples_file',metavar='sampleFile', default=None, required=True)
     preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq two file set',
                         action='store',type=str, required=True, nargs='+')
@@ -197,7 +199,11 @@ class splitreadsCMD:
         else:
             return app.start(args.fastq_file1, args.fastq_file2, output_prefix, sFile, batchsize, uncompressed, output_unidentified, verbose, debug)
 
-
+def joinFun(args,verbose):
+    from dbcAmplicons import parse_flash
+    p = Popen(args, stdout = PIPE, stderr = STDOUT, close_fds = False )
+    pf = parse_flash(p.stdout,verbose)
+    
 #####################################################################################
 ## join reads using flash, path through application
 def joinApp(subparsers):
@@ -224,6 +230,8 @@ def joinApp(subparsers):
                         type=int, dest='threads',default=1)
     preprocess_parser.add_argument('-p', '--flash_path', help='path to the application flash [default: %(default)s]',
                         action='store', type=str, dest='flash_path',metavar='path', default='flash', required=False)
+    preprocess_parser.add_argument('-v', '--verbose', help='verbose output [default: %(default)s]',
+                        action='store_true', dest='verbose', default=False)
     preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq (or fastq.gz) two file set',
                         action='store',type=str, required=True)
     preprocess_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq (or fastq.gz)  two file set',
@@ -248,7 +256,6 @@ class joinCMD:
             compress='-z'
 
         fastq_file1 = os.path.realpath(args.fastq_file1)
-        print(fastq_file1)
         if args.fastq_file2 is None:
             fastq_file2 = misc.infer_read_file_name(fastq_file1,"2")
         else:
@@ -259,10 +266,10 @@ class joinCMD:
         call_string = [args.flash_path,"-t",str(args.threads),"-x",str(args.max_mixmatch_density),"-o",output_prefix,compress,fastq_file1,fastq_file2]
         if profile:
             import cProfile
-            cProfile.runctx('call(call_string)', globals(), locals())
+            cProfile.runctx('joinFun(call_string,args.verbose)', globals(), locals())
             return 255
         else:
-            return call(call_string)
+            return joinFun(call_string,args.verbose)
 
 
 #####################################################################################
@@ -276,7 +283,11 @@ def classifyApp(subparsers):
     #
     preprocess_parser = subparsers.add_parser('classify', help = 'classify reads using RDP generating a fixrank formated file')
     preprocess_parser.add_argument('-b', '--batchsize', help='batch size to process reads in [default: %(default)s]',
-                        type=int, dest='batchsize', default=10000)    
+                        type=int, dest='batchsize', default=100000)
+    preprocess_parser.add_argument('-q', '--minQ', help="trim 3' end of sequences to minQ (paired-end reads only) [default: %(default)s]",
+                        type=int, dest='minQ', default=None),
+    preprocess_parser.add_argument('-l', '--minL', help='if minQ is not None, only keep reads that are at least minL length (paired-end reads only) [default: %(default)s]',
+                        type=int, dest='minL', default=0),
     preprocess_parser.add_argument('-p', '--processors', help='number of processors to use, [default: %(default)s]',
                         type=int, dest='procs', default=1)
     preprocess_parser.add_argument('--rdpPath',metavar='PATH', dest='rdpPath', help='path to the RDP classifier',
@@ -318,11 +329,11 @@ class classifyCMD:
         rdpPath = args.rdpPath
 
         if (procs > cpu_count()):
-            print("The number of processors specified [%s] is greater than the number available [%s], exiting application" % (str(procs),str(cpu_count())))
+            sys.stderr.write("The number of processors specified [%s] is greater than the number available [%s], exiting application\n" % (str(procs),str(cpu_count())))
             sys.exit()
 
         if (args.gene != '16srrna' and args.gene != 'fungallsu'):
-            print("parameter -g (--gene) must be one of 16srrna or fungallsu")
+            sys.stderr.write("parameter -g (--gene) must be one of 16srrna or fungallsu\n")
             sys.exit()
 
         from dbcAmplicons import classifyApp
@@ -330,10 +341,10 @@ class classifyCMD:
 
         if profile:
             import cProfile
-            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, rdpPath, args.gene, batchsize,  procs, verbose, debug)', globals(), locals())
+            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, rdpPath, args.gene, batchsize, args.minQ, args.minL, procs, verbose, debug)', globals(), locals())
             return 255
         else:
-            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, rdpPath, args.gene, batchsize, procs, verbose, debug)
+            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, rdpPath, args.gene, batchsize, args.minQ, args.minL, procs, verbose, debug)
 
 #####################################################################################
 ## Compute an abundance table from classified reads in fixrank format

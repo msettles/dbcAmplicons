@@ -30,25 +30,25 @@ def rdpCall(query, output, gene, rdpPath, verbose):
     rdpPath should point to the classifier.jar as a part of RDPTools
     '''
     if gene != "16srrna" and gene != "fungallsu":
-        print( 'ERROR:[rdpCall] incorrect gene string provided to rdp')
+        sys.stderr.write('ERROR:[rdpCall] incorrect gene string provided to rdp\n')
         raise
     #rdp_call = "java -Xmx1g -jar %s classify -q %s -o %s -f fixrank -g %s" % (rdpPath, query, output, gene)
     rdp_call = ['java', '-Xmx1024M', '-Xms128M', '-XX:+UseParallelGC', '-XX:ParallelGCThreads=2', '-jar', rdpPath, 'classify', '-q', query, '-o', output, '-f', 'fixrank', '-g', gene]
     starttime = time.time()
     if verbose:
-        print "Starting rdp for file %s" % query
+        sys.stderr.write("Starting rdp for file %s\n" % query)
     res = call(rdp_call)
     if res == 0:
         try:
             os.remove(query)
         except OSError, e:  ## if failed, report it back to the user ##
-            print ("ERROR:[rdpCall] %s - %s." % (e.filename,e.strerror))
+            sys.stderr.write("ERROR:[rdpCall] %s - %s.\n" % (e.filename,e.strerror))
             raise
         if verbose:
-            print "Finished processing %s in %s minutes" % (query, round((time.time() - starttime)/60,2))
+            sys.stderr.write("Finished processing %s in %s minutes\n" % (query, round((time.time() - starttime)/60,2)))
         return res
     else:
-        print("ERROR:[rdpCall] RDP did not finish properly, returned: %s" % res)
+        sys.stderr.write("ERROR:[rdpCall] RDP did not finish properly, returned: %s\n" % res)
         raise
 
 def check_status(results):
@@ -72,14 +72,14 @@ class classifyApp:
     """ 
     def __init__(self):
     	self.verbose=False
-    def start(self, fastq_file1, fastq_file2, fastq_fileU, output_prefix, rdpPath='./classifier.jar', gene='16srrna', batchsize=10000, procs = 1, verbose=True, debug=False):
+    def start(self, fastq_file1, fastq_file2, fastq_fileU, output_prefix, rdpPath='./classifier.jar', gene='16srrna', batchsize=10000, minQ=None, minL = 0, procs = 1, verbose=True, debug=False):
     	"""
             Start classifying double barcoded Illumina sequencing run
         """
         self.verbose = verbose
         try:
             if (gene != '16srrna' and gene != 'fungallsu'):
-                print("parameter -g (--gene) must be one of 16srrna or fungallsu")
+                sys.stderr.write("ERROR:[classify] parameter -g (--gene) must be one of 16srrna or fungallsu\n")
                 raise Exception
             ## establish and open the Illumin run
             if fastq_file1 != None and fastq_file2 != None:
@@ -93,7 +93,7 @@ class classifyApp:
             else:
                 self.runSingle = None
             if self.runPairs == None and self.runSingle == None:
-                print("ERROR:[classify] input reads not specified, or incorrect pairs")
+                sys.stderr.write("ERROR:[classify] input reads not specified, or incorrect pairs\n")
                 raise Exception
             lasttime = time.time()
             batch = 0
@@ -124,6 +124,9 @@ class classifyApp:
                     run_out = IlluminaFastaOutput(output_prefix + "." + str(batch))
                     ## process individual reads
                     for read in reads:
+#                        if minQ != None: # TODO: add trim read to TwoSequenceReadSet
+#                            read.trimRead(minQ, minL)
+#                        if read.goodRead == True:
                         run_out.addRead(read.getJoinedFasta())
                     ### Write out reads
                     run_out.writeReads()
@@ -136,30 +139,30 @@ class classifyApp:
                 if np == 0:
                     allfinished = True
             if self.verbose:
-                print "Combining temporary files"
+                sys.stderr.write("Combining temporary files\n")
             with open(output_prefix + ".fixrank", "wb") as outfile:
                 for f in results.keys():
                     with open(f, "rb") as infile:
                         outfile.write(infile.read())
                     os.remove(f)
             if self.verbose:
-                print "%s reads processed in %s minutes" % (batch,round((time.time()-lasttime)/(60),2))
+                sys.stdout.write("%s reads processed in %s minutes\n" % (batch,round((time.time()-lasttime)/(60),2)))
             self.clean()
             return 0    
     	except (KeyboardInterrupt, SystemExit):
             self.clean()
-            print("%s unexpectedly terminated" % (__name__))
+            sys.stderr.write("%s unexpectedly terminated\n" % (__name__))
             return 1
         except:
             self.clean()
-            print("A fatal error was encountered.")
+            sys.stderr.write("A fatal error was encountered.\n")
             if debug:
-                print "".join(traceback.format_exception(*sys.exc_info()))
+                sys.stderr.write("".join(traceback.format_exception(*sys.exc_info())))
             return 1
 
     def clean(self):
         if self.verbose:
-            print("Cleaning up.")
+            sys.stderr.write("Cleaning up.\n")
         try:
             self.runSingle.close()
             self.runPairs.close()
