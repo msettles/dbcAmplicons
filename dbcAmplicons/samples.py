@@ -137,9 +137,9 @@ class sampleTable:
         try:
             sid = self.sampleTable[barcode]
             if primer != None and '*' in sid.keys():
-                return sid['*'][1]
+                return sid['*'][0]
             elif primer == None and '-' in sid.keys():
-                return sid['-'][1]
+                return sid['-'][0]
             else:
                 return(sid[primer][0])
         except KeyError:
