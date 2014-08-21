@@ -9,6 +9,34 @@ import shlex
 import re
 
 
+
+'''
+Gzip utilities, run gzip in a subprocess
+'''
+
+### Add try Popen except try gzip.open except
+def sp_gzip_read(file):
+    p = Popen(shlex.split('gzip --decompress --to-stdout') + [file], stdout = PIPE, stderr = STDOUT, bufsize=-1)
+    return p.stdout
+
+def sp_gzip_write(file):
+    filep = open(file,'wb')
+    p = Popen('gzip',stdin=PIPE, stdout=filep, shell=True, bufsize=-1)
+    return p.stdin
+
+
+### Test Gzip file threaded gzip
+#ifile = sp_gzip_read('Hkates_R1.fastq.gz')
+
+#ofile = sp_gzip_write("Hkates_R1.2.fastq.gz")
+
+#while 1:
+#    line = ifile.readline()
+#    ofile.write(line)
+
+
+
+
 def parse_flash(fileinput_stream,verbose=False):
     skip = 4
     for i, line in enumerate(fileinput_stream):
@@ -48,32 +76,6 @@ def parse_flash(fileinput_stream,verbose=False):
             continue
         elif skip == 0 and "Writing histogram files" in line:
             return(0)
-
-
-'''
-Gzip utilities, run gzip in a subprocess
-'''
-
-### Add try Popen except try gzip.open except
-def sp_gzip_read(file):
-    p = Popen(shlex.split('gzip --decompress --to-stdout') + [file], stdout = PIPE, stderr = STDOUT)
-    return p.stdout
-
-def sp_gzip_write(file):
-    filep = open(file,'wb')
-    p = Popen('gzip',stdin=PIPE, stdout=filep, shell=True)
-    return p.stdin
-
-
-### Test Gzip file threaded gzip
-#ifile = sp_gzip_read('Hkates_R1.fastq.gz')
-
-#ofile = sp_gzip_write("Hkates_R1.2.fastq.gz")
-
-#while 1:
-#    line = ifile.readline()
-#    ofile.write(line)
-
 
 def infer_read_file_name(baseread, seakread):
     ''' Find other read filenames (ex. R1, R2, R3, R4) in the directory based on Read 1 filename '''

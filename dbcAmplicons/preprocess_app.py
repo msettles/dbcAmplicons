@@ -155,7 +155,6 @@ class preprocessApp:
             if evalSample and self.verbose:
                 for key in self.run_out:
                     sys.stdout.write("%s (%s%%)\treads found for project\t%s\n" % (self.run_out[key].count(), round((float(self.run_out[key].count())/float(identified_count))*100,1), key))
-                    sys.stdout.write("%s reads processed in %s minutes, %s (%s%%) identified\n\n" % (self.run.count(),round((time.time()-lasttime)/(60),2),identified_count,round((float(identified_count)/float(self.run.count()))*100,1)))
             self.clean()
             return 0    
         except (KeyboardInterrupt, SystemExit):
