@@ -46,7 +46,9 @@ profile = False
 # added support for gzip in a separate process and ability to infer read file names
 # version 0.5.6
 # added support for Fluidgm down stream processing of samples, in scripts/R
-version_num = "v0.5.6-8102014"
+# version 0.5.7
+# increased speed in gzip read, and bug fixes
+version_num = "v0.5.7-8212014"
 
 
 #####################################################################################
