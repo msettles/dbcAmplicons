@@ -158,7 +158,7 @@ class FourSequenceReadSet:
         """
         self.project = sTable.getProjectID(self.barcode[0],self.primer[0])
         self.sample = sTable.getSampleID(self.barcode[0],self.primer[0])
-        self.goodRead = self.goodRead and self.project != None:
+        self.goodRead = self.goodRead and self.project != None
         return 0
     def trimRead(self, minQ, minL):
         """
@@ -256,9 +256,7 @@ class TwoSequenceReadSet:
         """
         self.project = sTable.getProjectID(self.barcode,self.primer)
         self.sample = sTable.getSampleID(self.barcode,self.primer)
-        self.goodRead = False
-        if self.project != None:
-            self.goodRead = True
+        self.goodRead = self.goodRead and self.project != None
         return 0
     def getFastq(self):
         """ 
