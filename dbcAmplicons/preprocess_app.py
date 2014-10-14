@@ -28,7 +28,7 @@ class preprocessApp:
     """ 
     def __init__(self):
         self.verbose = False
-    def start(self, fastq_file1, fastq_file2, fastq_file3, fastq_file4, output_prefix, barcodesFile, primerFile, samplesFile, barcodeMaxDiff=1, primerMaxDiff=4, primerEndMatch=4, batchsize=10000, uncompressed=False, output_unidentified=False, minQ=None, minL = 0, verbose=True, debug=False):
+    def start(self, fastq_file1, fastq_file2, fastq_file3, fastq_file4, output_prefix, barcodesFile, primerFile, samplesFile, barcodeMaxDiff=1, primerMaxDiff=4, primerEndMatch=4, batchsize=10000, uncompressed=False, output_unidentified=False, minQ=None, minL = 0, verbose=True, debug=False, test=False):
         """
         Start preprocessing double barcoded Illumina sequencing run, perform 
         """
@@ -129,6 +129,8 @@ class preprocessApp:
                     self.run_out[key].writeReads()
                 if self.verbose:
                     sys.stderr.write("processed %s total reads, %s Reads/second, %s identified reads, %s unidentified reads (%s%%)\n" % (self.run.count(), round(self.run.count()/(time.time() - lasttime),0), identified_count,unidentified_count,round((float(identified_count)/float(self.run.count()))*100)))
+                if test: ### exit after the first batch to test the inputs
+                    break
             if self.verbose:
                     sys.stdout.write("%s reads processed in %s minutes, %s (%s%%) identified\n\n" % (self.run.count(),round((time.time()-lasttime)/(60),2),identified_count,round((float(identified_count)/float(self.run.count()))*100,1)))
             # Write out barcode and primer table

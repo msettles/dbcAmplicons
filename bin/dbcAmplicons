@@ -95,6 +95,8 @@ def preprocessApp(subparsers):
                         action='store',type=str, required=False, nargs='+')
     preprocess_parser.add_argument('-4', metavar="read4", dest='fastq_file4', help='read4 of an amplicon fastq four file set',
                         action='store',type=str, required=False, nargs='+')
+    preprocess_parser.add_argument('--test', help='exit after the first batch in order to test the inputs',
+                        action='store_true', dest="test", default = False)
     preprocess_parser.add_argument('--debug', help='show traceback on error',
                         action='store_true', dest="debug", default = False)
     return preprocess_parser 
@@ -136,10 +138,10 @@ class preprocessCMD:
 
         if profile:
             import cProfile
-            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug)', globals(), locals())
+            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.test)', globals(), locals())
             return 255
         else:
-            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug)
+            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.test)
 
 #####################################################################################
 ## Split Preprocessed data by project
