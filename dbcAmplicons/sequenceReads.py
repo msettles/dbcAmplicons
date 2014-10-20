@@ -102,7 +102,7 @@ class FourSequenceReadSet:
         """
         ### Barcode One Matching ###
         bc1 = None
-        bc1Mismatch = len(self.bc_1)
+        bc1Mismatch = max_diff+1
         for key in bcTable.getP7():
             bcdist = barcodeDist(key, self.bc_1)
             if bcdist < bc1Mismatch:
@@ -110,7 +110,7 @@ class FourSequenceReadSet:
                 bc1Mismatch = bcdist
         ### Barcode Two Matching ###
         bc2 = None
-        bc2Mismatch = len(self.bc_2)
+        bc2Mismatch = max_diff+1
         for key in bcTable.getP5():
             bcdist = barcodeDist(key, self.bc_2)
             if bcdist <= bc2Mismatch:
@@ -118,7 +118,7 @@ class FourSequenceReadSet:
                 bc2Mismatch = bcdist
         ### Barcode Pair Matching ###
         self.barcode = [bcTable.getMatch(bc1,bc2),bc1Mismatch,bc2Mismatch]
-        self.goodRead = self.barcode[0] != None and bc1Mismatch <= max_diff and bc2Mismatch <= max_diff
+        self.goodRead = self.barcode[0] != None
         self.sample = self.barcode[0]
         return 0
     def assignPrimer(self, prTable, max_diff, endmatch):
@@ -158,7 +158,7 @@ class FourSequenceReadSet:
         """
         self.project = sTable.getProjectID(self.barcode[0],self.primer[0])
         self.sample = sTable.getSampleID(self.barcode[0],self.primer[0])
-        self.goodRead = self.goodRead and self.project != None
+        self.goodRead = self.project != None
         return 0
     def trimRead(self, minQ, minL):
         """

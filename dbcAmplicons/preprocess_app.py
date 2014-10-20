@@ -128,7 +128,7 @@ class preprocessApp:
                 for key in self.run_out:
                     self.run_out[key].writeReads()
                 if self.verbose:
-                    sys.stderr.write("processed %s total reads, %s Reads/second, %s identified reads, %s unidentified reads (%s%%)\n" % (self.run.count(), round(self.run.count()/(time.time() - lasttime),0), identified_count,unidentified_count,round((float(identified_count)/float(self.run.count()))*100)))
+                    sys.stderr.write("processed %s total reads, %s Reads/second, %s identified reads, %s unidentified reads (%s%%)\n" % (self.run.count(), round(self.run.count()/(time.time() - lasttime),0), identified_count,unidentified_count,round((float(identified_count)/float(self.run.count()))*100,1)))
                 if test: ### exit after the first batch to test the inputs
                     break
             if self.verbose:
