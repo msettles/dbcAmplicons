@@ -143,7 +143,7 @@ class preprocessCMD:
             cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)', globals(), locals())
             return 255
         else:
-            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, arg.kprimer, args.test)
+            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)
 
 #####################################################################################
 ## Split Preprocessed data by project
