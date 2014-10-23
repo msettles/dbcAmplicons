@@ -96,9 +96,9 @@ class preprocessApp:
                     if read.goodRead == True:
                         identified_count += 1
                         if evalSample:
-                            self.run_out[read.getProject()].addRead(read.getFastq())
+                            self.run_out[read.getProject()].addRead(read.getFastq(kprimer))
                         else:
-                            self.run_out["Identified"].addRead(read.getFastq())
+                            self.run_out["Identified"].addRead(read.getFastq(kprimer))
                         # Record data for final barcode table
                         if read.getBarcode() in barcode_counts:
                             if evalPrimer and read.getPrimer() == None:
