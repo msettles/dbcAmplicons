@@ -28,7 +28,7 @@ class preprocessApp:
     """ 
     def __init__(self):
         self.verbose = False
-    def start(self, fastq_file1, fastq_file2, fastq_file3, fastq_file4, output_prefix, barcodesFile, primerFile, samplesFile, barcodeMaxDiff=1, primerMaxDiff=4, primerEndMatch=4, batchsize=10000, uncompressed=False, output_unidentified=False, minQ=None, minL = 0, verbose=True, debug=False, test=False):
+    def start(self, fastq_file1, fastq_file2, fastq_file3, fastq_file4, output_prefix, barcodesFile, primerFile, samplesFile, barcodeMaxDiff=1, primerMaxDiff=4, primerEndMatch=4, batchsize=10000, uncompressed=False, output_unidentified=False, minQ=None, minL = 0, verbose=True, debug=False, kprimer=False, test=False):
         """
         Start preprocessing double barcoded Illumina sequencing run, perform 
         """
@@ -123,7 +123,7 @@ class preprocessApp:
                     else:
                         unidentified_count += 1
                         if output_unidentified:
-                            self.run_out["Unidentified"].addRead(read.getFastq())
+                            self.run_out["Unidentified"].addRead(read.getFastq(kprimer))
                 ### Write out reads
                 for key in self.run_out:
                     self.run_out[key].writeReads()

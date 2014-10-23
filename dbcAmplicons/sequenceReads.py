@@ -190,11 +190,11 @@ class FourSequenceReadSet:
         Return the reads project ID
         """
         return self.project
-    def getFastq(self):
+    def getFastq(self,kprimer):
         """ 
         Create four line string ('\n' separator included) for the read pair, returning a length 2 vector (one for each read)
         """
-        if self.primer[0] != None:
+        if self.primer[0] != None and kprimer == False:
             read1_name = "%s 1:N:0:%s:%s %s|%s|%s|%s %s|%s|%s" % (self.name, self.sample, self.primer[0], self.bc_1, self.barcode[1], self.bc_2 , self.barcode[2], self.primer[1], self.primer[2], self.primer[3])
             read2_name = "%s 2:N:0:%s:%s %s|%s|%s|%s %s|%s|%s" % (self.name, self.sample, self.primer[0], self.bc_1, self.barcode[1], self.bc_2 , self.barcode[2], self.primer[4], self.primer[5], self.primer[6])
             r1 = '\n'.join([read1_name, self.read_1[self.primer[3]:self.trim_left],'+',self.qual_1[self.primer[3]:self.trim_left]])
