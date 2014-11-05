@@ -113,7 +113,7 @@ class FourSequenceReadSet:
         bc2Mismatch = max_diff+1
         for key in bcTable.getP5():
             bcdist = barcodeDist(key, self.bc_2)
-            if bcdist <= bc2Mismatch:
+            if bcdist < bc2Mismatch:
                 bc2 = key
                 bc2Mismatch = bcdist
         ### Barcode Pair Matching ###
@@ -143,7 +143,7 @@ class FourSequenceReadSet:
         pr2Position = 0
         for key in prTable.getP7sequences():
             prdist = primerDist(key, self.read_2,max_diff,endmatch)
-            if prdist[0] <= pr2Mismatch:
+            if prdist[0] < pr2Mismatch:
                 pr2 = key
                 pr2Mismatch = prdist[0]
                 pr2Position = prdist[1]

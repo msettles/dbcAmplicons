@@ -123,7 +123,7 @@ class preprocessApp:
                     else:
                         unidentified_count += 1
                         if output_unidentified:
-                            self.run_out["Unidentified"].addRead(read.getFastq(kprimer))
+                            self.run_out["Unidentified"].addRead(read.getFastq(True))
                 ### Write out reads
                 for key in self.run_out:
                     self.run_out[key].writeReads()

@@ -48,7 +48,9 @@ profile = False
 # added support for Fluidgm down stream processing of samples, in scripts/R
 # version 0.5.7
 # increased speed in gzip read, and bug fixes
-version_num = "v0.5.7-8212014"
+# version 0.5.8
+# fixed bug in barcodes mismatches, added two new flags to preprocess keep primer and test
+version_num = "v0.5.8-1152014"
 
 
 #####################################################################################
