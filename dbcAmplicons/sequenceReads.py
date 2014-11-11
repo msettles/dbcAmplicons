@@ -305,7 +305,7 @@ class TwoSequenceReadSet:
             read2_name = "%s 2:N:0:%s:%s" % (name, self.sample, self.primer)
         else:
             read1_name = "%s 1:N:0:%s" % (name, self.sample)
-            read2_name = "%s 1:N:0:%s" % (name, self.sample)
+            read2_name = "%s 2:N:0:%s" % (name, self.sample)
         r1 = '\n'.join([read1_name, self.read_1])
         r2 = '\n'.join([read2_name, self.read_2])
         return [r1,r2]
@@ -317,7 +317,7 @@ class TwoSequenceReadSet:
         if self.primer != None:
             read1_name = "%s|%s:%s" % (name, self.sample, self.primer)
         else:
-            read1_name = "%s:%s" % (name, self.sample)
+            read1_name = "%s|%s" % (name, self.sample)
         r1 = '\n'.join([read1_name, self.read_1 + misc.reverseComplement(self.read_2)])
         return [r1]
     
