@@ -115,6 +115,7 @@ def make_sure_path_exists(path):
         except OSError as exception:
             if exception.errno != errno.EEXIST:
                 raise
+    return path
 
 def expand_path(list):
     newlist = []

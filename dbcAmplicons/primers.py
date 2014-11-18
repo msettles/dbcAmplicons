@@ -59,7 +59,7 @@ class primerTable:
                 continue
             row = row.rstrip()
             try:
-                READ, PAIR, ID, SEQ = row.split('\t')
+                READ, PAIR, ID, SEQ = row.split('\t')[0:4]
             except ValueError as e:
                 sys.stderr.write("ERROR:[Primers] Error reading line %s of primer file: %s\n" % (str(line), str(e)))
                 raise
@@ -68,7 +68,7 @@ class primerTable:
                 raise
             self.primers.extend([PAIR])
             pseqs = misc.expand_iupac(SEQ.upper())
-            if READ in ["P5","R1","READ1"]:
+            if READ in ["P5","R1","READ1","F","FORWARD"]:
                 for pseq in pseqs:
                     if pseq in self.P5sequences:
                         self.P5id[pseq].extend([ID])
@@ -77,7 +77,7 @@ class primerTable:
                         self.P5sequences.extend([pseq])
                         self.P5id[pseq] = [ID]
                         self.P5pair[pseq] = [PAIR]
-            if READ in ["P7","R2","READ2"]:
+            if READ in ["P7","R2","READ2","R","REVERSE"]:
                 for pseq in pseqs:
                     if pseq in self.P7sequences:
                         self.P7id[pseq].extend([ID])

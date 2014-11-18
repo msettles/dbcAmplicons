@@ -14,14 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# ---------------- reverse complement a sequence s ----------------
+# ---------------- reverse complement a sequences ----------------
 
 ## barcode lookup file should look like
-## #Barcode_name   P5_barcode  P7_barcode
-## Alpha1  TAGATCGC    TAAGGCGA
-## Alpha2  CTCTCTAT    TAAGGCGA
-## Alpha3  TATCCTCT    TAAGGCGA
-## Alpha4  AGAGTAGA    TAAGGCGA
+## #Barcode_name P7_barcode  P5_barcode  
+## Alpha1  TAAGGCGA TAGATCGC
+## Alpha2  TAAGGCGA CTCTCTAT
+## Alpha3  TAAGGCGA TATCCTCT
+## Alpha4  TAAGGCGA AGAGTAGA
 ##
 
 """
@@ -56,7 +56,7 @@ class barcodeTable:
                 continue
             row = row.rstrip()
             try:
-                ID, P5BC, P7BC = row.split('\t')
+                ID, P7BC, P5BC = row.split('\t')[0:3]
                 # P7 barcode shows up as the reverse complement in the sequencing run
                 P7BC = misc.reverseComplement(P7BC)
             except ValueError as e:
