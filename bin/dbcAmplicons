@@ -64,17 +64,17 @@ def preprocessApp(subparsers):
     #
     preprocess_parser = subparsers.add_parser('preprocess', help = 'Preprocess four read raw amplicon data, identifying barcode and primer sequence')
     preprocess_parser.add_argument('-B', '--barcodes_file', help='file with barcodes',
-                        action='store', type=str, metavar='barcodesFile', required=True)
+                        action='store', type=str, metavar='FILENAME', required=True)
     preprocess_parser.add_argument('-d', '--barcodediff', help='max hamming dist from barcode [default: %(default)s]',
                         type=int, dest='barcodediff', default=1)
     preprocess_parser.add_argument('-P', '--primer_file', help='file with primers',
-                        action='store', type=str, dest='primer_file',metavar='primerFile', default=None)
+                        action='store', type=str, dest='primer_file',metavar='FILENAME', default=None)
     preprocess_parser.add_argument('-D', '--primerdiff', help='max hamming dist from primer [default: %(default)s]',
                         type=int, dest='primerdiff', default=4)
     preprocess_parser.add_argument('-e', '--primerend', help='required number of matching bases at end of primer [default: %(default)s]',
                         type=int, dest='primerend', default=4)
-    preprocess_parser.add_argument('-S', '--samples_file', help='file with primers',
-                        action='store', type=str, dest='samples_file',metavar='sampleFile', default=None)
+    preprocess_parser.add_argument('-S', '--sample_metadata', help='file with sample metadata',
+                        action='store', type=str, dest='samples_file',metavar='FILENAME', default=None)
     preprocess_parser.add_argument('-q', '--minQ', help="trim 3' end of sequences to minQ [default: %(default)s]",
                         type=int, dest='minQ', default=None),
     preprocess_parser.add_argument('-l', '--minL', help='if minQ is not None, only keep reads that are at least minL length [default: %(default)s]',
@@ -167,8 +167,8 @@ def splitreadsApp(subparsers):
                         action='store_true', dest='uncompressed', default=False)
     preprocess_parser.add_argument('-v', '--silent', help='verbose output [default: %(default)s]',
                         action='store_true', dest='verbose', default=False)
-    preprocess_parser.add_argument('-S', '--samples_file', help='file with sample ids',
-                        action='store', type=str, dest='samples_file',metavar='sampleFile', default=None, required=True)
+    preprocess_parser.add_argument('-S', '--sample_metadata', help='file with sample metadata',
+                        action='store', type=str, dest='samples_file',metavar='FILENAME', default=None, required=True)
     preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq two file set',
                         action='store',type=str, required=True, nargs='+')
     preprocess_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq two file set',
@@ -300,8 +300,8 @@ def classifyApp(subparsers):
                         action='store',type=str, default='classify.jar', required=False)
     preprocess_parser.add_argument('-g','--gene',metavar='<arg>', dest='gene', help='16srrna or fungallsu [default: %(default)s]',
                         action='store',type=str, default='16srrna', required=False)
-    preprocess_parser.add_argument('-S', '--samples_file', help='file with primers',
-                        action='store', type=str, dest='samples_file',metavar='sampleFile', default=None, required=False)
+    preprocess_parser.add_argument('-S', '--sample_metadata', help='file with sample metadata',
+                        action='store', type=str, dest='samples_file',metavar='FILENAME', default=None, required=False)
     preprocess_parser.add_argument('-O', '--output_path', help='path for output files [default: %(default)s]',
                         action='store', type=str, dest='output_base', metavar='outputPrefix', default='classify')
     preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq two file set',
@@ -366,7 +366,7 @@ def abundanceApp(subparsers):
                         action='store', type=str, dest='rank', metavar='<arg>', default='genus', required=False, choices=['domain', 'phylum', 'class', 'order', 'family', 'genus', 'species'])
     preprocess_parser.add_argument('-t', '--threshold', help='Threshold bootstrap value to use for assignment, first taxon level greater than threshold',
                         type=float, dest='threshold', metavar="VALUE", default=0.5,required=False)
-    preprocess_parser.add_argument('-S', '--samples_file', help='file with primers',
+    preprocess_parser.add_argument('-S', '--sample_metadata', help='file with sample metadata',
                         action='store', type=str, dest='samples_file',metavar='FILE', default=None, required=False)
     preprocess_parser.add_argument('-O', '--output_path', help='path for output files [default: %(default)s]',
                         action='store', type=str, dest='output_base', metavar='FILE_PREFIX', default='table')

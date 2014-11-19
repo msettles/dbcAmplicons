@@ -136,7 +136,7 @@ if (trimOne != 0 | trimTwo != 0){
 if (!opt$reuse){
     write(paste("Joining reads with flash"),stdout())
     flash_prefix = "flash"
-    call <- paste("flash -t",procs,"-x 0.25 -z -o", file.path(output,flash_prefix),R1,R2,sep=" " )
+    call <- paste("flash --max-overlap=250 -t",procs,"-x 0.25 -z -o", file.path(output,flash_prefix),R1,R2,sep=" " )
     flash_output <- system(call,intern = TRUE)
     
     flash_data = rep(NA,4)

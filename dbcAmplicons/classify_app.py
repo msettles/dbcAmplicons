@@ -15,7 +15,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys, os, traceback
+import sys
+import os
+import traceback
 import time
 from dbcAmplicons import TwoReadIlluminaRun
 from dbcAmplicons import OneReadIlluminaRun
@@ -23,6 +25,7 @@ from dbcAmplicons import IlluminaFastaOutput
 
 from subprocess import call
 from multiprocessing import Pool
+
 
 def rdpCall(query, output, gene, rdpPath, verbose):
     '''
@@ -41,15 +44,16 @@ def rdpCall(query, output, gene, rdpPath, verbose):
     if res == 0:
         try:
             os.remove(query)
-        except OSError, e:  ## if failed, report it back to the user ##
-            sys.stderr.write("ERROR:[rdpCall] %s - %s.\n" % (e.filename,e.strerror))
+        except OSError, e:  # if failed, report it back to the user ##
+            sys.stderr.write("ERROR:[rdpCall] %s - %s.\n" % (e.filename, e.strerror))
             raise
         if verbose:
-            sys.stderr.write("Finished processing %s in %s minutes\n" % (query, round((time.time() - starttime)/60,2)))
+            sys.stderr.write("Finished processing %s in %s minutes\n" % (query, round((time.time() - starttime)/60, 2)))
         return res
     else:
         sys.stderr.write("ERROR:[rdpCall] RDP did not finish properly, returned: %s\n" % res)
         raise
+
 
 def check_status(results):
     """
@@ -65,15 +69,17 @@ def check_status(results):
             finished += 1
     return unfinished
 
+
 class classifyApp:
     """
     Classify preprocessed Illumina Reads using RDP
     Takes fastq files and outputs batched fasta files that are each processed by rdp in parrallel
-    """ 
+    """
     def __init__(self):
-    	self.verbose=False
-    def start(self, fastq_file1, fastq_file2, fastq_fileU, output_prefix, rdpPath='./classifier.jar', gene='16srrna', batchsize=10000, minQ=None, minL = 0, procs = 1, verbose=True, debug=False):
-    	"""
+        self.verbose = False
+
+    def start(self, fastq_file1, fastq_file2, fastq_fileU, output_prefix, rdpPath='./classifier.jar', gene='16srrna', batchsize=10000, minQ=None, minL=0, procs=1, verbose=True, debug=False):
+        """
             Start classifying double barcoded Illumina sequencing run
         """
         self.verbose = verbose
@@ -82,24 +88,24 @@ class classifyApp:
                 sys.stderr.write("ERROR:[classify] parameter -g (--gene) must be one of 16srrna or fungallsu\n")
                 raise Exception
             ## establish and open the Illumin run
-            if fastq_file1 != None and fastq_file2 != None:
-                self.runPairs = TwoReadIlluminaRun(fastq_file1,fastq_file2)
+            if fastq_file1 is not None and fastq_file2 is not None:
+                self.runPairs = TwoReadIlluminaRun(fastq_file1, fastq_file2)
                 self.runPairs.open()
             else:
                 self.runPairs = None
-            if fastq_fileU != None:
+            if fastq_fileU is not None:
                 self.runSingle = OneReadIlluminaRun(fastq_fileU)
                 self.runSingle.open()
             else:
                 self.runSingle = None
-            if self.runPairs == None and self.runSingle == None:
+            if self.runPairs is None and self.runSingle is None:
                 sys.stderr.write("ERROR:[classify] input reads not specified, or incorrect pairs\n")
                 raise Exception
             lasttime = time.time()
             batch = 0
             pool = Pool(procs, maxtasksperchild=1)
             results = {}
-            if (self.runSingle != None):
+            if (self.runSingle is not None):
                 while 1:
                     ## get next batch of reads
                     reads = self.runSingle.next(batchsize)
@@ -113,8 +119,8 @@ class classifyApp:
                     ### Write out reads
                     run_out.writeReads()
                     rdp_out = output_prefix + "." + str(batch) + ".fixrank"
-                    results[rdp_out] = pool.apply_async(rdpCall, (run_out.output_prefix,rdp_out, gene, rdpPath, self.verbose, ))
-            if (self.runPairs != None):
+                    results[rdp_out] = pool.apply_async(rdpCall, (run_out.output_prefix, rdp_out, gene, rdpPath, self.verbose))
+            if (self.runPairs is not None):
                 while 1:
                     ## get next batch of reads
                     reads = self.runPairs.next(batchsize)
@@ -131,7 +137,7 @@ class classifyApp:
                     ### Write out reads
                     run_out.writeReads()
                     rdp_out = output_prefix + "." + str(batch) + ".fixrank"
-                    results[rdp_out] = pool.apply_async(rdpCall, (run_out.output_prefix,rdp_out, '16srrna', rdpPath, self.verbose, ))
+                    results[rdp_out] = pool.apply_async(rdpCall, (run_out.output_prefix, rdp_out, '16srrna', rdpPath, self.verbose))
             allfinished = False
             while not allfinished:
                 time.sleep(1)
@@ -146,10 +152,10 @@ class classifyApp:
                         outfile.write(infile.read())
                     os.remove(f)
             if self.verbose:
-                sys.stdout.write("%s reads processed in %s minutes\n" % (batch,round((time.time()-lasttime)/(60),2)))
+                sys.stdout.write("%s reads processed in %s minutes\n" % (batch, round((time.time()-lasttime)/(60), 2)))
             self.clean()
-            return 0    
-    	except (KeyboardInterrupt, SystemExit):
+            return 0
+        except (KeyboardInterrupt, SystemExit):
             self.clean()
             sys.stderr.write("%s unexpectedly terminated\n" % (__name__))
             return 1
@@ -168,5 +174,3 @@ class classifyApp:
             self.runPairs.close()
         except:
             pass
-
-
