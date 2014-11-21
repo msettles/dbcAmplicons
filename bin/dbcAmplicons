@@ -269,7 +269,7 @@ class joinCMD:
 
 
         # System call, try adding Popen and CString to capture output
-        call_string = [args.flash_path,"--max-overlap=450","-t",str(args.threads),"-x",str(args.max_mixmatch_density),"-o",output_prefix,compress,fastq_file1,fastq_file2]
+        call_string = [args.flash_path,"--max-overlap=600 --allow-outies","-t",str(args.threads),"-x",str(args.max_mixmatch_density),"-o",output_prefix,compress,fastq_file1,fastq_file2]
         if profile:
             import cProfile
             cProfile.runctx('joinFun(call_string,args.verbose)', globals(), locals())
