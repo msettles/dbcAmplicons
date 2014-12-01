@@ -117,8 +117,8 @@ if (trimOne != 0 | trimTwo != 0){
             ShortReadQ(sread=subseq(sread(sr),start=trimL,end=trimR),
                              quality=new(Class=class(quality(sr)),quality=subseq(quality(quality(sr)),start=trimL,end=trimR)),
                              id=id(sr))
-        }
-        tryCatch({
+    }
+    tryCatch({
         fq_r1 <- trimSRQ(fq_r1,1,width(fq_r1)-trimOne);
         fq_r2 <- trimSRQ(fq_r2,1,width(fq_r2)-trimTwo);
         R1 <- file.path(output,paste(basename,".trimmed_R1.fastq.gz",sep=""))
@@ -130,7 +130,7 @@ if (trimOne != 0 | trimTwo != 0){
         } else {
             R1 <- file.path(output,paste(basename,".trimmed_R1.fastq.gz",sep=""))
             R2 <- file.path(output,paste(basename,".trimmed_R2.fastq.gz",sep=""))            
-        }
+    }
 }
 
 if (!opt$reuse){
