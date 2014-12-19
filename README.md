@@ -1,7 +1,7 @@
 DBC_amplicons
 =============
 
-Analysis of Double Barcoded Illumina Amplicon Data
+#Analysis of Double Barcoded Illumina Amplicon Data
 
 ## Installation:
 Minimum requirements for the dbcAmplicons package: Python 2.X is required to run any and all of the
