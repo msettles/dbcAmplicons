@@ -226,7 +226,7 @@ class TwoReadIlluminaRun:
                         sys.stderr.write('ERROR:[TwoReadIlluminaRun] read2 file not found\n')
                         raise
             if len(self.fread1) != len(self.fread2):
-                sys.stderr.write('ERROR:[TwoReadIlluminaRun] Inconsistant number of files for each read\n')
+                sys.stderr.write('ERROR:[TwoReadIlluminaRun] Inconsistent number of files for each read\n')
                 raise
         except:
             raise
@@ -424,6 +424,28 @@ class IlluminaFourReadOutput:
         self.B1 = []
         self.B2 = []
         self.mcount=0
+        if self.uncompressed is True:
+            if os.path.exists(self.output_prefix + '_R1_001.fastq'):
+                sys.stderr.write('WARNING:[IlluminaFourReadOutput] File with prefix: %s exists, DELETING\n' % self.output_prefix)
+                try: 
+                    os.remove(self.output_prefix + '_R1_001.fastq')
+                    os.remove(self.output_prefix + '_R2_001.fastq')
+                    os.remove(self.output_prefix + '_R3_001.fastq')
+                    os.remove(self.output_prefix + '_R4_001.fastq')
+                except:
+                    sys.stderr.write('WARNING:[IlluminaFourReadOutput] Cannot delete file with prefix: %s\n' % self.output_prefix)
+                    raise
+        else:
+            if os.path.exists(self.output_prefix + '_R1_001.fastq.gz'):
+                sys.stderr.write('WARNING:[IlluminaFourReadOutput] File with prefix: %s exists, DELETING\n' % self.output_prefix)
+                try:
+                      os.remove(self.output_prefix + '_R1_001.fastq.gz')
+                      os.remove(self.output_prefix + '_R2_001.fastq.gz')
+                      os.remove(self.output_prefix + '_R3_001.fastq.gz')
+                      os.remove(self.output_prefix + '_R4_001.fastq.gz')
+                except:
+                    sys.stderr.write('WARNING:[IlluminaFourReadOutput] Cannot delete file with prefix: %s\n' % self.output_prefix)
+                    raise     
     def open(self):
         """
         Open the four read files for writing, appending _R1_001.fastq and _R2_001.fastq (mimic illumina file format) to the output_prefix.
