@@ -9,7 +9,7 @@ editdist = Extension('editdist', sources = ['lib/editdist.c'])
 trim = Extension('trim', sources = ['lib/trim.c'])
 config = {
     'description': 'Processing of Illumina double barcoded amplicon projects',
-    'author': 'Matt Settles',
+    'author': 'Matt Settles, Alida Gerritsen',
     'url': 'https://github.com/msettles/DBC_amplicons/py-dbcAmplicons',
     'download_url': 'https://github.com/msettles/DBC_amplicons/py-dbcAmplicons',
     'author_email': 'msettles@uidaho.edu',
