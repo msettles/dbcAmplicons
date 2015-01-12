@@ -50,7 +50,10 @@ profile = False
 # increased speed in gzip read, and bug fixes
 # version 0.5.8
 # fixed bug in barcodes mismatches, added two new flags to preprocess keep primer and test
-version_num = "v0.5.8-1152014"
+# version 0.5.9
+# added script to split by sample, appending output files through iterations
+
+version_num = "v0.5.9-01122015"
 
 
 #####################################################################################
