@@ -35,7 +35,7 @@ def rdpCall(query, output, gene, rdpPath, verbose):
     if gene != "16srrna" and gene != "fungallsu":
         sys.stderr.write('ERROR:[rdpCall] incorrect gene string provided to rdp\n')
         raise
-    #rdp_call = "java -Xmx1g -jar %s classify -q %s -o %s -f fixrank -g %s" % (rdpPath, query, output, gene)
+    #rdp_call = "java -Xmx1g -jar %s classify -q %s -o %s -f fixrankcd class -g %s" % (rdpPath, query, output, gene)
     rdp_call = ['java', '-Xmx1024M', '-Xms128M', '-XX:+UseParallelGC', '-XX:ParallelGCThreads=2', '-jar', rdpPath, 'classify', '-q', query, '-o', output, '-f', 'fixrank', '-g', gene]
     starttime = time.time()
     if verbose:

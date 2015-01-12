@@ -151,7 +151,7 @@ class sampleTable:
             raise
     def getProjectID(self,barcode,primer):
         """
-        Given a barcode and primer, return the associated project, "*" is allowd in the primer for 'any' primer match
+        Given a barcode and primer, return the associated project, "*" is allowed in the primer for 'any' primer match
         """
         try:
             sid = self.sampleTable[barcode]

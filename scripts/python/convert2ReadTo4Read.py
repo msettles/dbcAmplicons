@@ -35,7 +35,7 @@ class convertApp:
     """ 
     def __init__(self):
         self.verbose = False
-    def start(self, fastq_file1, fastq_file2, output_prefix, batchsize=10000, uncompressed=False, verbose=True, debug=False):
+    def start(self, fastq_file1, fastq_file2, output_prefix, batchsize=100000, uncompressed=False, verbose=True, debug=False):
         """
         Start conversion of double barcoded Illumina sequencing run from two to four reads 
         """

@@ -456,15 +456,15 @@ class IlluminaFourReadOutput:
         try:
             misc.make_sure_path_exists(os.path.dirname(self.output_prefix))
             if self.uncompressed is True:
-                self.R1f = open(self.output_prefix + '_R1_001.fastq', 'w')
-                self.R2f = open(self.output_prefix + '_R2_001.fastq', 'w')
-                self.R3f = open(self.output_prefix + '_R3_001.fastq', 'w')
-                self.R4f = open(self.output_prefix + '_R4_001.fastq', 'w')
+                self.R1f = open(self.output_prefix + '_R1_001.fastq', 'a')
+                self.R2f = open(self.output_prefix + '_R2_001.fastq', 'a')
+                self.R3f = open(self.output_prefix + '_R3_001.fastq', 'a')
+                self.R4f = open(self.output_prefix + '_R4_001.fastq', 'a')
             else:
-                self.R1f = gzip.open(self.output_prefix + '_R1_001.fastq.gz', 'wb')
-                self.R2f = gzip.open(self.output_prefix + '_R2_001.fastq.gz', 'wb')
-                self.R3f = gzip.open(self.output_prefix + '_R3_001.fastq.gz', 'wb')
-                self.R4f = gzip.open(self.output_prefix + '_R4_001.fastq.gz', 'wb')
+                self.R1f = gzip.open(self.output_prefix + '_R1_001.fastq.gz', 'ab')
+                self.R2f = gzip.open(self.output_prefix + '_R2_001.fastq.gz', 'ab')
+                self.R3f = gzip.open(self.output_prefix + '_R3_001.fastq.gz', 'ab')
+                self.R4f = gzip.open(self.output_prefix + '_R4_001.fastq.gz', 'ab')
         except:
             sys.stderr.write('ERROR:[IlluminaFourReadOutput] Cannot write reads to file with prefix: %s\n' % self.output_prefix)
             raise
@@ -474,10 +474,13 @@ class IlluminaFourReadOutput:
         """
         Close an IlluminaFourReadOutput file set
         """
-        self.R1f.close()
-        self.R2f.close() 
-        self.R3f.close()
-        self.R4f.close() 
+        try:
+            self.R1f.close()
+            self.R2f.close() 
+            self.R3f.close()
+            self.R4f.close()
+        except:
+            raise 
         self.isOpen = False
     def count(self):
         """
@@ -488,8 +491,6 @@ class IlluminaFourReadOutput:
         """
         Add a pair of reads to the output queue
         """
-        if self.isOpen is False:
-            self.open()
         self.R1.append(read[0])
         self.R2.append(read[3])
         self.B1.append(read[1])
@@ -505,7 +506,7 @@ class IlluminaFourReadOutput:
             if not self.isOpen:
                 try:
                     if self.open() == 1:
-                        sys.stderr.write('ERROR:[IlluminaTwoReadOutput] ERROR Opening files for writing\n')
+                        sys.stderr.write('ERROR:[IlluminaFourReadOutput] ERROR Opening files for writing\n')
                         raise
                 except:
                     raise
@@ -515,12 +516,13 @@ class IlluminaFourReadOutput:
                 self.R2f.write('\n'.join(self.B1) + '\n')
                 self.R3f.write('\n'.join(self.B2) + '\n')
             except:
-                sys.stderr.write('ERROR:[IlluminaTwoReadOutput] Cannot write reads to file with prefix: %s\n' % self.output_prefix)
+                sys.stderr.write('ERROR:[IlluminaFourReadOutput] Cannot write reads to file with prefix: %s\n' % self.output_prefix)
                 raise
             self.R1 = []
             self.R2 = []
             self.B1 = []
             self.B2 = []
+            self.close()
 
 class IlluminaTwoReadOutput:
     """ 
@@ -537,6 +539,24 @@ class IlluminaTwoReadOutput:
         self.R1 = []
         self.R2 = []
         self.mcount=0
+        if self.uncompressed is True:
+            if os.path.exists(self.output_prefix + '_R1.fastq'):
+                sys.stderr.write('WARNING:[IlluminaTwoReadOutput] File with prefix: %s exists, DELETING\n' % self.output_prefix)
+                try: 
+                    os.remove(self.output_prefix + '_R1.fastq')
+                    os.remove(self.output_prefix + '_R2.fastq')
+                except:
+                    sys.stderr.write('WARNING:[IlluminaTwoReadOutput] Cannot delete file with prefix: %s\n' % self.output_prefix)
+                    raise
+        else:
+            if os.path.exists(self.output_prefix + '_R1.fastq.gz'):
+                sys.stderr.write('WARNING:[IlluminaTwoReadOutput] File with prefix: %s exists, DELETING\n' % self.output_prefix)
+                try:
+                    os.remove(self.output_prefix + '_R1.fastq.gz')
+                    os.remove(self.output_prefix + '_R2.fastq.gz')
+                except:
+                    sys.stderr.write('WARNING:[IlluminaTwoReadOutput] Cannot delete file with prefix: %s\n' % self.output_prefix)
+                    raise     
     def open(self):
         """
         Open the two read files for writing, appending _R1.fastq and _R2.fastq to the output_prefix.
@@ -547,13 +567,13 @@ class IlluminaTwoReadOutput:
         try:
             misc.make_sure_path_exists(os.path.dirname(self.output_prefix))
             if self.uncompressed is True:
-                self.R1f = open(self.output_prefix + '_R1.fastq', 'w')
-                self.R2f = open(self.output_prefix + '_R2.fastq', 'w')
+                self.R1f = open(self.output_prefix + '_R1.fastq', 'a')
+                self.R2f = open(self.output_prefix + '_R2.fastq', 'a')
             else:
                 #self.R1f = misc.sp_gzip_write(self.output_prefix + '_R1.fastq.gz')
                 #self.R2f = misc.sp_gzip_write(self.output_prefix + '_R2.fastq.gz')
-                self.R1f = gzip.open(self.output_prefix + '_R1.fastq.gz', 'wb')
-                self.R2f = gzip.open(self.output_prefix + '_R2.fastq.gz', 'wb')
+                self.R1f = gzip.open(self.output_prefix + '_R1.fastq.gz', 'ab')
+                self.R2f = gzip.open(self.output_prefix + '_R2.fastq.gz', 'ab')
         except:
             sys.stderr.write('ERROR:[IlluminaTwoReadOutput] Cannot write reads to file with prefix: %s\n' % self.output_prefix)
             raise
@@ -563,8 +583,11 @@ class IlluminaTwoReadOutput:
         """
         Close an IlluminaTwoReadOutput file set
         """
-        self.R1f.close()
-        self.R2f.close() 
+        try:
+            self.R1f.close()
+            self.R2f.close()
+        except:
+            raise
         self.isOpen = False
     def count(self):
         """
@@ -575,8 +598,6 @@ class IlluminaTwoReadOutput:
         """
         Add a pair of reads to the output queue
         """
-        if self.isOpen is False:
-            self.open()
         self.R1.append(read[0])
         self.R2.append(read[1])
         self.mcount +=1
@@ -602,6 +623,7 @@ class IlluminaTwoReadOutput:
                 raise
             self.R1 = []
             self.R2 = []
+            self.close()
 
 class IlluminaOneReadOutput:
     """ 
@@ -617,6 +639,22 @@ class IlluminaOneReadOutput:
         self.uncompressed = uncompressed
         self.mcount=0
         self.R1 = []
+        if self.uncompressed is True:
+            if os.path.exists(self.output_prefix + '_R1.fastq'):
+                sys.stderr.write('WARNING:[IlluminaOneReadOutput] File with prefix: %s exists, DELETING\n' % self.output_prefix)
+                try: 
+                    os.remove(self.output_prefix + '_R1.fastq')
+                except:
+                    sys.stderr.write('WARNING:[IlluminaOneReadOutput] Cannot delete file with prefix: %s\n' % self.output_prefix)
+                    raise
+        else:
+            if os.path.exists(self.output_prefix + '_R1.fastq.gz'):
+                sys.stderr.write('WARNING:[IlluminaOneReadOutput] File with prefix: %s exists, DELETING\n' % self.output_prefix)
+                try:
+                    os.remove(self.output_prefix + '_R1.fastq.gz')
+                except:
+                    sys.stderr.write('WARNING:[IlluminaOneReadOutput] Cannot delete file with prefix: %s\n' % self.output_prefix)
+                    raise   
     def open(self):
         """
         Open the read file for writing, appending .fastq to the output_prefix.
@@ -627,9 +665,9 @@ class IlluminaOneReadOutput:
         try:
             misc.make_sure_path_exists(os.path.dirname(self.output_prefix))
             if self.uncompressed is True:
-                self.R1f = open(self.output_prefix + '.fastq', 'w')
+                self.R1f = open(self.output_prefix + '.fastq', 'a')
             else:
-                self.R1f = gzip.open(self.output_prefix + '.fastq.gz', 'wb')
+                self.R1f = gzip.open(self.output_prefix + '.fastq.gz', 'ab')
         except:
             sys.stderr.write('ERROR:[IlluminaOneReadOutput] Cannot write reads to file with prefix: %s\n' % self.output_prefix)
             raise
@@ -639,7 +677,10 @@ class IlluminaOneReadOutput:
         """
         Close an IlluminaOneReadOutput file set
         """
-        self.R1f.close()
+        try:
+            self.R1f.close()
+        except:
+            raise
         self.isOpen = False
     def count(self):
         """
@@ -650,8 +691,6 @@ class IlluminaOneReadOutput:
         """
         Add a pair of reads to the output queue
         """
-        if self.isOpen is False:
-            self.open()
         self.R1.append(read[0])
         self.mcount +=1
     def writeReads(self):
@@ -674,7 +713,7 @@ class IlluminaOneReadOutput:
                 sys.stderr.write('ERROR:[IlluminaOneReadOutput] Cannot write read to file with prefix: %s\n' % self.output_prefix)
                 raise
             self.R1 = []
-
+            self.close()
 
 class IlluminaFastaOutput:
     """ 
@@ -697,7 +736,7 @@ class IlluminaFastaOutput:
             self.close()
         try:
             misc.make_sure_path_exists(os.path.dirname(self.output_prefix))
-            self.R1f = open(self.output_prefix, 'w')
+            self.R1f = open(self.output_prefix, 'a')
         except:
             sys.stderr.write('ERROR:[IlluminaFastaOutput] Cannot write reads to file with prefix: %s\n' % self.output_prefix)
             raise
@@ -707,7 +746,10 @@ class IlluminaFastaOutput:
         """
         Close an IlluminaFastaOutput file set
         """
-        self.R1.close()
+        try:
+            self.R1f.close()
+        except:
+            raise
         self.isOpen = False
     def count(self):
         """
@@ -718,8 +760,8 @@ class IlluminaFastaOutput:
         """
         Add a pair of reads to the output queue
         """
-        if self.isOpen is False:
-            self.open()
+        #if self.isOpen is False:
+         #   self.open()
         self.R1.append(read[0])
         self.mcount +=1
     def writeReads(self):
@@ -742,5 +784,6 @@ class IlluminaFastaOutput:
                 sys.stderr.write('ERROR:[IlluminaFastaOutput] Cannot write read to file with prefix: %s\n' % self.output_prefix)
                 raise
             self.R1 = []
+            self.close()
 
 

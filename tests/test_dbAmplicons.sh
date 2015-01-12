@@ -1,30 +1,37 @@
 #!/usr/bin/env sh
 
 #dbcAmplicons preprocess -b 15001 -B barcodeLookupTable.txt -P primerLookupTable.txt -1 Amplicon_Raw_fastq/Test100K_16S_R1_001.fastq.gz Amplicon_Raw_fastq/test40k_R1_001.fastq.gz -2 Amplicon_Raw_fastq/Test100K_16S_R2_001.fastq.gz Amplicon_Raw_fastq/test40k_R2_001.fastq.gz -3 Amplicon_Raw_fastq/Test100K_16S_R3_001.fastq.gz Amplicon_Raw_fastq/test40k_R3_001.fastq.gz -4 Amplicon_Raw_fastq/Test100K_16S_R4_001.fastq.gz Amplicon_Raw_fastq/test40k_R4_001.fastq.gz -O preprocess/trimL --debug
-dbcAmplicons preprocess -b 15001 -B barcodeLookupTable.txt -P primerLookupTable.txt -1 Amplicon_Raw_fastq/Test100K_16S_R1_001.fastq.gz Amplicon_Raw_fastq/test40k_R1_001.fastq.gz  -O preprocess/trimL --debug
+#dbcAmplicons preprocess -b 15001 -B barcodeLookupTable.txt -P primerLookupTable.txt -1 Amplicon_Raw_fastq/Test100K_16S_R1_001.fastq.gz Amplicon_Raw_fastq/test40k_R1_001.fastq.gz  -O preprocess/trimL --debug
+dbcAmplicons preprocess -b 15001 -S sampleLookupTable.txt -B barcodeLookupTable.txt -P primerLookupTable.txt -1 Amplicon_Raw_fastq/Test100K_16S_R1_001.fastq.gz Amplicon_Raw_fastq/test40k_R1_001.fastq.gz  -O preprocess --debug
+
 #cat $cmd
 #system $cmd
 
-# Current output should be
-
-#No sample file identified
 #barcode table length: 864
 #primer table length P5 Primer Sequences:7, P7 Primer Sequences:7
-#processed 15001 total reads, 4345.0 Reads/second, 2103 identified reads, 12898 unidentified reads
-#processed 30002 total reads, 4404.0 Reads/second, 4299 identified reads, 25703 unidentified reads
-#processed 45003 total reads, 4051.0 Reads/second, 9651 identified reads, 35352 unidentified reads
-#processed 60004 total reads, 3367.0 Reads/second, 21796 identified reads, 38208 unidentified reads
-#processed 75005 total reads, 3032.0 Reads/second, 34066 identified reads, 40939 unidentified reads
-#processed 90006 total reads, 2816.0 Reads/second, 46271 identified reads, 43735 unidentified reads
-#processed 105007 total reads, 2643.0 Reads/second, 58547 identified reads, 46460 unidentified reads
-#processed 120008 total reads, 2513.0 Reads/second, 70845 identified reads, 49163 unidentified reads
-#processed 135009 total reads, 2438.0 Reads/second, 83193 identified reads, 51816 unidentified reads
-#processed 140000 total reads, 2421.0 Reads/second, 87346 identified reads, 52654 unidentified reads
-#140000 reads processed in 0.96 minutes
+#sample table length: 208, and 5 projects.
+#processed 15001 total reads, 20909.0 Reads/second, 568 identified reads, 14433 unidentified reads (3.8%)
+#processed 30002 total reads, 19821.0 Reads/second, 1138 identified reads, 28864 unidentified reads (3.8%)
+#processed 45003 total reads, 14712.0 Reads/second, 5218 identified reads, 39785 unidentified reads (11.6%)
+#processed 60004 total reads, 9865.0 Reads/second, 16506 identified reads, 43498 unidentified reads (27.5%)
+#processed 75005 total reads, 8199.0 Reads/second, 27832 identified reads, 47173 unidentified reads (37.1%)
+#processed 90006 total reads, 7381.0 Reads/second, 39140 identified reads, 50866 unidentified reads (43.5%)
+#processed 105007 total reads, 6881.0 Reads/second, 50455 identified reads, 54552 unidentified reads (48.0%)
+#processed 120008 total reads, 6527.0 Reads/second, 61793 identified reads, 58215 unidentified reads (51.5%)
+#processed 135009 total reads, 6267.0 Reads/second, 73156 identified reads, 61853 unidentified reads (54.2%)
+#processed 140000 total reads, 6186.0 Reads/second, 76970 identified reads, 63030 unidentified reads (55.0%)
+#140000 reads processed in 0.38 minutes, 76970 (55.0%) identified
+
+#25093 (32.6%)	reads found for project	match_twoprimersecond
+#31438 (40.8%)	reads found for project	match_twoprimer
+#2195 (2.9%)	reads found for project	subfolder/match_16S
+#18244 (23.7%)	reads found for project	match_wildcard
+#0 (0.0%)	reads found for project	nomatch
 #Cleaning up.
 
+
 #dbcAmplicons splitreads -b 15001 -S sampleLookupTable.txt -1 preprocess/trimL_R1.fastq.gz -2 preprocess/trimL_R2.fastq.gz -O splitreads
-dbcAmplicons splitreads -b 15001 -S sampleLookupTable.txt -1 preprocess/trimL_R1.fastq.gz -O splitreads
+#dbcAmplicons splitreads -b 15001 -S sampleLookupTable.txt -1 preprocess/trimL_R1.fastq.gz -2 preprocess/trimL_R2.fastq.gz -O splitreads --debug
 
 # Current output should be
 
@@ -43,77 +50,72 @@ dbcAmplicons splitreads -b 15001 -S sampleLookupTable.txt -1 preprocess/trimL_R1
 #0	reads found for project	nomatch
 #Cleaning up.
 
-#dbcAmplicons join -t 4 -x 0.25 -1 splitreads/match_twoprimer_R1.fastq.gz -2 splitreads/match_twoprimer_R2.fastq.gz -O join/match_twoprimer
-dbcAmplicons join -t 4 -x 0.25 -1 splitreads/match_twoprimer_R1.fastq.gz -O join/match_twoprimer
+dbcAmplicons join -t 4 -x 0.25 -1 preprocess/match_twoprimer_R1.fastq.gz -2 preprocess/match_twoprimer_R2.fastq.gz -O join/match_twoprimer -v
+#dbcAmplicons join -t 4 -x 0.25 -1 splitreads/match_twoprimer_R1.fastq.gz -O join/match_twoprimer
+#dbcAmplicons join -t 4 -x 0.25 -1 preprocess/trimL_R1.fastq.gz -O join/all_primers
 
 # Results should be
 
-#[FLASH] Starting FLASH v1.2.8
-#[FLASH] Fast Length Adjustment of SHort reads
-#[FLASH]
-#[FLASH] Input files:
-#[FLASH]     splitreads/match_twoprimer_R1.fastq.gz
-#[FLASH]     splitreads/match_twoprimer_R2.fastq.gz
-#[FLASH]
-#[FLASH] Output files:
-#[FLASH]     ./join/match_twoprimer.extendedFrags.fastq.gz
-#[FLASH]     ./join/match_twoprimer.notCombined_1.fastq.gz
-#[FLASH]     ./join/match_twoprimer.notCombined_2.fastq.gz
-#[FLASH]     ./join/match_twoprimer.hist
-#[FLASH]     ./join/match_twoprimer.histogram
-#[FLASH]
-#[FLASH] Parameters:
-#[FLASH]     Min overlap:          10
-#[FLASH]     Max overlap:          65
-#[FLASH]     Phred offset:         33
-#[FLASH]     Combiner threads:     4
-#[FLASH]     Max mismatch density: 0.250000
-#[FLASH]     Cap mismatch quals:   false
-#[FLASH]     Output format:        gzip
-#[FLASH]     Interleaved input:    false
-#[FLASH]     Interleaved output:   false
-#[FLASH]
-#[FLASH] Starting FASTQ readers and writer threads
-#[FLASH] Starting 4 combiner threads
-#[FLASH] Processed 25000 read pairs
-#[FLASH] Processed 31438 read pairs
-#[FLASH]
-#[FLASH] Read combination statistics:
-#[FLASH]     Total reads:      31438
-#[FLASH]     Combined reads:   25357
-#[FLASH]     Uncombined reads: 6081
-#[FLASH]     Percent combined: 80.66%
-#[FLASH]
-#[FLASH] Writing histogram files.
-#[FLASH]
-#[FLASH] FLASH v1.2.8 complete!
-#[FLASH] 3.178 seconds elapsed
+#Using Flash_version:v1.2.11
+#Min_overlap:10
+#Max_overlap:600
+#Max_mismatch_density:0.250000
+#Allow_"outie"_pairs:true
+#Cap_mismatch_quals:false
+#Combiner_threads:4
+#Input_format:FASTQ, phred_offset=33
+#Output_format:FASTQ, phred_offset=33, gzip
+#Total_pairs:31438
+#Combined_pairs:28132
+#Innie_pairs:27910 (99.21% of combined)
+#Outie_pairs:222 (0.79% of combined)
+#Uncombined_pairs:3306
+#Percent_combined:89.48%
 
-dbcAmplicons classify -b 7500 -O join/classify -U join/match_twoprimer.extendedFrags.fastq.gz --debug  --rdpPath=/Users/msettles/opt/RDPTools/classifier.jar -p 4 -1 join/match_twoprimer.notCombined_1.fastq.gz -2 join/match_twoprimer.notCombined_2.fastq.gz
+
+
+dbcAmplicons classify -b 7500 -O join/classify -U join/match_twoprimer.extendedFrags.fastq.gz --debug  --rdpPath /home/alida/Documents/Idaho/bioinformatics/RDPTools/classifier/dist/classifier.jar -p 4 -1 join/match_twoprimer.notCombined_1.fastq.gz -2 join/match_twoprimer.notCombined_2.fastq.gz
 
 # Result should be
 
-#Starting rdp for file joint/classify.7500.fasta
-#Starting rdp for file joint/classify.15000.fasta
-#Starting rdp for file joint/classify.22500.fasta
-#Starting rdp for file joint/classify.25357.fasta
-#Finished processing joint/classify.25357.fasta in 1.36 minutes
-#Starting rdp for file joint/classify.31438.fasta
-#Finished processing joint/classify.22500.fasta in 2.97 minutes
-#Finished processing joint/classify.15000.fasta in 3.0 minutes
-#Finished processing joint/classify.7500.fasta in 3.01 minutes
-#Finished processing joint/classify.31438.fasta in 2.04 minutes
+#Starting rdp for file join/classify.7500.fasta
+#Starting rdp for file join/classify.15000.fasta
+#Starting rdp for file join/classify.22500.fasta
+#Starting rdp for file join/classify.28132.fasta
+#Finished processing join/classify.28132.fasta in 1.21 minutes
+#Starting rdp for file join/classify.31438.fasta
+#Finished processing join/classify.15000.fasta in 1.35 minutes
+#Finished processing join/classify.22500.fasta in 1.52 minutes
+#Finished processing join/classify.7500.fasta in 1.54 minutes
+#Finished processing join/classify.31438.fasta in 0.44 minutes
 #Combining temporary files
-#31438 reads processed in 3.43 minutes
+#31438 reads processed in 1.66 minutes
 #Cleaning up.
 
+
 dbcAmplicons abundance -O join/abundance -F join/classify.fixrank --debug
+
+# Output should be 
+#31438 lines processed in 0.01 minutes
+#Writing output
+#finished in 0.01 minutes
+#Cleaning up.
 
 #convert2ReadTo4Read.py -O test -1 Amplicon_Raw_fastq/Hkates_R1.40k.fastq.gz -2 Amplicon_Raw_fastq/Hkates_R2.40k.fastq.gz
 convert2ReadTo4Read.py -O backtest/test -1 Amplicon_Raw_fastq/Hkates_R1.40k.fastq.gz 
 
+#processed 40000 total reads, 3844.0 Reads/second
+#40000 reads processed in 0.17 minutes
+#Cleaning up.
+
+#SplitReadsBySample.py -O allSamples -1 Amplicon_Raw_fastq/Hkates_R1.40k.fastq.gz -2 Amplicon_Raw_fastq/Hkates_R2.40k.fastq.gz --debug
+#SplitReadsBySample.py -O allSamples -U Amplicon_Raw_fastq/Hkates_R1.40k.fastq.gz --debug
 
 #dbcAmplicons preprocess -B barcodeLookupTable.txt -O test2 -1 test_R1_001.fastq.gz -2 test_R2_001.fastq.gz -3 test_R3_001.fastq.gz -4 test_R4_001.fastq.gz
 dbcAmplicons preprocess -B barcodeLookupTable.txt -O backtest/test2 -1 backtest/test_R1_001.fastq.gz
-
-## 100% should be identified
+#No sample file identified
+#No primer file identified
+#barcode table length: 864
+#processed 40000 total reads, 3719.0 Reads/second, 39186 identified reads, 814 unidentified reads (98.0%)
+#40000 reads processed in 0.18 minutes, 39186 (98.0%) identified
+#Cleaning up.

@@ -75,7 +75,7 @@ class preprocessApp:
                     self.run_out["Unidentified"] = IlluminaTwoReadOutput(os.path.join(output_prefix,'UnidentifiedProject'),uncompressed)
                 else:
                     self.run_out["Unidentified"] = IlluminaTwoReadOutput(output_prefix+"_Unidentified",uncompressed)
-            ## establish and open the Illumin run
+            ## establish and open the Illumina run
             self.run = FourReadIlluminaRun(fastq_file1, fastq_file2, fastq_file3, fastq_file4)
             self.run.open()
             lasttime = time.time()
