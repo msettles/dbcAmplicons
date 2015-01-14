@@ -2,7 +2,7 @@
 
 #dbcAmplicons preprocess -b 15001 -B barcodeLookupTable.txt -P primerLookupTable.txt -1 Amplicon_Raw_fastq/Test100K_16S_R1_001.fastq.gz Amplicon_Raw_fastq/test40k_R1_001.fastq.gz -2 Amplicon_Raw_fastq/Test100K_16S_R2_001.fastq.gz Amplicon_Raw_fastq/test40k_R2_001.fastq.gz -3 Amplicon_Raw_fastq/Test100K_16S_R3_001.fastq.gz Amplicon_Raw_fastq/test40k_R3_001.fastq.gz -4 Amplicon_Raw_fastq/Test100K_16S_R4_001.fastq.gz Amplicon_Raw_fastq/test40k_R4_001.fastq.gz -O preprocess/trimL --debug
 #dbcAmplicons preprocess -b 15001 -B barcodeLookupTable.txt -P primerLookupTable.txt -1 Amplicon_Raw_fastq/Test100K_16S_R1_001.fastq.gz Amplicon_Raw_fastq/test40k_R1_001.fastq.gz  -O preprocess/trimL --debug
-dbcAmplicons preprocess -b 15001 -S sampleLookupTable.txt -B barcodeLookupTable.txt -P primerLookupTable.txt -1 Amplicon_Raw_fastq/Test100K_16S_R1_001.fastq.gz Amplicon_Raw_fastq/test40k_R1_001.fastq.gz  -O preprocess --debug
+dbcAmplicons preprocess -b 15001 -S sampleLookupTable.txt -B barcodeLookupTable.txt -P primerLookupTable.txt -1 Amplicon_Raw_fastq/Test100K_16S_R1_001.fastq.gz Amplicon_Raw_fastq/test40k_R1_001.fastq.gz  -U -O preprocess --debug
 
 #cat $cmd
 #system $cmd
@@ -10,24 +10,26 @@ dbcAmplicons preprocess -b 15001 -S sampleLookupTable.txt -B barcodeLookupTable.
 #barcode table length: 864
 #primer table length P5 Primer Sequences:7, P7 Primer Sequences:7
 #sample table length: 208, and 5 projects.
-#processed 15001 total reads, 20909.0 Reads/second, 568 identified reads, 14433 unidentified reads (3.8%)
-#processed 30002 total reads, 19821.0 Reads/second, 1138 identified reads, 28864 unidentified reads (3.8%)
-#processed 45003 total reads, 14712.0 Reads/second, 5218 identified reads, 39785 unidentified reads (11.6%)
-#processed 60004 total reads, 9865.0 Reads/second, 16506 identified reads, 43498 unidentified reads (27.5%)
-#processed 75005 total reads, 8199.0 Reads/second, 27832 identified reads, 47173 unidentified reads (37.1%)
-#processed 90006 total reads, 7381.0 Reads/second, 39140 identified reads, 50866 unidentified reads (43.5%)
-#processed 105007 total reads, 6881.0 Reads/second, 50455 identified reads, 54552 unidentified reads (48.0%)
-#processed 120008 total reads, 6527.0 Reads/second, 61793 identified reads, 58215 unidentified reads (51.5%)
-#processed 135009 total reads, 6267.0 Reads/second, 73156 identified reads, 61853 unidentified reads (54.2%)
-#processed 140000 total reads, 6186.0 Reads/second, 76970 identified reads, 63030 unidentified reads (55.0%)
-#140000 reads processed in 0.38 minutes, 76970 (55.0%) identified
+#processed 15001 total reads, 2704.0 Reads/second, 568 identified reads(3.8%), 14433 unidentified reads
+#processed 30002 total reads, 2635.0 Reads/second, 1138 identified reads(3.8%), 28864 unidentified reads
+#processed 45003 total reads, 2704.0 Reads/second, 5218 identified reads(11.6%), 39785 unidentified reads
+#processed 60004 total reads, 2908.0 Reads/second, 16506 identified reads(27.5%), 43498 unidentified reads
+#processed 75005 total reads, 3044.0 Reads/second, 27832 identified reads(37.1%), 47173 unidentified reads
+#processed 90006 total reads, 3142.0 Reads/second, 39140 identified reads(43.5%), 50866 unidentified reads
+#processed 105007 total reads, 3217.0 Reads/second, 50455 identified reads(48.0%), 54552 unidentified reads
+#processed 120008 total reads, 3274.0 Reads/second, 61793 identified reads(51.5%), 58215 unidentified reads
+#processed 135009 total reads, 3228.0 Reads/second, 73156 identified reads(54.2%), 61853 unidentified reads
+#processed 140000 total reads, 3203.0 Reads/second, 76970 identified reads(55.0%), 63030 unidentified reads
+#140000 reads processed in 0.73 minutes, 76970 (55.0%) identified
 
-#25093 (32.6%)	reads found for project	match_twoprimersecond
-#31438 (40.8%)	reads found for project	match_twoprimer
-#2195 (2.9%)	reads found for project	subfolder/match_16S
-#18244 (23.7%)	reads found for project	match_wildcard
-#0 (0.0%)	reads found for project	nomatch
+#63030 reads (45.0% of total run) found for project	Unidentified
+#18244 reads (13.0% of total run) found for project	match_wildcard
+#25093 reads (17.9% of total run) found for project	match_twoprimersecond
+#31438 reads (22.5% of total run) found for project	match_twoprimer
+#2195 reads (1.6% of total run) found for project	subfolder/match_16S
+#0 reads (0.0% of total run) found for project	nomatch
 #Cleaning up.
+
 
 
 #dbcAmplicons splitreads -b 15001 -S sampleLookupTable.txt -1 preprocess/trimL_R1.fastq.gz -2 preprocess/trimL_R2.fastq.gz -O splitreads
@@ -102,16 +104,18 @@ dbcAmplicons abundance -O join/abundance -F join/classify.fixrank --debug
 #Cleaning up.
 
 #convert2ReadTo4Read.py -O test -1 Amplicon_Raw_fastq/Hkates_R1.40k.fastq.gz -2 Amplicon_Raw_fastq/Hkates_R2.40k.fastq.gz
+
 convert2ReadTo4Read.py -O backtest/test -1 Amplicon_Raw_fastq/Hkates_R1.40k.fastq.gz 
 
 #processed 40000 total reads, 3844.0 Reads/second
 #40000 reads processed in 0.17 minutes
 #Cleaning up.
 
-#SplitReadsBySample.py -O allSamples -1 Amplicon_Raw_fastq/Hkates_R1.40k.fastq.gz -2 Amplicon_Raw_fastq/Hkates_R2.40k.fastq.gz --debug
+SplitReadsBySample.py -O allSamples -1 Amplicon_Raw_fastq/Hkates_R1.40k.fastq.gz -2 Amplicon_Raw_fastq/Hkates_R2.40k.fastq.gz --debug
 #SplitReadsBySample.py -O allSamples -U Amplicon_Raw_fastq/Hkates_R1.40k.fastq.gz --debug
 
 #dbcAmplicons preprocess -B barcodeLookupTable.txt -O test2 -1 test_R1_001.fastq.gz -2 test_R2_001.fastq.gz -3 test_R3_001.fastq.gz -4 test_R4_001.fastq.gz
+
 dbcAmplicons preprocess -B barcodeLookupTable.txt -O backtest/test2 -1 backtest/test_R1_001.fastq.gz
 #No sample file identified
 #No primer file identified
