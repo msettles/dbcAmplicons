@@ -256,7 +256,7 @@ class TwoSequenceReadSet:
         """
         self.project = sTable.getProjectID(self.barcode,self.primer)
         self.sample = sTable.getSampleID(self.barcode,self.primer)
-        self.goodRead = self.goodRead and self.project != None
+        self.goodRead = self.project != None
         return 0
     def getFastq(self):
         """ 
