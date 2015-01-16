@@ -1,7 +1,7 @@
 #### Misc functions
 
 import sys, os, errno
-from subprocess import Popen, PIPE, STDOUT
+from subprocess import Popen, PIPE, STDOUT, call
 import glob
 import gzip
 import shlex

@@ -1,4 +1,4 @@
-DBC_amplicons
+#dbcAmplicons
 =============
 
 Analysis of Double Barcoded Illumina Amplicon Data
@@ -9,11 +9,10 @@ elements in the package. Some applications within the package rely on FLASH or t
 complete, so the user must determine of those external tools are necessary if the entire pipeline will not be run.
 ###Programs:
 External programs used in the pipeline:
-FLASH
+FLASH,
 RDP classifier
 ###Windows Systems
-dbcAmplicons has not been tested on Windows systems, although Windows Powershell (active in XP sys-
-tems and later) may be sufficient to run the analysis. It is highly recommended, however, that the user
+dbcAmplicons has not been tested on Windows systems, although Windows Powershell (active in XP systems and later) may be sufficient to run the analysis. It is highly recommended, however, that the user
 install a Linux-based virtual machine to run the pipeline.
 ###Mac OSX
 Mac users should first download and install Xcode and then download the app via a terminal by:  
