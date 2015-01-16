@@ -62,6 +62,8 @@ class splitApp:
             self.run_out = {}
             if (self.runPairs is not None):
                 while 1:
+                    if self.verbose:
+                        sys.stderr.write("Processing sequence files.\n")
                     ## get next batch of reads
                     reads = self.runPairs.next(batchsize)
                     if len(reads) == 0:
@@ -77,13 +79,13 @@ class splitApp:
                     ### Write out reads for each key in dictionary
                     for key in self.run_out:
                         self.run_out[key].writeReads()
-                        if self.verbose:
-                            sys.stderr.write("processing %s total samples\n" % len(self.run_out))
-                return 0
                 if self.verbose:
-                    sys.stderr.write("processing %s total samples\n" % len(self.run_out))
+                    sys.stderr.write("\nSplit out %s total samples in %s.\n" % (len(self.run_out), output_prefix))
+                return 0
             if (self.runSingle is not None):
                 while 1:
+                    if self.verbose:
+                        sys.stderr.write("Processing sequence files.\n")
                     ## get next batch of reads
                     reads = self.runSingle.next(batchsize)
                     if len(reads) == 0:
@@ -99,12 +101,12 @@ class splitApp:
                     ### Write out reads for each key in dictionary
                     for key in self.run_out:
                         self.run_out[key].writeReads()
-                        if self.verbose:
-                            sys.stderr.write("processing %s total samples\n" % len(self.run_out))
+                if self.verbose:
+                    sys.stderr.write("\nSplit out %s total samples in %s.\n" % (len(self.run_out), output_prefix))
                 return 0
         except (KeyboardInterrupt, SystemExit):
             self.clean()
-            sys.stderr.write("%s unexpectedly terminated\n" % (__name__))
+            sys.stderr.write("%s unexpectedly terminated.\n" % (__name__))
             return 1
         except:
             self.clean()
