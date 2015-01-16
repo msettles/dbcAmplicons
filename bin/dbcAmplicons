@@ -212,6 +212,7 @@ def joinFun(args,verbose):
     from dbcAmplicons import parse_flash
     p = Popen(args, stdout = PIPE, stderr = STDOUT, close_fds = False )
     pf = parse_flash(p.stdout,verbose)
+    return pf
     
 #####################################################################################
 ## join reads using flash, path through application
