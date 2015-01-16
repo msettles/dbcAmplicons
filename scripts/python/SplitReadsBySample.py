@@ -77,7 +77,11 @@ class splitApp:
                     ### Write out reads for each key in dictionary
                     for key in self.run_out:
                         self.run_out[key].writeReads()
+                        if self.verbose:
+                            sys.stderr.write("processing %s total samples\n" % len(self.run_out))
                 return 0
+                if self.verbose:
+                    sys.stderr.write("processing %s total samples\n" % len(self.run_out))
             if (self.runSingle is not None):
                 while 1:
                     ## get next batch of reads
@@ -95,6 +99,8 @@ class splitApp:
                     ### Write out reads for each key in dictionary
                     for key in self.run_out:
                         self.run_out[key].writeReads()
+                        if self.verbose:
+                            sys.stderr.write("processing %s total samples\n" % len(self.run_out))
                 return 0
         except (KeyboardInterrupt, SystemExit):
             self.clean()

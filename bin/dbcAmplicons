@@ -23,7 +23,7 @@
 import sys
 import os
 import argparse 
-from subprocess import Popen, PIPE, STDOUT
+from subprocess import Popen, PIPE, STDOUT, call
 from multiprocessing import cpu_count
 
 profile = False
