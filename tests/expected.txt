@@ -1,76 +1,72 @@
 No sample file identified
-WARNING:[IlluminaTwoReadOutput] File with prefix: preprocess/trimL exists, DELETING
-processed 15001 total reads, 6227.0 Reads/second, 2103 identified reads(14.0%), 12898 unidentified reads
-processed 30002 total reads, 6106.0 Reads/second, 4299 identified reads(14.3%), 25703 unidentified reads
-processed 45003 total reads, 4642.0 Reads/second, 9651 identified reads(21.4%), 35352 unidentified reads
-processed 60004 total reads, 3143.0 Reads/second, 21796 identified reads(36.3%), 38208 unidentified reads
-processed 75005 total reads, 2623.0 Reads/second, 34066 identified reads(45.4%), 40939 unidentified reads
-processed 90006 total reads, 2359.0 Reads/second, 46271 identified reads(51.4%), 43735 unidentified reads
-processed 105007 total reads, 2200.0 Reads/second, 58547 identified reads(55.8%), 46460 unidentified reads
-processed 120008 total reads, 2098.0 Reads/second, 70845 identified reads(59.0%), 49163 unidentified reads
-processed 135009 total reads, 2014.0 Reads/second, 83193 identified reads(61.6%), 51816 unidentified reads
-processed 140000 total reads, 1989.0 Reads/second, 87346 identified reads(62.4%), 52654 unidentified reads
+processed 15001 total reads, 14507.0 Reads/second, 2103 identified reads(14.0%), 12898 unidentified reads
+processed 30002 total reads, 13738.0 Reads/second, 4299 identified reads(14.3%), 25703 unidentified reads
+processed 45003 total reads, 11050.0 Reads/second, 9651 identified reads(21.4%), 35352 unidentified reads
+processed 60004 total reads, 6981.0 Reads/second, 21796 identified reads(36.3%), 38208 unidentified reads
+processed 75005 total reads, 5791.0 Reads/second, 34066 identified reads(45.4%), 40939 unidentified reads
+processed 90006 total reads, 5462.0 Reads/second, 46271 identified reads(51.4%), 43735 unidentified reads
+processed 105007 total reads, 5252.0 Reads/second, 58547 identified reads(55.8%), 46460 unidentified reads
+processed 120008 total reads, 5111.0 Reads/second, 70845 identified reads(59.0%), 49163 unidentified reads
+processed 135009 total reads, 4960.0 Reads/second, 83193 identified reads(61.6%), 51816 unidentified reads
+processed 140000 total reads, 4902.0 Reads/second, 87346 identified reads(62.4%), 52654 unidentified reads
 Cleaning up.
+
 barcode table length: 864
 primer table length P5 Primer Sequences:7, P7 Primer Sequences:7
-140000 reads processed in 1.17 minutes, 87346 (62.4%) identified
+140000 reads processed in 0.48 minutes, 87346 (62.4%) identified
 
-WARNING:[IlluminaTwoReadOutput] File with prefix: splitreads/match_twoprimer exists, DELETING
-WARNING:[IlluminaTwoReadOutput] File with prefix: splitreads/match_twoprimersecond exists, DELETING
-WARNING:[IlluminaTwoReadOutput] File with prefix: splitreads/match_wildcard exists, DELETING
-WARNING:[IlluminaTwoReadOutput] File with prefix: splitreads/subfolder/match_16S exists, DELETING
-processed 15001 total reads, 2148.0 Reads/second, 10188 identified reads, 4813 unidentified reads (68.0%)
-processed 30002 total reads, 1834.0 Reads/second, 24073 identified reads, 5929 unidentified reads (80.0%)
-processed 45003 total reads, 1759.0 Reads/second, 37964 identified reads, 7039 unidentified reads (84.0%)
-processed 60004 total reads, 1717.0 Reads/second, 51809 identified reads, 8195 unidentified reads (86.0%)
-processed 75005 total reads, 1695.0 Reads/second, 65595 identified reads, 9410 unidentified reads (87.0%)
-processed 87346 total reads, 1679.0 Reads/second, 76970 identified reads, 10376 unidentified reads (88.0%)
+processed 15001 total reads, 4882.0 Reads/second, 10188 identified reads, 4813 unidentified reads (68.0%)
+processed 30002 total reads, 4786.0 Reads/second, 24073 identified reads, 5929 unidentified reads (80.0%)
+processed 45003 total reads, 4583.0 Reads/second, 37964 identified reads, 7039 unidentified reads (84.0%)
+processed 60004 total reads, 4462.0 Reads/second, 51809 identified reads, 8195 unidentified reads (86.0%)
+processed 75005 total reads, 4565.0 Reads/second, 65595 identified reads, 9410 unidentified reads (87.0%)
+processed 87346 total reads, 4442.0 Reads/second, 76970 identified reads, 10376 unidentified reads (88.0%)
 Cleaning up.
+
 sample table length: 208, and 5 projects.
-87346 reads processed in 0.87 minutes, 76970 (88.1%) identified
+87346 reads processed in 0.33 minutes, 76970 (88.1%) identified
 
 25093 (28.7%)	reads found for project	match_twoprimersecond
 31438 (36.0%)	reads found for project	match_twoprimer
 2195 (2.5%)	reads found for project	subfolder/match_16S
 18244 (20.9%)	reads found for project	match_wildcard
 0 (0.0%)	reads found for project	nomatch
+
 Using Flash_version:v2.2.00
 Starting rdp for file join/classify.7500.fasta
-Unable to access jarfile ~/opt/RDPTools/classifier/dist/classifier.jar
-ERROR:[rdpCall] RDP did not finish properly, returned: 1
 Starting rdp for file join/classify.15000.fasta
-Unable to access jarfile ~/opt/RDPTools/classifier/dist/classifier.jar
-ERROR:[rdpCall] RDP did not finish properly, returned: 1
 Starting rdp for file join/classify.22500.fasta
-Unable to access jarfile ~/opt/RDPTools/classifier/dist/classifier.jar
-ERROR:[rdpCall] RDP did not finish properly, returned: 1
 Starting rdp for file join/classify.27914.fasta
-Unable to access jarfile ~/opt/RDPTools/classifier/dist/classifier.jar
-ERROR:[rdpCall] RDP did not finish properly, returned: 1
+Finished processing join/classify.27914.fasta in 1.12 minutes
 Starting rdp for file join/classify.31438.fasta
-Unable to access jarfile ~/opt/RDPTools/classifier/dist/classifier.jar
-ERROR:[rdpCall] RDP did not finish properly, returned: 1
+Finished processing join/classify.22500.fasta in 1.49 minutes
+Finished processing join/classify.15000.fasta in 1.55 minutes
+Finished processing join/classify.7500.fasta in 1.61 minutes
+Finished processing join/classify.31438.fasta in 0.6 minutes
 Combining temporary files
 Cleaning up.
-A fatal error was encountered.
-Traceback (most recent call last):
-  File "/Users/msettles/CodeProjects/dbcAmplicons/bin/../dbcAmplicons/classify_app.py", line 151, in start
-    with open(f, "rb") as infile:
-IOError: [Errno 2] No such file or directory: 'join/classify.31438.fixrank'
+
+31438 reads processed in 1.73 minutes
 Writing output
-finished in 0.0 minutes
+finished in 0.07 minutes
 Cleaning up.
-0 lines processed in 0.0 minutes
-processed 40000 total reads, 1193.0 Reads/second
+31438 lines processed in 0.07 minutes
+processed 40000 total reads, 3487.0 Reads/second
 Cleaning up.
-40000 reads processed in 0.56 minutes
+
+40000 reads processed in 0.19 minutes
 No sample file identified
 No primer file identified
-processed 40000 total reads, 1218.0 Reads/second, 39186 identified reads(98.0%), 814 unidentified reads
+processed 40000 total reads, 3562.0 Reads/second, 39186 identified reads(98.0%), 814 unidentified reads
 Cleaning up.
 barcode table length: 864
-40000 reads processed in 0.55 minutes, 39186 (98.0%) identified
+40000 reads processed in 0.19 minutes, 39186 (98.0%) identified
 
+Processing sequence files.
+Processing sequence files.
+
+Split out 96 total samples in allSamples.
+Processing sequence files.
 WARNING:[IlluminaOneReadOutput] File with prefix: allSamples/S9-38 exists, DELETING
 WARNING:[IlluminaOneReadOutput] File with prefix: allSamples/S9-66 exists, DELETING
 WARNING:[IlluminaOneReadOutput] File with prefix: allSamples/S9-86 exists, DELETING
@@ -167,3 +163,6 @@ WARNING:[IlluminaOneReadOutput] File with prefix: allSamples/SKU1672 exists, DEL
 WARNING:[IlluminaOneReadOutput] File with prefix: allSamples/S9-123 exists, DELETING
 WARNING:[IlluminaOneReadOutput] File with prefix: allSamples/ARIZ 396001 exists, DELETING
 WARNING:[IlluminaOneReadOutput] File with prefix: allSamples/S9-41 exists, DELETING
+Processing sequence files.
+
+Split out 96 total samples in allSamples.
