@@ -16,7 +16,7 @@ config = {
     'version': 'v0.5.9-01122015',
     'install_requires': [],
     'packages': ['dbcAmplicons'],
-    'scripts': ['bin/dbcAmplicons', 'scripts/python/convert2ReadTo4Read.py', 'scripts/python/splitReadsBySample.py', 'scripts/R/reduce_amplicons.R'],
+    'scripts': ['bin/dbcAmplicons', 'bin/flash2', 'scripts/python/convert2ReadTo4Read.py', 'scripts/python/splitReadsBySample.py', 'scripts/R/reduce_amplicons.R'],
     'name': 'dbcAmplicons',
     "ext_package":'dbcAmplicons',
     'ext_modules': [editdist,trim]

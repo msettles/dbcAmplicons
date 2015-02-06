@@ -12,7 +12,7 @@ suppressPackageStartupMessages(library("optparse"))
 # help="Show this help message and exit")
 option_list <- list(
     make_option(c("-p","--program"), type="character", default="consensus",
-                help="comma separated list of the functions of consensus,ambiguities,occurance [default %default]",
+                help="comma separated list of the functions of consensus,ambiguities,occurrence [default %default]",
                 dest="program"),
     make_option(c("-s", "--min-seq"), type="integer", default=5,
                 help="minimum number of reads [default %default]",
@@ -41,12 +41,12 @@ option_list <- list(
 parser <- OptionParser(usage = "%prog [options] basename",option_list=option_list)
 arguments <- parse_args(parser, positional_arguments = 1)
 
-#arguments <- list(options = list(program="consensus,ambiguities,occurance",min_seq=5,min_freq=0.05,trimOne=0,trimTwo=0,reuse=FALSE,output="Diego_Chloroplast_R1-0_R2-0",procs=30),args="Diego_Chloroplast_primer")
+#arguments <- list(options = list(program="consensus,ambiguities,occurrence",min_seq=5,min_freq=0.05,trimOne=0,trimTwo=0,reuse=FALSE,output="Diego_Chloroplast_R1-0_R2-0",procs=30),args="Diego_Chloroplast_primer")
 
 opt <- arguments$options
 basename <- arguments$args
 
-avail_functions <- c("consensus","ambiguities","occurance")
+avail_functions <- c("consensus","ambiguities","occurrence")
 program_list = unlist(strsplit(opt$program,split=","))
 if (!all(program_list %in% avail_functions)) {
     stop(paste("program list parameter must be 1) comma separated and 2) in the list",paste(avail_functions,collapse=","),sep=" "))
@@ -158,28 +158,28 @@ fq_r2 <- readFastq(file.path(output,"flash.notCombined_2.fastq.gz"))
 nms <- as.character(id(fq))
 id <- sapply(strsplit(sapply(strsplit(nms,split=" "),"[[",2L),split=":"),"[[",4L)
 primer <- sapply(strsplit(sapply(strsplit(nms,split=" "),"[[",2L),split=":"),"[[",5L)
-occurance = table(id,primer)
+occurrence = table(id,primer)
 
 ### process unmerged files
 nms_p <- as.character(id(fq_r1))
 id_p <- sapply(strsplit(sapply(strsplit(nms_p,split=" "),"[[",2L),split=":"),"[[",4L)
 primer_p <- sapply(strsplit(sapply(strsplit(nms_p,split=" "),"[[",2L),split=":"),"[[",5L)
-occurance_p = table(id_p,primer_p)
+occurrence_p = table(id_p,primer_p)
 
 uprimer <- sort(unique(c(primer,primer_p)))
 uid <- sort(unique(c(id,id_p)))
 
 ## Plot read ratio 
-uoccurance <- matrix(0,nrow=length(uid),ncol=length(uprimer))
-uoccurance_p <- matrix(0,nrow=length(uid),ncol=length(uprimer))
-rownames(uoccurance) <- uid
-rownames(uoccurance_p) <- uid
-colnames(uoccurance) <- uprimer
-colnames(uoccurance_p) <- uprimer
+uoccurrence <- matrix(0,nrow=length(uid),ncol=length(uprimer))
+uoccurrence_p <- matrix(0,nrow=length(uid),ncol=length(uprimer))
+rownames(uoccurrence) <- uid
+rownames(uoccurrence_p) <- uid
+colnames(uoccurrence) <- uprimer
+colnames(uoccurrence_p) <- uprimer
 
-uoccurance[rownames(occurance),colnames(occurance)] <- occurance
-uoccurance_p[rownames(occurance_p),colnames(occurance_p)] <- occurance_p
-ratio <- log10((uoccurance+1)/(uoccurance_p+1))
+uoccurrence[rownames(occurrence),colnames(occurrence)] <- occurrence
+uoccurrence_p[rownames(occurrence_p),colnames(occurrence_p)] <- occurrence_p
+ratio <- log10((uoccurrence+1)/(uoccurrence_p+1))
 mratio <- melt(ratio)
 colnames(mratio) <- c("SampleID","PrimerID","value")
 
@@ -357,14 +357,14 @@ invisible(dev.off())
 }
 
 ######################################################################
-## occurance
+## occurrence
 ##  output all sequences, for each sample/amplicon, which meet the min_freq and min_seq criteria
 ## 
 ## Parameters
 ##  name: amplicon name
 ##  min_freq: minimum frequence to accept variant
 ##  min_seq: minimum number of sequences to accept variant
-"occurance" <- function(name,min_freq,min_seq) {
+"occurrence" <- function(name,min_freq,min_seq) {
 #    cat(name,", ")
     seqs <- DNAStringSet()
     
@@ -471,14 +471,14 @@ sapply(program_list,function(program){
         }
     }
     
-    occurance_a <- table(oid,oprimer)
-    uoccurance_a <- matrix(0,nrow=length(uid),ncol=length(uprimer))
-    rownames(uoccurance_a) <- uid
-    colnames(uoccurance_a) <- uprimer
+    occurrence_a <- table(oid,oprimer)
+    uoccurrence_a <- matrix(0,nrow=length(uid),ncol=length(uprimer))
+    rownames(uoccurrence_a) <- uid
+    colnames(uoccurrence_a) <- uprimer
     
-    uoccurance_a[rownames(occurance_a),colnames(occurance_a)] <- occurance_a
+    uoccurrence_a[rownames(occurrence_a),colnames(occurrence_a)] <- occurrence_a
     
-    mratio <- melt(uoccurance_a)
+    mratio <- melt(uoccurrence_a)
     colnames(mratio) <- c("SampleID","PrimerID","value")
     mratio$value = as.factor(mratio$value)
     

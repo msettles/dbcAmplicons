@@ -238,8 +238,8 @@ def joinApp(subparsers):
                           default=0.25)
     preprocess_parser.add_argument('-t', '--threads',metavar='NTHREADS', help='Set the number of worker threads. [default: %(default)s]',
                         type=int, dest='threads',default=1)
-    preprocess_parser.add_argument('-p', '--flash_path', help='path to the application flash [default: %(default)s]',
-                        action='store', type=str, dest='flash_path',metavar='path', default='flash', required=False)
+#    preprocess_parser.add_argument('-p', '--flash2_path', help='path to the application flash2 [default: %(default)s]',
+#                        action='store', type=str, dest='flash2_path',metavar='path', default='flash2', required=False)
     preprocess_parser.add_argument('-v', '--verbose', help='verbose output [default: %(default)s]',
                         action='store_true', dest='verbose', default=False)
     preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq (or fastq.gz) two file set',
@@ -273,7 +273,8 @@ class joinCMD:
 
 
         # System call, try adding Popen and CString to capture output
-        call_string = [args.flash_path,"--max-overlap",str(600),"--allow-outies","-t",str(args.threads),"-x",str(args.max_mixmatch_density),"-o",output_prefix,compress,fastq_file1,fastq_file2]
+        call_string = ["flash2","--max-overlap",str(600),"--allow-outies","-t",str(args.threads),"-x",str(args.max_mixmatch_density),"-o",output_prefix,compress,fastq_file1,fastq_file2]
+        print call_string
         if profile:
             import cProfile
             cProfile.runctx('joinFun(call_string,args.verbose)', globals(), locals())
@@ -304,8 +305,8 @@ def classifyApp(subparsers):
                         action='store',type=str, default='classify.jar', required=False)
     preprocess_parser.add_argument('-g','--gene',metavar='<arg>', dest='gene', help='16srrna or fungallsu [default: %(default)s]',
                         action='store',type=str, default='16srrna', required=False)
-    preprocess_parser.add_argument('-S', '--sample_metadata', help='file with sample metadata',
-                        action='store', type=str, dest='samples_file',metavar='FILENAME', default=None, required=False)
+#    preprocess_parser.add_argument('-S', '--sample_metadata', help='file with sample metadata',
+#                        action='store', type=str, dest='samples_file',metavar='FILENAME', default=None, required=False)
     preprocess_parser.add_argument('-O', '--output_path', help='path for output files [default: %(default)s]',
                         action='store', type=str, dest='output_base', metavar='outputPrefix', default='classify')
     preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq two file set',

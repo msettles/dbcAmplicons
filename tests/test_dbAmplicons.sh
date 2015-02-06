@@ -10,7 +10,7 @@ echo "Testing dbcAmplicons splitreads"
 dbcAmplicons splitreads -b 15001 -S sampleLookupTable.txt -1 preprocess/trimL_R1.fastq.gz -O splitreads --debug >> out.txt 2>&1
 
 echo "Testing dbcAmplicons join"
-dbcAmplicons join -t 4 -x 0.25 -1 splitreads/match_twoprimer_R1.fastq.gz -O join/match_twoprimer >> out.txt 2>&1
+dbcAmplicons join -t 4 -x 0.25 -1 splitreads/match_twoprimer_R1.fastq.gz -O join/match_twoprimer -v >> out.txt 2>&1
 
 echo "Testing dbcAmplicons classify"
 dbcAmplicons classify -b 7500 -O join/classify -U join/match_twoprimer.extendedFrags.fastq.gz --debug --rdpPath /home/alida/Documents/Idaho/bioinformatics/RDPTools/classifier/dist/classifier.jar -p 4 -1 join/match_twoprimer.notCombined_1.fastq.gz -2 join/match_twoprimer.notCombined_2.fastq.gz >> out.txt 2>&1

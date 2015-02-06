@@ -89,7 +89,7 @@ class fixrankLine:
 class abundanceApp:
     """
     Generate an abundance table from a fixrank formated file
-    Takes fixrank formated files from dbcAmplicons classify anda taxonomic rank to build table from, allowable values are (domain, phylum, class, order, family, genus, and species{if performed}
+    Takes fixrank formatted files from dbcAmplicons classify and a taxonomic rank to build table from, allowable values are (domain, phylum, class, order, family, genus, and species{if performed}
     and output an abundance and proportions table with taxon in rows and samples as columns.
     """ 
     def __init__(self):

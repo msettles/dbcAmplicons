@@ -120,7 +120,7 @@ def parseArgs():
     generate main parser
     """
     parser = argparse.ArgumentParser( \
-        description = 'convert2ReadTo4Read, a python script for back converting 2 Illumina sequences reads that have been processced for their barodes back to a four read set to be reprocessed using dbcAmplicons', \
+        description = 'convert2ReadTo4Read, a python script for back converting 2 Illumina sequence reads that have been processed for their barcodes back to a four read set to be reprocessed using dbcAmplicons', \
         epilog ='For questions or comments, please contact Matt Settles <msettles@uidaho.edu>', add_help=True)
     parser.add_argument('--version', action='version', version="%(prog)s Version " + version_num)
     parser.add_argument('-b', '--batchsize', help='batch size to process reads in [default: %(default)s]',
