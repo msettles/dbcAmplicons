@@ -274,7 +274,6 @@ class joinCMD:
 
         # System call, try adding Popen and CString to capture output
         call_string = ["flash2","--max-overlap",str(600),"--allow-outies","-t",str(args.threads),"-x",str(args.max_mixmatch_density),"-o",output_prefix,compress,fastq_file1,fastq_file2]
-        print call_string
         if profile:
             import cProfile
             cProfile.runctx('joinFun(call_string,args.verbose)', globals(), locals())
@@ -329,7 +328,7 @@ class classifyCMD:
         pass
     def execute (self,args):
         # ----------------------- options input files -----------------------
-        sFile = args.samples_file
+#        sFile = args.samples_file
         # ----------------------- options output prefix -----------------------
         output_prefix = args.output_base
         # ----------------------- other options ------------
