@@ -258,6 +258,16 @@ class TwoSequenceReadSet:
         self.sample = sTable.getSampleID(self.barcode,self.primer)
         self.goodRead = self.project != None
         return 0
+    def getFastqSRA(self):
+        """ 
+        Create four line string ('\n' separator included) for the read pair, returning a length 2 vector (one for each read)
+        """
+        read1_name = "%s 1:N:0:" % (self.name)
+        read2_name = "%s 2:N:0:" % (self.name)
+        r1 = '\n'.join([read1_name, self.read_1,'+',self.qual_1])
+        r2 = '\n'.join([read2_name, self.read_2,'+',self.qual_2])
+        return [r1,r2]
+
     def getFastq(self):
         """ 
         Create four line string ('\n' separator included) for the read pair, returning a length 2 vector (one for each read)
