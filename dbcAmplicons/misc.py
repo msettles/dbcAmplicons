@@ -37,7 +37,7 @@ def sp_gzip_write(file):
 
 
 
-def parse_flash(fileinput_stream,verbose=False):
+def parse_flash(fileinput_stream,verbose=True):
     skip = 4
     for i, line in enumerate(fileinput_stream):
         if skip == 4:

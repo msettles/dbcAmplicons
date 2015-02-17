@@ -90,7 +90,7 @@ def preprocessApp(subparsers):
                         action='store_true', dest='unidentified', default=False)
     preprocess_parser.add_argument('-u', '--uncompressed', help='leave output files uncompressed [default: %(default)s]',
                         action='store_true', dest='uncompressed', default=False)
-    preprocess_parser.add_argument('-v', '--silent', help='verbose output [default: %(default)s]',
+    preprocess_parser.add_argument('-v', '--silent', help='silences verbose output [default: %(default)s]',
                         action='store_true', dest='verbose', default=False)
     preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq four file set',
                         action='store',type=str, required=True, nargs='+')
@@ -232,7 +232,7 @@ def joinApp(subparsers):
                           mismatched base pairs and the overlap length. \
                           Two reads will not be combined with a given overlap \
                           if that overlap results in a mismatched base density \
-                          higher than this value.  Note: Any occurence of an \
+                          higher than this value.  Note: Any occurrence of an \
                           "N" in either read is ignored and not counted \
                           towards the mismatches or overlap length. [default:%(default)s]', type=float, dest='max_mixmatch_density', metavar='NUM',
                           default=0.25)
@@ -241,7 +241,7 @@ def joinApp(subparsers):
 #    preprocess_parser.add_argument('-p', '--flash2_path', help='path to the application flash2 [default: %(default)s]',
 #                        action='store', type=str, dest='flash2_path',metavar='path', default='flash2', required=False)
     preprocess_parser.add_argument('-v', '--verbose', help='verbose output [default: %(default)s]',
-                        action='store_true', dest='verbose', default=False)
+                        action='store_true', dest='verbose', default=True)
     preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq (or fastq.gz) two file set',
                         action='store',type=str, required=True)
     preprocess_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq (or fastq.gz)  two file set',
@@ -276,10 +276,10 @@ class joinCMD:
         call_string = ["flash2","--max-overlap",str(600),"--allow-outies","-t",str(args.threads),"-x",str(args.max_mixmatch_density),"-o",output_prefix,compress,fastq_file1,fastq_file2]
         if profile:
             import cProfile
-            cProfile.runctx('joinFun(call_string,args.verbose)', globals(), locals())
+            cProfile.runctx('joinFun(call_string, args.verbose)', globals(), locals())
             return 255
         else:
-            return joinFun(call_string,args.verbose)
+            return joinFun(call_string, args.verbose)
 
 
 #####################################################################################
@@ -314,7 +314,7 @@ def classifyApp(subparsers):
                         action='store',type=str, default=None, required=False, nargs='+')
     preprocess_parser.add_argument('-U', metavar="single", dest='fastq_file3', help='single-end amplicon, typically from joined paired reads',
                         action='store',type=str, default=None, required=False, nargs='+')
-    preprocess_parser.add_argument('-v', '--silent', help='verbose output [default: %(default)s]',
+    preprocess_parser.add_argument('-v', '--silent', help='silences verbose output [default: %(default)s]',
                         action='store_true', dest='verbose', default=False)
     preprocess_parser.add_argument('--debug', help='show traceback on error',
                         action='store_true', dest="debug", default = False)
