@@ -210,7 +210,7 @@ class splitreadsCMD:
 
 def joinFun(args,verbose):
     from dbcAmplicons import parse_flash
-    print args
+#    print args
     p = Popen(args, stdout = PIPE, stderr = STDOUT, close_fds = False )
     pf = parse_flash(p.stdout,verbose)
     return pf
