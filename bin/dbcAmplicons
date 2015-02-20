@@ -210,6 +210,7 @@ class splitreadsCMD:
 
 def joinFun(args,verbose):
     from dbcAmplicons import parse_flash
+    print args
     p = Popen(args, stdout = PIPE, stderr = STDOUT, close_fds = False )
     pf = parse_flash(p.stdout,verbose)
     return pf
@@ -223,7 +224,7 @@ def joinApp(subparsers):
     #
     # Parse options
     #
-    preprocess_parser = subparsers.add_parser('join', help = 'join reads using flash')
+    preprocess_parser = subparsers.add_parser('join', help = 'join reads using flash2-amp')
     preprocess_parser.add_argument('-O', '--output_path', help='path for output files [default: %(default)s]',
                         action='store', type=str, dest='output_base', metavar='PREFIX', default="joined")
     preprocess_parser.add_argument('-u', '--uncompressed', help='leave output files uncompressed [default: %(default)s]',
@@ -273,7 +274,7 @@ class joinCMD:
 
 
         # System call, try adding Popen and CString to capture output
-        call_string = ["flash2","--max-overlap",str(600),"--allow-outies","-t",str(args.threads),"-x",str(args.max_mixmatch_density),"-o",output_prefix,compress,fastq_file1,fastq_file2]
+        call_string = ["flash2-amp","--max-overlap",str(600),"--allow-outies","-t",str(args.threads),"-x",str(args.max_mixmatch_density),"-o",output_prefix,compress,fastq_file1,fastq_file2]
         if profile:
             import cProfile
             cProfile.runctx('joinFun(call_string, args.verbose)', globals(), locals())
