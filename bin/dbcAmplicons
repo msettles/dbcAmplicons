@@ -210,7 +210,7 @@ class splitreadsCMD:
 
 def joinFun(args,verbose):
     from dbcAmplicons import parse_flash
-    print args
+#    print args
     p = Popen(args, stdout = PIPE, stderr = STDOUT, close_fds = False )
     pf = parse_flash(p.stdout,verbose)
     return pf
@@ -305,8 +305,6 @@ def classifyApp(subparsers):
                         action='store',type=str, default='classify.jar', required=False)
     preprocess_parser.add_argument('-g','--gene',metavar='<arg>', dest='gene', help='16srrna or fungallsu [default: %(default)s]',
                         action='store',type=str, default='16srrna', required=False)
-#    preprocess_parser.add_argument('-S', '--sample_metadata', help='file with sample metadata',
-#                        action='store', type=str, dest='samples_file',metavar='FILENAME', default=None, required=False)
     preprocess_parser.add_argument('-O', '--output_path', help='path for output files [default: %(default)s]',
                         action='store', type=str, dest='output_base', metavar='outputPrefix', default='classify')
     preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq two file set',

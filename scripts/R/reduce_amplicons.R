@@ -41,7 +41,7 @@ option_list <- list(
 parser <- OptionParser(usage = "%prog [options] basename",option_list=option_list)
 arguments <- parse_args(parser, positional_arguments = 1)
 
-#arguments <- list(options = list(program="consensus,ambiguities,occurrence",min_seq=5,min_freq=0.05,trimOne=0,trimTwo=0,reuse=FALSE,output="Diego_Chloroplast_R1-0_R2-0",procs=30),args="Diego_Chloroplast_primer")
+#arguments <- list(options = list(program="consensus,ambiguities,occurrence",min_seq=5,min_freq=0.05,trimOne=0,trimTwo=0,reuse=FALSE,output="AlSoodani_A",procs=30),args="AlSoodani_A")
 
 opt <- arguments$options
 basename <- arguments$args
@@ -135,24 +135,29 @@ if (trimOne != 0 | trimTwo != 0){
 
 if (!opt$reuse){
     write(paste("Joining reads with flash"),stdout())
-    flash_prefix = "flash"
-    call <- paste("flash --max-overlap=600 --allow-outies -t",procs,"-x 0.25 -z -o", file.path(output,flash_prefix),R1,R2,sep=" " )
+    flash_prefix = "flash2"
+    call <- paste("flash2 --max-overlap=600 --allow-outies -t",procs,"-x 0.25 -z -o", file.path(output,flash_prefix),R1,R2,sep=" " )
     flash_output <- system(call,intern = TRUE)
     
-    flash_data = rep(NA,4)
+    flash_data = rep(NA,8)
     if(length(oflash <- which(flash_output=="[FLASH] Read combination statistics:")) != 0){
-        flash_res <- flash_output[(oflash+1):(oflash+4)]
+        flash_res <- flash_output[(oflash+1):(oflash+8)]
         flash_data <- as.numeric(sapply(strsplit(flash_res,split=" +|%"),"[[",4L))
-        flash_data <- paste("\nReads_Combined:\t\t",flash_data[2],"\nReads_Uncombined:\t",flash_data[3],"\nCombined_Percentage:\t",flash_data[4],"%",sep="")
     }
-    write(flash_data,stdout())
+    flash_output <- paste("\nReads total:\t\t\t", flash_data[1], "\n",
+                        "Reads discarded:\t\t",flash_data[2], "\t(", flash_data[3], "%)\n",
+                        "Reads combined:\t\t\t",flash_data[4], "\t(", flash_data[8], "%)\n",
+                        "\tcombined extended:\t",flash_data[5],"\t(", round(100*(flash_data[5]/flash_data[4]),2),"%)\n",
+                        "\tcombined short:\t\t",flash_data[6], "\t(", round(100*(flash_data[6]/flash_data[4]),2),"%)\n",sep="")
+    
+    write(flash_output,stdout())
 }
 write(paste("Reading merged read files:\n",file.path(output,"flash.extendedFrags.fastq.gz"),"\n",file.path(output,"flash.notCombined_1.fastq.gz"),"\n",file.path(output,"flash.notCombined_2.fastq.gz")),stdout())
 
 ### read in input files      
-fq <- readFastq(file.path(output,"flash.extendedFrags.fastq.gz"))
-fq_r1 <- readFastq(file.path(output,"flash.notCombined_1.fastq.gz"))
-fq_r2 <- readFastq(file.path(output,"flash.notCombined_2.fastq.gz"))
+fq <- readFastq(file.path(output,paste0(flash_prefix,".extendedFrags.fastq.gz")))
+fq_r1 <- readFastq(file.path(output,paste0(flash_prefix,".notCombined_1.fastq.gz")))
+fq_r2 <- readFastq(file.path(output,paste0(flash_prefix,".notCombined_2.fastq.gz")))
 
 ### process merged files
 nms <- as.character(id(fq))
@@ -170,6 +175,7 @@ uprimer <- sort(unique(c(primer,primer_p)))
 uid <- sort(unique(c(id,id_p)))
 
 ## Plot read ratio 
+#####################################################################
 uoccurrence <- matrix(0,nrow=length(uid),ncol=length(uprimer))
 uoccurrence_p <- matrix(0,nrow=length(uid),ncol=length(uprimer))
 rownames(uoccurrence) <- uid
@@ -199,7 +205,7 @@ p <- ggplot(mratio, aes(x = PrimerID, y = SampleID, fill = value)) +
                          high = jRdGyPalette[paletteSize],
                          midpoint = 0,
                          name = "log10 Read Count") +
-    labs(title=paste("Overlapping Read Bias\nPositive values indicate joined reads\nnegative values indecate unpaired reads\nCombined_Percentage:\t",flash_data[4],"%",sep=""))
+    labs(title=paste("Overlapping Read Bias\nPositive values indicate more joined reads\nnegative values indicate more unpaired reads\nCombined_Percentage:\t",flash_data[8],"%",sep=""))
 
 png(file.path(output,"merged_read_results.png"),width=8,height=10.5,units="in",res=300)
 print(p)
