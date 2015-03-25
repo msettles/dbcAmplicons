@@ -303,7 +303,7 @@ def classifyApp(subparsers):
                         type=int, dest='procs', default=1)
     preprocess_parser.add_argument('--rdpPath',metavar='PATH', dest='rdpPath', help='path to the RDP classifier',
                         action='store',type=str, default='classify.jar', required=False)
-    preprocess_parser.add_argument('-g','--gene',metavar='<arg>', dest='gene', help='16srrna or fungallsu [default: %(default)s]',
+    preprocess_parser.add_argument('-g','--gene',metavar='<arg>', dest='gene', help='16srrna, fungallsu, fungalits_warcup, or fungalits_unite [default: %(default)s]',
                         action='store',type=str, default='16srrna', required=False)
     preprocess_parser.add_argument('-O', '--output_path', help='path for output files [default: %(default)s]',
                         action='store', type=str, dest='output_base', metavar='outputPrefix', default='classify')

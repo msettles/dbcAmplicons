@@ -32,7 +32,7 @@ def rdpCall(query, output, gene, rdpPath, verbose):
     rdpCall takes a query fasta and generates the rdp call for the file, gene should be one of 16srrna or fungallsu
     rdpPath should point to the classifier.jar as a part of RDPTools
     '''
-    if gene != "16srrna" and gene != "fungallsu":
+    if gene != "16srrna" and gene != "fungallsu" and gene != "fungalits_warcup" and gene != "fungalits_unite":
         sys.stderr.write('ERROR:[rdpCall] incorrect gene string provided to rdp\n')
         raise
     #rdp_call = "java -Xmx1g -jar %s classify -q %s -o %s -f fixrankcd class -g %s" % (rdpPath, query, output, gene)
@@ -40,7 +40,7 @@ def rdpCall(query, output, gene, rdpPath, verbose):
     starttime = time.time()
     if verbose:
         sys.stderr.write("Starting rdp for file %s\n" % query)
-        sys.stderr.write(' '.join(rdp_call))
+#        sys.stderr.write(' '.join(rdp_call))
     res = call(rdp_call)
     if res == 0:
         try:
@@ -85,8 +85,8 @@ class classifyApp:
         """
         self.verbose = verbose
         try:
-            if (gene != '16srrna' and gene != 'fungallsu'):
-                sys.stderr.write("ERROR:[classify] parameter -g (--gene) must be one of 16srrna or fungallsu\n")
+            if (gene != '16srrna' and gene != 'fungallsu' and gene != "fungalits_warcup" and gene != "fungalits_unite"):
+                sys.stderr.write("ERROR:[classify] parameter -g (--gene) must be one of 16srrna or fungallsu or fungalits_warcup or fungalits_unite \n")
                 raise Exception
             ## establish and open the Illumin run
             if fastq_file1 is not None and fastq_file2 is not None:
@@ -138,7 +138,7 @@ class classifyApp:
                     ### Write out reads
                     run_out.writeReads()
                     rdp_out = output_prefix + "." + str(batch) + ".fixrank"
-                    results[rdp_out] = pool.apply_async(rdpCall, (run_out.output_prefix, rdp_out, '16srrna', rdpPath, self.verbose))
+                    results[rdp_out] = pool.apply_async(rdpCall, (run_out.output_prefix, rdp_out, gene, rdpPath, self.verbose))
             allfinished = False
             while not allfinished:
                 time.sleep(1)
