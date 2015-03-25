@@ -55,7 +55,7 @@ class sampleTable:
         except IOError:
             sys.stderr.write('ERROR:[Samples] cannot open\n', samplefile)
             raise
-        f = sfile.next() ## read the file
+        f = sfile.next() # read the file
         header = f.rstrip()
         vheader = header.split('\t')
         try:

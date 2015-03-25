@@ -22,6 +22,8 @@ from dbcAmplicons import sampleTable
 from dbcAmplicons import FourReadIlluminaRun
 from dbcAmplicons import IlluminaTwoReadOutput
 from dbcAmplicons import misc
+
+
 class preprocessApp:
     """
     Preprocess raw Illumina four read amplicon data
