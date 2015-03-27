@@ -341,8 +341,8 @@ class classifyCMD:
             sys.stderr.write("The number of processors specified [%s] is greater than the number available [%s], exiting application\n" % (str(procs),str(cpu_count())))
             sys.exit()
 
-        if (args.gene != '16srrna' and args.gene != 'fungallsu'):
-            sys.stderr.write("parameter -g (--gene) must be one of 16srrna or fungallsu\n")
+        if (args.gene != '16srrna' and args.gene != 'fungallsu' and args.gene != "fungali
+            sys.stderr.write("parameter -g (--gene) must be one of 16srrna or fungallsu or fungalits_warcup or fungalits_unite\n")
             sys.exit()
 
         from dbcAmplicons import classifyApp
