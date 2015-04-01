@@ -1,5 +1,4 @@
-#py-classify
-#!/usr/bin/env python
+# py-classify
 
 # Copyright 2013, Institute for Bioninformatics and Evolutionary Studies
 #
@@ -35,12 +34,11 @@ def rdpCall(query, output, gene, rdpPath, verbose):
     if gene != "16srrna" and gene != "fungallsu" and gene != "fungalits_warcup" and gene != "fungalits_unite":
         sys.stderr.write('ERROR:[rdpCall] incorrect gene string provided to rdp\n')
         raise
-    #rdp_call = "java -Xmx1g -jar %s classify -q %s -o %s -f fixrankcd class -g %s" % (rdpPath, query, output, gene)
-    rdp_call = ['java', '-Xmx1024M', '-Xms128M', '-XX:+UseParallelGC', '-XX:ParallelGCThreads=2', '-jar', rdpPath, 'classify', '-q', query, '-o', output, '-f', 'fixrank', '-g', gene]
+    rdp_call = ['java', '-Xmx2048M', '-Xms256M', '-XX:+UseParallelGC', '-XX:ParallelGCThreads=2', '-jar', rdpPath, 'classify', '-q', query, '-o', output, '-f', 'fixrank', '-g', gene]
     starttime = time.time()
     if verbose:
         sys.stderr.write("Starting rdp for file %s\n" % query)
-#        sys.stderr.write(' '.join(rdp_call))
+        sys.stderr.write(' '.join(rdp_call))
     res = call(rdp_call)
     if res == 0:
         try:
@@ -88,7 +86,7 @@ class classifyApp:
             if (gene != '16srrna' and gene != 'fungallsu' and gene != "fungalits_warcup" and gene != "fungalits_unite"):
                 sys.stderr.write("ERROR:[classify] parameter -g (--gene) must be one of 16srrna or fungallsu or fungalits_warcup or fungalits_unite \n")
                 raise Exception
-            ## establish and open the Illumin run
+            # establish and open the Illumin run
             if fastq_file1 is not None and fastq_file2 is not None:
                 self.runPairs = TwoReadIlluminaRun(fastq_file1, fastq_file2)
                 self.runPairs.open()
@@ -108,34 +106,34 @@ class classifyApp:
             results = {}
             if (self.runSingle is not None):
                 while 1:
-                    ## get next batch of reads
+                    # get next batch of reads
                     reads = self.runSingle.next(batchsize)
                     batch = batch + len(reads)
                     if len(reads) == 0:
                         break
                     run_out = IlluminaFastaOutput(output_prefix + "." + str(batch))
-                    ## process individual reads
+                    # process individual reads
                     for read in reads:
                         run_out.addRead(read.getFasta())
-                    ### Write out reads
+                    # Write out reads
                     run_out.writeReads()
                     rdp_out = output_prefix + "." + str(batch) + ".fixrank"
                     results[rdp_out] = pool.apply_async(rdpCall, (run_out.output_prefix, rdp_out, gene, rdpPath, self.verbose))
             if (self.runPairs is not None):
                 while 1:
-                    ## get next batch of reads
+                    # get next batch of reads
                     reads = self.runPairs.next(batchsize)
                     batch = batch + len(reads)
                     if len(reads) == 0:
                         break
                     run_out = IlluminaFastaOutput(output_prefix + "." + str(batch))
-                    ## process individual reads
+                    # process individual reads
                     for read in reads:
 #                        if minQ != None: # TODO: add trim read to TwoSequenceReadSet
 #                            read.trimRead(minQ, minL)
 #                        if read.goodRead == True:
                         run_out.addRead(read.getJoinedFasta())
-                    ### Write out reads
+                    # Write out reads
                     run_out.writeReads()
                     rdp_out = output_prefix + "." + str(batch) + ".fixrank"
                     results[rdp_out] = pool.apply_async(rdpCall, (run_out.output_prefix, rdp_out, gene, rdpPath, self.verbose))
