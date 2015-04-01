@@ -18,6 +18,9 @@ dbcAmplicons classify -b 7500 -O join/classify -U join/match_twoprimer.extendedF
 echo "Testing dbcAmplicons abundance"
 dbcAmplicons abundance -O join/abundance -F join/classify.fixrank --debug
 
+echo "Testing dbcAmplicons abundance (biom format)"
+dbcAmplicons abundance -O join/abundance -F join/classify.fixrank -S sampleLookupTable.txt -b --debug
+
 echo "Testing convert2ReadTo4Read"
 convert2ReadTo4Read.py -O backtest/test -1 Amplicon_Raw_fastq/Hkates_R1.40k.fastq.gz
 
