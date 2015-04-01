@@ -12,7 +12,7 @@ suppressPackageStartupMessages(library("optparse"))
 # help="Show this help message and exit")
 option_list <- list(
     make_option(c("-p","--program"), type="character", default="consensus",
-                help="comma separated list of the functions of consensus,ambiguities,occurance [default %default]",
+                help="comma separated list of the functions of consensus,ambiguities,occurrence [default %default]",
                 dest="program"),
     make_option(c("-s", "--min-seq"), type="integer", default=5,
                 help="minimum number of reads [default %default]",
@@ -41,12 +41,12 @@ option_list <- list(
 parser <- OptionParser(usage = "%prog [options] basename",option_list=option_list)
 arguments <- parse_args(parser, positional_arguments = 1)
 
-#arguments <- list(options = list(program="consensus,ambiguities,occurance",min_seq=5,min_freq=0.05,trimOne=0,trimTwo=0,reuse=FALSE,output="Diego_Chloroplast_R1-0_R2-0",procs=30),args="Diego_Chloroplast_primer")
+#arguments <- list(options = list(program="consensus,ambiguities,occurrence",min_seq=5,min_freq=0.05,trimOne=0,trimTwo=0,reuse=TRUE,output="AlSoodani_A",procs=30),args="AlSoodani_A")
 
 opt <- arguments$options
 basename <- arguments$args
 
-avail_functions <- c("consensus","ambiguities","occurance")
+avail_functions <- c("consensus","ambiguities","occurrence")
 program_list = unlist(strsplit(opt$program,split=","))
 if (!all(program_list %in% avail_functions)) {
     stop(paste("program list parameter must be 1) comma separated and 2) in the list",paste(avail_functions,collapse=","),sep=" "))
@@ -133,53 +133,60 @@ if (trimOne != 0 | trimTwo != 0){
     }
 }
 
+flash_prefix = "flash2"
+
 if (!opt$reuse){
     write(paste("Joining reads with flash"),stdout())
-    flash_prefix = "flash"
-    call <- paste("flash --max-overlap=600 --allow-outies -t",procs,"-x 0.25 -z -o", file.path(output,flash_prefix),R1,R2,sep=" " )
+    call <- paste("flash2 --max-overlap=600 --allow-outies -t",procs,"-x 0.25 -z -o", file.path(output,flash_prefix),R1,R2,sep=" " )
     flash_output <- system(call,intern = TRUE)
     
-    flash_data = rep(NA,4)
+    flash_data = rep(NA,8)
     if(length(oflash <- which(flash_output=="[FLASH] Read combination statistics:")) != 0){
-        flash_res <- flash_output[(oflash+1):(oflash+4)]
+        flash_res <- flash_output[(oflash+1):(oflash+8)]
         flash_data <- as.numeric(sapply(strsplit(flash_res,split=" +|%"),"[[",4L))
-        flash_data <- paste("\nReads_Combined:\t\t",flash_data[2],"\nReads_Uncombined:\t",flash_data[3],"\nCombined_Percentage:\t",flash_data[4],"%",sep="")
     }
-    write(flash_data,stdout())
+    flash_output <- paste("\nReads total:\t\t\t", flash_data[1], "\n",
+                        "Reads discarded:\t\t",flash_data[2], "\t(", flash_data[3], "%)\n",
+                        "Reads combined:\t\t\t",flash_data[4], "\t(", flash_data[8], "%)\n",
+                        "\tcombined extended:\t",flash_data[5],"\t(", round(100*(flash_data[5]/flash_data[4]),2),"%)\n",
+                        "\tcombined short:\t\t",flash_data[6], "\t(", round(100*(flash_data[6]/flash_data[4]),2),"%)\n",sep="")
+    
+    write(flash_output,stdout())
 }
 write(paste("Reading merged read files:\n",file.path(output,"flash.extendedFrags.fastq.gz"),"\n",file.path(output,"flash.notCombined_1.fastq.gz"),"\n",file.path(output,"flash.notCombined_2.fastq.gz")),stdout())
 
 ### read in input files      
-fq <- readFastq(file.path(output,"flash.extendedFrags.fastq.gz"))
-fq_r1 <- readFastq(file.path(output,"flash.notCombined_1.fastq.gz"))
-fq_r2 <- readFastq(file.path(output,"flash.notCombined_2.fastq.gz"))
+fq <- readFastq(file.path(output,paste0(flash_prefix,".extendedFrags.fastq.gz")))
+fq_r1 <- readFastq(file.path(output,paste0(flash_prefix,".notCombined_1.fastq.gz")))
+fq_r2 <- readFastq(file.path(output,paste0(flash_prefix,".notCombined_2.fastq.gz")))
 
 ### process merged files
 nms <- as.character(id(fq))
 id <- sapply(strsplit(sapply(strsplit(nms,split=" "),"[[",2L),split=":"),"[[",4L)
 primer <- sapply(strsplit(sapply(strsplit(nms,split=" "),"[[",2L),split=":"),"[[",5L)
-occurance = table(id,primer)
+occurrence = table(id,primer)
 
 ### process unmerged files
 nms_p <- as.character(id(fq_r1))
 id_p <- sapply(strsplit(sapply(strsplit(nms_p,split=" "),"[[",2L),split=":"),"[[",4L)
 primer_p <- sapply(strsplit(sapply(strsplit(nms_p,split=" "),"[[",2L),split=":"),"[[",5L)
-occurance_p = table(id_p,primer_p)
+occurrence_p = table(id_p,primer_p)
 
 uprimer <- sort(unique(c(primer,primer_p)))
 uid <- sort(unique(c(id,id_p)))
 
 ## Plot read ratio 
-uoccurance <- matrix(0,nrow=length(uid),ncol=length(uprimer))
-uoccurance_p <- matrix(0,nrow=length(uid),ncol=length(uprimer))
-rownames(uoccurance) <- uid
-rownames(uoccurance_p) <- uid
-colnames(uoccurance) <- uprimer
-colnames(uoccurance_p) <- uprimer
+#####################################################################
+uoccurrence <- matrix(0,nrow=length(uid),ncol=length(uprimer))
+uoccurrence_p <- matrix(0,nrow=length(uid),ncol=length(uprimer))
+rownames(uoccurrence) <- uid
+rownames(uoccurrence_p) <- uid
+colnames(uoccurrence) <- uprimer
+colnames(uoccurrence_p) <- uprimer
 
-uoccurance[rownames(occurance),colnames(occurance)] <- occurance
-uoccurance_p[rownames(occurance_p),colnames(occurance_p)] <- occurance_p
-ratio <- log10((uoccurance+1)/(uoccurance_p+1))
+uoccurrence[rownames(occurrence),colnames(occurrence)] <- occurrence
+uoccurrence_p[rownames(occurrence_p),colnames(occurrence_p)] <- occurrence_p
+ratio <- log10((uoccurrence+1)/(uoccurrence_p+1))
 mratio <- melt(ratio)
 colnames(mratio) <- c("SampleID","PrimerID","value")
 
@@ -189,21 +196,23 @@ jRdGyPalette <- jRdGyFun(paletteSize)
 
 axis.y.res = if(length(unique(mratio$SampleID))> 96) { element_blank() }else{element_text(size=8)}
 
-p <- ggplot(mratio, aes(x = PrimerID, y = SampleID, fill = value)) +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5,size=8),
-              axis.text.y = if(length(unique(mratio$SampleID))> 96) { element_blank() }else{element_text(size=8)}) +
-#     axis.text.y = element_text(size=8)) +
-    geom_tile() +
-    scale_fill_gradient2(low = jRdGyPalette[1],
-                         mid = jRdGyPalette[paletteSize/2],
-                         high = jRdGyPalette[paletteSize],
-                         midpoint = 0,
-                         name = "log10 Read Count") +
-    labs(title=paste("Overlapping Read Bias\nPositive values indicate joined reads\nnegative values indecate unpaired reads\nCombined_Percentage:\t",flash_data[4],"%",sep=""))
-
-png(file.path(output,"merged_read_results.png"),width=8,height=10.5,units="in",res=300)
-print(p)
-invisible(dev.off())
+if (!opt$reuse){
+  p <- ggplot(mratio, aes(x = PrimerID, y = SampleID, fill = value)) +
+      theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5,size=8),
+                axis.text.y = if(length(unique(mratio$SampleID))> 96) { element_blank() }else{element_text(size=8)}) +
+  #     axis.text.y = element_text(size=8)) +
+      geom_tile() +
+      scale_fill_gradient2(low = jRdGyPalette[1],
+                           mid = jRdGyPalette[paletteSize/2],
+                           high = jRdGyPalette[paletteSize],
+                           midpoint = 0,
+                           name = "log10 Read Count") +
+      labs(title=paste("Overlapping Read Bias\nPositive values indicate more joined reads\nnegative values indicate more unpaired reads\nCombined_Percentage:\t",flash_data[8],"%",sep=""))
+  
+  png(file.path(output,"merged_read_results.png"),width=8,height=10.5,units="in",res=300)
+  print(p)
+  invisible(dev.off())
+}
 
 #####################################################################
 ### Analysis Functions BEGIN
@@ -342,11 +351,11 @@ invisible(dev.off())
             abcA[abc < min_seq | abcf < min_freq] = 0
             consensus <- names(IUPAC_CODE_MAP)[match(apply(abcA,2,function(x) paste(rownames(abcA)[x>0],collapse="")),IUPAC_CODE_MAP)]
             consensus[is.na(consensus)] = "N"
-            consensus[which(abc['.',] > (length(wtmp)*0.9))] = "."  ## at least 90% of reads must have '.' at the join location
+            consensus[which(abc['.',] > (length(wtmp)*0.9))] =  "."  ## at least 90% of reads must have '.' at the join location
             amb_bases <- sum(consensus %in% names(IUPAC_CODE_MAP[-c(1:4)])) ## - 5 for Ns
             consensus = paste(consensus,collapse="")
             error_rate=sum(1-apply(sweep(abc,MARGIN=2,STATS=colSums(abc),FUN="/"),2,max))/(nchar(consensus)-5) ## - 5 for Ns
-            spaired_str <- lapply(strsplit(consensus,split=".....",fixed = TRUE),DNAStringSet)
+            spaired_str <- lapply(strsplit(consensus,split="\\.+",fixed = FALSE),DNAStringSet)
             spaired_str <- do.call("c",spaired_str)
             names(spaired_str) <- paste(name,c("read1","read2"),rep(seq.int(1,length(spaired_str)/2),each=2),length(wtmp), counts[[name]], round(length(wtmp)/counts[[name]],3),round(error_rate,3),amb_bases,sep="|")            
             maxsize = length(wtmp)
@@ -357,14 +366,75 @@ invisible(dev.off())
 }
 
 ######################################################################
-## occurance
+## ambiguities_by_size
+##  compute ambiguity sequence for each size version of sample/amplicon
+## 
+## Parameters
+##  name: amplicon name
+##  min_freq: minimum frequence to accept variant
+##  min_seq: minimum number of sequences to accept variant
+"ambiguities_by_size" <- function(name,min_freq,min_seq) {
+  #    cat(name,", ")
+  seqs <- DNAStringSet()
+  if (name %in% names(splitfq)){
+    tmp <- splitfq[[name]]
+    stmp = split(tmp,width(tmp))
+
+#    wtmp = wtmp[[which.max(sapply(wtmp,length))]]
+    single_res <- lapply(stmp,function(wtmp){
+      if(length(wtmp) > min_seq & (length(wtmp)/counts[[name]]) > min_freq){
+        abc<-alphabetByCycle(wtmp)
+        abcf<-sweep(abc,MARGIN=2,STATS=colSums(abc),FUN="/")
+        abcA = abc
+        abcA[abc < min_seq | abcf < min_freq] = 0
+        consensus <- names(IUPAC_CODE_MAP)[match(apply(abcA,2,function(x) paste(rownames(abcA)[x>0],collapse="")),IUPAC_CODE_MAP)]
+        consensus[is.na(consensus)] = "N"
+        amb_bases <- sum(consensus %in% names(IUPAC_CODE_MAP[-c(1:4)]))
+        consensus = paste(consensus,collapse="")
+        error_rate=sum(1-apply(sweep(abc,MARGIN=2,STATS=colSums(abc),FUN="/"),2,max))/nchar(consensus)
+        ssingle_str <- DNAStringSet(consensus)
+        names(ssingle_str) <- paste(name,"merged", seq.int(1,length(ssingle_str)), length(wtmp), counts[[name]], round(length(wtmp)/counts[[name]],3), round(error_rate,3), amb_bases,sep="|")
+        ssingle_str
+      }
+    })
+  }
+  if (name %in% names(splitfq_p)){
+    tmp <- splitfq_p[[name]]
+    stmp = split(tmp,width(tmp))
+
+#    wtmp = wtmp[[which.max(sapply(wtmp,length))]]
+    paired_res <- lapply(stmp,function(wtmp){
+      if(length(wtmp) > min_seq & (length(wtmp)/counts[[name]]) > min_freq){
+        abc<-alphabetByCycle(wtmp)
+        abcf<-sweep(abc,MARGIN=2,STATS=colSums(abc),FUN="/")
+        abcA = abc
+        abcA[abc < min_seq | abcf < min_freq] = 0
+        consensus <- names(IUPAC_CODE_MAP)[match(apply(abcA,2,function(x) paste(rownames(abcA)[x>0],collapse="")),IUPAC_CODE_MAP)]
+        consensus[is.na(consensus)] = "N"
+        consensus[which(abc['.',] > (length(wtmp)*0.9))] =  "."  ## at least 90% of reads must have '.' at the join location
+        amb_bases <- sum(consensus %in% names(IUPAC_CODE_MAP[-c(1:4)])) ## - 5 for Ns
+        consensus = paste(consensus,collapse="")
+        error_rate=sum(1-apply(sweep(abc,MARGIN=2,STATS=colSums(abc),FUN="/"),2,max))/(nchar(consensus)-5) ## - 5 for Ns
+        spaired_str <- lapply(strsplit(consensus,split="\\.+",fixed = FALSE),DNAStringSet)
+        spaired_str <- do.call("c",spaired_str)
+        names(spaired_str) <- paste(name,c("read1","read2"),rep(seq.int(1,length(spaired_str)/2),each=2),length(wtmp), counts[[name]], round(length(wtmp)/counts[[name]],3),round(error_rate,3),amb_bases,sep="|")            
+        spaired_str
+      }
+    })
+  }
+  do.call("c",c(unname(single_res),unname(paired_res)))
+}
+
+
+######################################################################
+## occurrence
 ##  output all sequences, for each sample/amplicon, which meet the min_freq and min_seq criteria
 ## 
 ## Parameters
 ##  name: amplicon name
 ##  min_freq: minimum frequence to accept variant
 ##  min_seq: minimum number of sequences to accept variant
-"occurance" <- function(name,min_freq,min_seq) {
+"occurrence" <- function(name,min_freq,min_seq) {
 #    cat(name,", ")
     seqs <- DNAStringSet()
     
@@ -427,10 +497,11 @@ sapply(program_list,function(program){
     if (any(redo)) stop("Failed to complete all amplicons, try reducing the number of processors.")
     write(paste("Finished analyzing amplicons"),stdout())
         
-    names(freq_seqs) <- anames
-    result_seqs <- sapply(freq_seqs,length)
-    tt <- DNAStringSet(unlist(unname(sapply(freq_seqs,as.character))))
-   
+
+#    names(freq_seqs) <- anames
+#    result_seqs <- sapply(freq_seqs,length)
+#    tt <- DNAStringSet(unlist(unname(sapply(freq_seqs,as.character))))
+    tt <- do.call('c',unname(freq_seqs))  
     onms <- names(tt)
     first <- sapply(strsplit(onms,split="|",fixed=TRUE),"[[",1L)
     oprimer <- sapply(strsplit(first,split=":"),function(x) tail(x,1))
@@ -441,18 +512,19 @@ sapply(program_list,function(program){
     write(paste("Writing Reads"),stdout())
     writeXStringSet(tt,file.path(output,paste(program,"reduced.fasta",sep=".")))
 
-    dir.create(file.path(output,paste(program,"split_samples",sep=".")))
-    split_tt <- split(tt,oid)
-    mclapply(names(split_tt), function(x){
-        writeXStringSet(split_tt[[x]],file.path(output,paste(program,"split_samples",sep="."),paste("Sample",x,"fasta",sep=".")))
-    }, mc.cores = procs)
-    dir.create(file.path(output,paste(program,"split_amplicon",sep=".")))
-    split_tt <- split(tt,paste(oprimer,second,sep="."))
-    mclapply(names(split_tt), function(x){
-        writeXStringSet(split_tt[[x]],file.path(output,paste(program,"split_amplicon",sep="."),paste("Amplicon",x,"fasta",sep=".")))
-    }, mc.cores = procs)
-    
-    write(paste("Producing final images"),stdout())
+dir.create(file.path(output,paste(program,"split_samples",sep=".")))
+split_tt <- split(tt,oid)
+mclapply(names(split_tt), function(x){
+  writeXStringSet(split_tt[[x]],file.path(output,paste(program,"split_samples",sep="."),paste("Sample",x,"fasta",sep=".")))
+}, mc.cores = procs)
+dir.create(file.path(output,paste(program,"split_amplicon",sep=".")))
+split_tt <- split(tt,paste(oprimer,second,sep="."))
+mclapply(names(split_tt), function(x){
+  writeXStringSet(split_tt[[x]],file.path(output,paste(program,"split_amplicon",sep="."),paste("Amplicon",x,"fasta",sep=".")))
+}, mc.cores = procs)
+
+
+write(paste("Producing final images"),stdout())
     #### PLOTTING RESULTS    
     png(file.path(output,paste(program,"freq_read_counts.png",sep=".")),height=8,width=10.5,units="in",res=300)
     hist(as.numeric(sapply(strsplit(onms,split="|",fixed=TRUE),"[[",5L)),breaks=200,main=paste("histogram of amplicon read counts\n",program," trimR1:",trimOne," trimR2:",trimTwo,"\n",sep=""),xlab="frequency")
@@ -471,14 +543,14 @@ sapply(program_list,function(program){
         }
     }
     
-    occurance_a <- table(oid,oprimer)
-    uoccurance_a <- matrix(0,nrow=length(uid),ncol=length(uprimer))
-    rownames(uoccurance_a) <- uid
-    colnames(uoccurance_a) <- uprimer
+    occurrence_a <- table(oid,oprimer)
+    uoccurrence_a <- matrix(0,nrow=length(uid),ncol=length(uprimer))
+    rownames(uoccurrence_a) <- uid
+    colnames(uoccurrence_a) <- uprimer
     
-    uoccurance_a[rownames(occurance_a),colnames(occurance_a)] <- occurance_a
+    uoccurrence_a[rownames(occurrence_a),colnames(occurrence_a)] <- occurrence_a
     
-    mratio <- melt(uoccurance_a)
+    mratio <- melt(uoccurrence_a)
     colnames(mratio) <- c("SampleID","PrimerID","value")
     mratio$value = as.factor(mratio$value)
     

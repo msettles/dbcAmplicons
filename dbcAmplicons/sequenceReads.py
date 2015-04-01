@@ -256,8 +256,18 @@ class TwoSequenceReadSet:
         """
         self.project = sTable.getProjectID(self.barcode,self.primer)
         self.sample = sTable.getSampleID(self.barcode,self.primer)
-        self.goodRead = self.goodRead and self.project != None
+        self.goodRead = self.project != None
         return 0
+    def getFastqSRA(self):
+        """ 
+        Create four line string ('\n' separator included) for the read pair, returning a length 2 vector (one for each read)
+        """
+        read1_name = "%s 1:N:0:" % (self.name)
+        read2_name = "%s 2:N:0:" % (self.name)
+        r1 = '\n'.join([read1_name, self.read_1,'+',self.qual_1])
+        r2 = '\n'.join([read2_name, self.read_2,'+',self.qual_2])
+        return [r1,r2]
+
     def getFastq(self):
         """ 
         Create four line string ('\n' separator included) for the read pair, returning a length 2 vector (one for each read)
@@ -301,11 +311,11 @@ class TwoSequenceReadSet:
         """
         name = '>' + self.name[1:]
         if self.primer != None:
-            read1_name = "%s 1:N:0:%s:%s" % (name, self.sample, self.primer)
-            read2_name = "%s 2:N:0:%s:%s" % (name, self.sample, self.primer)
+            read1_name = "%s 1:N:0:%s:%s:%i" % (name, self.sample, self.primer,len(self.read_1))
+            read2_name = "%s 2:N:0:%s:%s:%i" % (name, self.sample, self.primer,len(self.read_2))
         else:
-            read1_name = "%s 1:N:0:%s" % (name, self.sample)
-            read2_name = "%s 2:N:0:%s" % (name, self.sample)
+            read1_name = "%s 1:N:0:%s:%i" % (name, self.sample,len(self.read_1))
+            read2_name = "%s 2:N:0:%s:%i" % (name, self.sample,len(self.read_2))
         r1 = '\n'.join([read1_name, self.read_1])
         r2 = '\n'.join([read2_name, self.read_2])
         return [r1,r2]
@@ -314,11 +324,12 @@ class TwoSequenceReadSet:
         Create two line string ('\n' separator included) for the read pair, concatenating the two reads into a single returning length 1 vector (one read)
         """
         name = '>' + self.name[1:]
+        joined_seq = self.read_1 + misc.reverseComplement(self.read_2)
         if self.primer != None:
-            read1_name = "%s|%s:%s" % (name, self.sample, self.primer)
+            read1_name = "%s|%s:%s:PAIR" % (name, self.sample, self.primer)
         else:
-            read1_name = "%s|%s" % (name, self.sample)
-        r1 = '\n'.join([read1_name, self.read_1 + misc.reverseComplement(self.read_2)])
+            read1_name = "%s|%s:PAIR" % (name, self.sample)
+        r1 = '\n'.join([read1_name, joined_seq])
         return [r1]
     
 
@@ -365,9 +376,9 @@ class OneSequenceReadSet:
         """
         name = '>' + self.name[1:]
         if self.primer != None:
-            read1_name = "%s|%s:%s" % (name, self.sample, self.primer)
+            read1_name = "%s|%s:%s:%i" % (name, self.sample, self.primer, len(self.read_1))
         else:
-            read1_name = "%s|%s" % (name, self.sample)
+            read1_name = "%s|%s:%i" % (name, self.sample, len(self.read_1))
         r1 = '\n'.join([read1_name, self.read_1])
         return [r1]
 

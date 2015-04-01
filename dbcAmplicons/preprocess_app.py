@@ -22,6 +22,8 @@ from dbcAmplicons import sampleTable
 from dbcAmplicons import FourReadIlluminaRun
 from dbcAmplicons import IlluminaTwoReadOutput
 from dbcAmplicons import misc
+
+
 class preprocessApp:
     """
     Preprocess raw Illumina four read amplicon data
@@ -128,7 +130,7 @@ class preprocessApp:
                 for key in self.run_out:
                     self.run_out[key].writeReads()
                 if self.verbose:
-                    sys.stderr.write("processed %s total reads, %s Reads/second, %s identified reads, %s unidentified reads (%s%%)\n" % (self.run.count(), round(self.run.count()/(time.time() - lasttime),0), identified_count,unidentified_count,round((float(identified_count)/float(self.run.count()))*100,1)))
+                    sys.stderr.write("processed %s total reads, %s Reads/second, %s identified reads(%s%%), %s unidentified reads\n" % (self.run.count(), round(self.run.count()/(time.time() - lasttime),0), identified_count,round((float(identified_count)/float(self.run.count()))*100,1), unidentified_count))
                 if test: ### exit after the first batch to test the inputs
                     break
             if self.verbose:
@@ -156,7 +158,7 @@ class preprocessApp:
             # write out project table
             if evalSample and self.verbose:
                 for key in self.run_out:
-                    sys.stdout.write("%s (%s%%)\treads found for project\t%s\n" % (self.run_out[key].count(), round((float(self.run_out[key].count())/float(identified_count))*100,1), key))
+                    sys.stdout.write("%s reads (%s%% of total run) found for project\t%s\n" % (self.run_out[key].count(), round((float(self.run_out[key].count())/float(self.run.count()))*100,1), key))
             self.clean()
             return 0    
         except (KeyboardInterrupt, SystemExit):
