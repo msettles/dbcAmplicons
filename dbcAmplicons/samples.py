@@ -122,11 +122,15 @@ class sampleTable:
                             if sid not in self.sampleMetadata:
                                 self.sampleMetadata[sid] = {}
                                 self.sampleMetadata[sid][(sid, primer)] = {"PrimerPairID": primer, "BarcodeID": barcode, "SampleID": sid, "ProjectID": pid}
+                            else:
+                                self.sampleMetadata[sid][(sid, primer)] = {"PrimerPairID": primer, "BarcodeID": barcode, "SampleID": sid, "ProjectID": pid}
                     else:
                         self.sampleTable[barcode] = {}
                         self.sampleTable[barcode][primer] = [sid, pid]
                         if sid not in self.sampleMetadata:
                             self.sampleMetadata[sid] = {}
+                            self.sampleMetadata[sid][(sid, primer)] = {"PrimerPairID": primer, "BarcodeID": barcode, "SampleID": sid, "ProjectID": pid}
+                        else:
                             self.sampleMetadata[sid][(sid, primer)] = {"PrimerPairID": primer, "BarcodeID": barcode, "SampleID": sid, "ProjectID": pid}
                 # parse metadata
                 if len(metadata_index) > 0:
@@ -191,7 +195,7 @@ class sampleTable:
         Given a barcode and primer, return the associated project, "*" is allowed in the primer for 'any' primer match
         """
         if barcode in self.sampleMetadata:
-            # barcode, primer has already been assigned
+            # barcode, primer has already been assigned and barcode is sample_id
             return self.sampleMetadata[barcode][(barcode, primer)]["ProjectID"]
         try:
             sid = self.sampleTable[barcode]
