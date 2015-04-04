@@ -228,7 +228,8 @@ class abundanceApp:
                 mtax_len_p = {v: round(tax_len[v]["PAIR"]/(sum(abundanceTable[v].values())), 3) for v in taxa_keys}
 
                 def func(x): return x.split(';')
-                taxa_keys_md = [{'taxonomy': func(v), 'mean_rdp_bootstrap_value': mbootscore[v], 'mean_sequence_length_single': mtax_len_s[v], 'percentage_paired': mtax_len_p[v]} for v in taxa_keys]
+                # taxa_keys_md = [{'taxonomy': func(v), 'mean_rdp_bootstrap_value': mbootscore[v], 'mean_sequence_length_single': mtax_len_s[v], 'percentage_paired': mtax_len_p[v]} for v in taxa_keys]
+                taxa_keys_md = [{'taxonomy': func(v)} for v in taxa_keys]
 
                 # build the data object
                 for i, taxa in enumerate(taxa_keys):

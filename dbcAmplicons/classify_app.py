@@ -39,6 +39,7 @@ def rdpCall(query, output, gene, rdpPath, verbose):
     if verbose:
         sys.stderr.write("Starting rdp for file %s\n" % query)
         sys.stderr.write(' '.join(rdp_call))
+        sys.stderr.write('\n')       
     res = call(rdp_call)
     if res == 0:
         try:
