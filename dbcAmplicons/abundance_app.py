@@ -209,10 +209,10 @@ class abundanceApp:
                 data = []
                 obs_ids = []
                 sampleList = sorted(sampleList)
-                sampleList_md = [{'primers': primers[v]} for v in sampleList]
-                if evalSample and sTable.hasMetadata:
-                    for i, v in enumerate(sampleList):
-                        sampleList_md[i].update(sTable.sampleMetadata[v]["Metadata"])
+                # sampleList_md = [{'id': v} for v in sampleList]
+                sampleList_md = [{'primers': ";".join(primers[v])} for v in sampleList]
+                for i, v in enumerate(sampleList):
+                    sampleList_md[i].update(sTable.sampleMetadata[v]["Metadata"])
 
                 # taxanomic keys and metadata
                 taxa_keys = sorted(abundanceTable.keys())
@@ -228,8 +228,8 @@ class abundanceApp:
                 mtax_len_p = {v: round(tax_len[v]["PAIR"]/(sum(abundanceTable[v].values())), 3) for v in taxa_keys}
 
                 def func(x): return x.split(';')
-                # taxa_keys_md = [{'taxonomy': func(v), 'mean_rdp_bootstrap_value': mbootscore[v], 'mean_sequence_length_single': mtax_len_s[v], 'percentage_paired': mtax_len_p[v]} for v in taxa_keys]
-                taxa_keys_md = [{'taxonomy': func(v)} for v in taxa_keys]
+                taxa_keys_md = [{'taxonomy': func(v), 'mean_rdp_bootstrap_value': mbootscore[v], 'mean_sequence_length_single': mtax_len_s[v], 'percentage_paired': mtax_len_p[v]} for v in taxa_keys]
+                # taxa_keys_md = [{'taxonomy': func(v)} for v in taxa_keys]
 
                 # build the data object
                 for i, taxa in enumerate(taxa_keys):
@@ -253,7 +253,7 @@ class abundanceApp:
                 except ImportError:
                     sys.stderr.write("Writing json formatted biom file to: %s\n" % (output_prefix + '.biom'))
                     with open(output_prefix + '.biom', 'w') as f:
-                        f.write(biomT.to_json("BIOM-Format 1.3.1"))
+                        f.write(biomT.to_json("dbcAmplicons"))
                 # if evalSample:
                 #     ab_name = output_prefix + '.biom'
                 # else:
