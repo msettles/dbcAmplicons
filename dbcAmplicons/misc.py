@@ -5,6 +5,7 @@ import os
 import errno
 from subprocess import Popen
 from subprocess import PIPE
+import signal
 import glob
 import shlex
 
@@ -17,7 +18,13 @@ Gzip utilities, run gzip in a subprocess
 
 
 def sp_gzip_read(file):
-    p = Popen(shlex.split('gzip --decompress --to-stdout') + [file], stdout=PIPE, stderr=None, bufsize=-1)
+    p = Popen(shlex.split('gzip --decompress --to-stdout') + [file],
+        stdout=PIPE,
+        stderr=None,
+        bufsize=-1,
+        preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+    if p.returncode:
+        raise
     return p.stdout
 
 

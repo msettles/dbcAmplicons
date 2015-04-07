@@ -129,7 +129,7 @@ class abundanceApp:
     def __init__(self):
         self.verbose = False
 
-    def start(self, fixrank_file, samplesFile, output_prefix='table', rank='genus', threshold=0.5, biom=False, verbose=True, debug=False):
+    def start(self, fixrank_file, samplesFile, output_prefix='table', rank='genus', threshold=0.5, minsize=None, maxsize=None, biom=False, verbose=True, debug=False):
         """
             Start processing classification fixrank files
         """
@@ -164,10 +164,19 @@ class abundanceApp:
             primers = dict()
             sampleList = []
             sampleCounts = Counter()
+            discardedReads = 0
             for ffile in self.ffixrank:
                 with open(ffile, "rb") as infile:
                     for line in infile:
                         lrank = fixrankLine(line.rstrip('\n'), rank, threshold, biom)
+                        tax = lrank.getCall()
+                        if (minsize is not None or maxsize is not None) and tax[2] != "PAIR":
+                            if minsize is not None and int(tax[2]) < minsize:
+                                discardedReads += 1
+                                continue
+                            if maxsize is not None and int(tax[2]) > maxsize:
+                                discardedReads += 1
+                                continue
                         if evalSample:
                             lrank.assignRead(sTable)
                         if lrank.isOk():
@@ -177,7 +186,6 @@ class abundanceApp:
                             sampleCounts[lrank.getSampleID()] += 1
                             if lrank.getPrimer() not in primers[lrank.getSampleID()]:
                                 primers[lrank.getSampleID()].append(lrank.getPrimer())
-                            tax = lrank.getCall()
                             if tax[0] in abundanceTable.keys():
                                 abundanceTable[tax[0]][lrank.getSampleID()] += 1
                                 bootscore[tax[0]] += tax[1]
@@ -201,6 +209,8 @@ class abundanceApp:
                             sys.stderr.write("processed %s total lines, %s lines/second\n" % (lines, round(lines/(time.time() - lasttime), 0)))
             if self.verbose:
                 sys.stdout.write("%s lines processed in %s minutes\n" % (lines, round((time.time()-lasttime)/(60), 2)))
+                if discardedReads > -1:
+                    sys.stderr.write("discarded %s reads for size\n" % str(discardedReads))
                 sys.stderr.write("Writing output\n")
             # output files
             # biom format

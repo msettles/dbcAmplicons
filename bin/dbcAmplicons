@@ -384,6 +384,10 @@ def abundanceApp(subparsers):
                         action='store', type=str, dest='rank', metavar='<arg>', default='genus', required=False, choices=['domain', 'phylum', 'class', 'order', 'family', 'genus', 'species'])
     preprocess_parser.add_argument('-t', '--threshold', help='Threshold bootstrap value to use for assignment, first taxon level greater than threshold',
                         type=float, dest='threshold', metavar="VALUE", default=0.5, required=False)
+    preprocess_parser.add_argument('-m', '--minsize', help='Min size of amplicon to consider',
+                        type=int, dest='minsize', metavar="VALUE", default=None, required=False)
+    preprocess_parser.add_argument('-M', '--maxsize', help='Max size of amplicon to consider',
+                        type=int, dest='maxsize', metavar="VALUE", default=None, required=False)
     preprocess_parser.add_argument('-S', '--sample_metadata', help='file with sample metadata',
                         action='store', type=str, dest='samples_file', metavar='FILE', default=None, required=False)
     preprocess_parser.add_argument('-O', '--output_path', help='path for output files [default: %(default)s]',
@@ -420,10 +424,10 @@ class abundanceCMD:
 
         if profile:
             import cProfile
-            cProfile.runctx('app.start(args.fixrank_file, sFile, output_prefix, args.rank, args.threshold, args.biom verbose, debug)', globals(), locals())
+            cProfile.runctx('app.start(args.fixrank_file, sFile, output_prefix, args.rank, args.threshold, args.minsize, args.maxsize, args.biom verbose, debug)', globals(), locals())
             return 255
         else:
-            return app.start(args.fixrank_file, sFile, output_prefix, args.rank, args.threshold, args.biom, verbose, debug)
+            return app.start(args.fixrank_file, sFile, output_prefix, args.rank, args.threshold, args.minsize, args.maxsize, args.biom, verbose, debug)
 
 
 #####################################################################################
@@ -439,7 +443,7 @@ def parseArgs():
     subparsers = parser.add_subparsers(help='commands', dest='command')
 
     preprocessApp(subparsers)
-    splitreadsApp(subparsers)
+    # splitreadsApp(subparsers)
     joinApp(subparsers)
     classifyApp(subparsers)
     abundanceApp(subparsers)
@@ -458,12 +462,13 @@ def main():
         sys.path.insert(0, lib_path)
 
     preprocess = preprocessCMD()
-    splitreads = splitreadsCMD()
+    # splitreads = splitreadsCMD()
     join = joinCMD()
     classify = classifyCMD()
     abundance = abundanceCMD()
 
-    commands = {'preprocess': preprocess, 'splitreads': splitreads, 'join': join, 'classify': classify, 'abundance': abundance}
+    # commands = {'preprocess': preprocess, 'splitreads': splitreads, 'join': join, 'classify': classify, 'abundance': abundance}
+    commands = {'preprocess': preprocess, 'join': join, 'classify': classify, 'abundance': abundance}
 
     args = parseArgs()
 
