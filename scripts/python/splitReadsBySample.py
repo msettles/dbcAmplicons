@@ -16,7 +16,6 @@
 
 import os
 import sys
-import time
 import argparse
 import traceback
 from dbcAmplicons import TwoReadIlluminaRun
@@ -31,12 +30,15 @@ profile = False
 
 version_num = "v0.0.1"
 
+
 class splitApp:
     """
     Split two read Illumina files (barcodes processed from dbcAmplicons) into separate projects
-    """ 
+    """
+
     def __init__(self):
         self.verbose = False
+
     def start(self, fastq_file1, fastq_file2, fastq_fileU, output_prefix, batchsize=100000, uncompressed=False, verbose=True, debug=False):
         """
         Split double barcoded Illumina sequencing run from two to four reads by sample identifier
@@ -64,19 +66,19 @@ class splitApp:
                 while 1:
                     if self.verbose:
                         sys.stderr.write("Processing sequence files.\n")
-                    ## get next batch of reads
+                    # get next batch of reads
                     reads = self.runPairs.next(batchsize)
                     if len(reads) == 0:
                         break
-                    ## process individual reads, check to see if sample was already added to the library of self.run_out
+                    # process individual reads, check to see if sample was already added to the library of self.run_out
                     for read in reads:
                         sample = read.sample
                         if sample in self.run_out:
-                            self.run_out[sample].addRead(read.getFastq())
+                            self.run_out[sample].addRead(read.getFastqSRA())
                         else:
-                            self.run_out[sample] = IlluminaTwoReadOutput(os.path.join(output_prefix, sample),uncompressed)
-                            self.run_out[sample].addRead(read.getFastq())
-                    ### Write out reads for each key in dictionary
+                            self.run_out[sample] = IlluminaTwoReadOutput(os.path.join(output_prefix, sample), uncompressed)
+                            self.run_out[sample].addRead(read.getFastqSRA())
+                    # Write out reads for each key in dictionary
                     for key in self.run_out:
                         self.run_out[key].writeReads()
                 if self.verbose:
@@ -86,19 +88,19 @@ class splitApp:
                 while 1:
                     if self.verbose:
                         sys.stderr.write("Processing sequence files.\n")
-                    ## get next batch of reads
+                    # get next batch of reads
                     reads = self.runSingle.next(batchsize)
                     if len(reads) == 0:
                         break
-                    ## process individual reads, check to see if sample was already added to the library of self.run_out
+                    # process individual reads, check to see if sample was already added to the library of self.run_out
                     for read in reads:
                         sample = read.sample
                         if sample in self.run_out:
-                            self.run_out[sample].addRead(read.getFastq())
+                            self.run_out[sample].addRead(read.getFastqSRA())
                         else:
-                            self.run_out[sample] = IlluminaOneReadOutput(os.path.join(output_prefix, sample),uncompressed)
-                            self.run_out[sample].addRead(read.getFastq())
-                    ### Write out reads for each key in dictionary
+                            self.run_out[sample] = IlluminaOneReadOutput(os.path.join(output_prefix, sample), uncompressed)
+                            self.run_out[sample].addRead(read.getFastqSRA())
+                    # Write out reads for each key in dictionary
                     for key in self.run_out:
                         self.run_out[key].writeReads()
                 if self.verbose:
@@ -125,13 +127,15 @@ class splitApp:
         except:
             pass
 
+
 class splitCMD:
     """
     validate splitApp parser parameters and run the conversion
     """
     def __init__(self):
         pass
-    def execute (self,args):
+
+    def execute(self, args):
         # ----------------------- options output prefix -----------------------
         if args.output_base is None:
             output_prefix = "DBCsample"
@@ -152,19 +156,17 @@ class splitCMD:
         else:
             return app.start(args.fastq_file1, args.fastq_file2, args.fastq_fileU, output_prefix, batchsize, uncompressed, verbose, debug)
 
-#
-#####################################################################################
-##  Master parser arguments
+
 def parseArgs():
     """
     generate main parser
     """
-    parser = argparse.ArgumentParser( \
-        description = 'SplitReadsBySample, a python script for splitting out Illumina sequence reads already processed by dbcAmplicons by sample', \
-        epilog ='For questions or comments, please contact Alida Gerritsen <alida@uidaho.edu>', add_help=True)
+    parser = argparse.ArgumentParser(
+        description='SplitReadsBySample, a python script for splitting out Illumina sequence reads already processed by dbcAmplicons by sample',
+        epilog='For questions or comments, please contact Alida Gerritsen <alida@uidaho.edu>', add_help=True)
     parser.add_argument('--version', action='version', version="%(prog)s Version " + version_num)
     parser.add_argument('-b', '--batchsize', help='batch size to process reads in [default: %(default)s]',
-                        type=int, dest='batchsize', default=100000)    
+                        type=int, dest='batchsize', default=100000)
     parser.add_argument('-O', '--output_path', help='filename for output files [default: %(default)s]',
                         action='store', type=str, dest='output_base', metavar='PREFIX', default=None)
     parser.add_argument('-u', '--uncompressed', help='leave output files uncompressed [default: %(default)s]',
@@ -172,17 +174,18 @@ def parseArgs():
     parser.add_argument('-v', '--silent', help='verbose output [default: %(default)s]',
                         action='store_true', dest='verbose', default=False)
     parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq two file set',
-                        action='store',type=str, required=False, nargs='+')
+                        action='store', type=str, required=False, nargs='+')
     parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq two file set',
-                        action='store',type=str, required=False, nargs='+')
+                        action='store', type=str, required=False, nargs='+')
     parser.add_argument('-U', metavar="singleRead", dest='fastq_fileU', help='fastq from a 1 file Illlumina run',
-                        action='store',type=str, required=False, nargs='+')
+                        action='store', type=str, required=False, nargs='+')
     parser.add_argument('--debug', help='show traceback on error',
-                        action='store_true', dest="debug", default = False)
+                        action='store_true', dest="debug", default=False)
 
-    args = parser.parse_args() 
+    args = parser.parse_args()
 
     return args
+
 
 def main():
     """
@@ -192,10 +195,8 @@ def main():
     if lib_path not in sys.path:
         sys.path.insert(0, lib_path)
     args = parseArgs()
-    
     split = splitCMD()
     split.execute(args)
 
 if __name__ == '__main__':
     main()
- 

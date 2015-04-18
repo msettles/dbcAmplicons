@@ -47,9 +47,10 @@ class sampleTable:
     """
     def __init__(self, samplefile):
         """
-        Initialize a new sampleTable object with the file sample table, parses and stores the sample information and
-        associated project. Class assumes the input file samplefile contains the following 4 columns
-        'SampleID','BarcodeID','PrimerPairID','ProjectID' (defined in the header) others columns in the file are allowed and ignored
+        Initialize a new sampleTable object with the file sample table, parses and stores the sample
+        information and associated project. Class assumes the input file samplefile contains the
+        following 4 columns 'SampleID','BarcodeID','PrimerPairID','ProjectID' (defined in the header)
+        others columns in the file are allowed and placed in Metadata
         """
         self.sampleCount = 0
         self.sampleTable = {}
@@ -106,8 +107,10 @@ class sampleTable:
                 row = row.rstrip()  # strip off newline
                 row = row.split('\t')  # split by tab
                 barcode = row[barcodeID_index]
-                sid = re.sub(r'[\\/:"\' ]+', ".", row[sampleID_index])  # replace unsafe characters from sampleID with '.'
-                pid = re.sub(r'[:"\'*?<>| ]+', ".", row[projectID_index])  # replace unsafe characters from projectID with '.'
+                # sid = re.sub(r'[\\/:"\' ]+', ".", row[sampleID_index])  # replace unsafe characters from sampleID with '.'
+                # pid = re.sub(r'[:"\'*?<>| ]+', ".", row[projectID_index])  # replace unsafe characters from projectID with '.'
+                sid = re.sub(r'[^a-zA-Z0-9_-]', ".", row[sampleID_index])  # replace unsafe characters from sampleID with '.'
+                pid = re.sub(r'[^a-zA-Z0-9_-]', ".", row[projectID_index])  # replace unsafe characters from projectID with '.'
                 projects.append(pid)
                 samples.append(sid)
                 for primer in row[primerID_index].split(','):

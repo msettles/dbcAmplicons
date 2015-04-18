@@ -42,3 +42,4 @@ from preprocess_app import preprocessApp
 from splitreads_app import splitreadsApp
 from classify_app import classifyApp
 from abundance_app import abundanceApp
+from validate_app import validateApp

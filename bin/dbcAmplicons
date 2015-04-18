@@ -64,9 +64,9 @@ version_num = "v0.6.0-04012015"
 
 #####################################################################################
 # Preprocess four read raw amplicon data set
-def preprocessApp(subparsers):
+def preprocessParser(subparsers):
     """
-    preprocessApp parser parameters
+    preprocessParser parser parameters
     """
     #
     # Parse options
@@ -161,9 +161,9 @@ class preprocessCMD:
 
 #####################################################################################
 # Split Preprocessed data by project
-def splitreadsApp(subparsers):
+def splitreadsParser(subparsers):
     """
-    splitreadsApp parser parameters
+    splitreadsParser parser parameters
     """
     #
     # Parse options
@@ -230,9 +230,9 @@ def joinFun(args, verbose):
     return pf
 
 
-def joinApp(subparsers):
+def joinParser(subparsers):
     """
-    joinApp parser parameters
+    joinParser parser parameters
     """
     #
     # Parse options
@@ -299,9 +299,9 @@ class joinCMD:
 
 #####################################################################################
 # Classify reads using rdp
-def classifyApp(subparsers):
+def classifyParser(subparsers):
     """
-    classifyApp parser parameters
+    classifyParser parser parameters
     """
     #
     # Parse options
@@ -372,9 +372,9 @@ class classifyCMD:
 
 #####################################################################################
 # Compute an abundance table from classified reads in fixrank format
-def abundanceApp(subparsers):
+def abundanceParser(subparsers):
     """
-    abundanceApp parser parameters
+    abundanceParser parser parameters
     """
     #
     # Parse options
@@ -442,11 +442,11 @@ def parseArgs():
     parser.add_argument('--version', action='version', version="%(prog)s Version " + version_num)
     subparsers = parser.add_subparsers(help='commands', dest='command')
 
-    preprocessApp(subparsers)
-    # splitreadsApp(subparsers)
-    joinApp(subparsers)
-    classifyApp(subparsers)
-    abundanceApp(subparsers)
+    preprocessParser(subparsers)
+    # splitreadsParser(subparsers)
+    joinParser(subparsers)
+    classifyParser(subparsers)
+    abundanceParser(subparsers)
 
     args = parser.parse_args()
 
