@@ -46,7 +46,7 @@ arguments <- parse_args(parser, positional_arguments = 1)
 opt <- arguments$options
 basename <- arguments$args
 
-avail_functions <- c("consensus","ambiguities","occurrence")
+avail_functions <- c("consensus","ambiguities","occurrence","ambiguities_by_size")
 program_list = unlist(strsplit(opt$program,split=","))
 if (!all(program_list %in% avail_functions)) {
     stop(paste("program list parameter must be 1) comma separated and 2) in the list",paste(avail_functions,collapse=","),sep=" "))
