@@ -21,7 +21,7 @@ config = \
         'url': 'https://github.com/msettles/DBC_amplicons/py-dbcAmplicons',
         'download_url': 'https://github.com/msettles/DBC_amplicons/py-dbcAmplicons',
         'author_email': 'msettles@uidaho.edu',
-        'version': 'v0.6.0-04012015',
+        'version': 'v0.6.1-04222015',
         'install_requires': ['biom-format>=2.1.3'],
         'packages': ['dbcAmplicons'],
         'scripts': ['bin/dbcAmplicons', 'scripts/python/convert2ReadTo4Read.py', 'scripts/python/splitReadsBySample.py', 'scripts/R/reduce_amplicons.R'],

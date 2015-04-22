@@ -47,8 +47,10 @@ profile = False
 # added script to split by sample, appending output files through iterations
 # version 0.6.0
 # added support for output of biom format in abundance tables
+# version 0.6.1
+# added validate app, some pep modification and various tweeks
 
-version_num = "v0.6.0-04012015"
+version_num = "v0.6.1-04222015"
 
 
 #####################################################################################
