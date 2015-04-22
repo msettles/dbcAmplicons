@@ -1,20 +1,7 @@
 #!/usr/bin/env python
 
-# Copyright 2013, Institute for Bioninformatics and Evolutionary Studies
+# dbcAmplicons
 #
-# Licensed under the Apache License, Version 2.0 (the 'License');
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an 'AS IS' BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-
 ######################################################################
 #
 # dbcAmplicons is an application which processes raw four read
@@ -29,6 +16,8 @@ from subprocess import Popen
 from subprocess import PIPE
 from subprocess import STDOUT
 from multiprocessing import cpu_count
+
+from distutils import spawn
 
 profile = False
 
@@ -63,6 +52,54 @@ version_num = "v0.6.0-04012015"
 
 
 #####################################################################################
+# Validate the sample, barcode and primer files
+def validateParser(subparsers):
+    """
+    validateParser parser parameters
+    """
+    #
+    # Parse options
+    #
+    validate_parser = subparsers.add_parser('validate', help='validate the sample, barcode and primer sheets')
+    validate_parser.add_argument('-B', '--barcodes_file', help='file with barcodes',
+                        action='store', type=str, dest='barcodes_file', metavar='FILENAME', required=True)
+    validate_parser.add_argument('-P', '--primer_file', help='file with primers',
+                        action='store', type=str, dest='primer_file', metavar='FILENAME', required=True)
+    validate_parser.add_argument('-S', '--sample_metadata', help='file with sample metadata',
+                        action='store', type=str, dest='samples_file', metavar='FILENAME', required=True)
+    validate_parser.add_argument('-v', '--silent', help='silences verbose output [default: %(default)s]',
+                        action='store_true', dest='verbose', default=False)
+    validate_parser.add_argument('--debug', help='show traceback on error',
+                        action='store_true', dest="debug", default=False)
+    return validate_parser
+
+
+class validateCMD:
+    """
+    validate validateApp parser parameters and launch the app
+    """
+    def __init__(self):
+        pass
+
+    def execute(self, args):
+        verbose = not args.verbose
+        # ----------------------- options input files -----------------------
+        bcFile = args.barcodes_file
+        sFile = args.samples_file
+        prFile = args.primer_file
+
+        from dbcAmplicons import validateApp
+        app = validateApp()
+
+        if profile:
+            import cProfile
+            cProfile.runctx('app.start(bcFile, prFile, sFile, verbose, args.debug)', globals(), locals())
+            return 255
+        else:
+            return app.start(bcFile, prFile, sFile, verbose, args.debug)
+
+
+#####################################################################################
 # Preprocess four read raw amplicon data set
 def preprocessParser(subparsers):
     """
@@ -73,7 +110,7 @@ def preprocessParser(subparsers):
     #
     preprocess_parser = subparsers.add_parser('preprocess', help='Preprocess four read raw amplicon data, identifying barcode and primer sequence')
     preprocess_parser.add_argument('-B', '--barcodes_file', help='file with barcodes',
-                        action='store', type=str, metavar='FILENAME', required=True)
+                        action='store', type=str, dest='barcodes_file', metavar='FILENAME', required=True)
     preprocess_parser.add_argument('-d', '--barcodediff', help='max hamming dist from barcode [default: %(default)s]',
                         type=int, dest='barcodediff', default=1)
     preprocess_parser.add_argument('-P', '--primer_file', help='file with primers',
@@ -237,7 +274,7 @@ def joinParser(subparsers):
     #
     # Parse options
     #
-    preprocess_parser = subparsers.add_parser('join', help='join reads using flash2-amp')
+    preprocess_parser = subparsers.add_parser('join', help='join reads using flash2')
     preprocess_parser.add_argument('-O', '--output_path', help='path for output files [default: %(default)s]',
                         action='store', type=str, dest='output_base', metavar='PREFIX', default="joined")
     preprocess_parser.add_argument('-u', '--uncompressed', help='leave output files uncompressed [default: %(default)s]',
@@ -280,15 +317,27 @@ class joinCMD:
             compress = ""
         else:
             compress = '-z'
-
+        if not os.path.isfile(args.fastq_file1):
+            sys.stderr.write("File: %s not found" % args.fastq_file1)
+            sys.exit()
         fastq_file1 = os.path.realpath(args.fastq_file1)
+
         if args.fastq_file2 is None:
             fastq_file2 = misc.infer_read_file_name(fastq_file1, "2")
+        elif not os.path.isfile(args.fastq_file2):
+            sys.stderr.write("File: %s not found" % args.fastq_file2)
+            sys.exit()
         else:
             fastq_file2 = args.fastq_file2
 
+        flash_path = spawn.find_executable("flash2")
+        if flash_path is None:
+            flash2_download = "https://github.com/dstreett/FLASH2"
+            sys.stderr.write("flash2 not found, please download and install from: %s\n" % flash2_download)
+            sys.exit()
+
         # System call, try adding Popen and CString to capture output
-        call_string = ["flash2-amp", "--max-overlap", str(600), "--allow-outies", "-t", str(args.threads), "-x", str(args.max_mixmatch_density), "-o", output_prefix, compress, fastq_file1, fastq_file2]
+        call_string = [flash_path, "--max-overlap", str(600), "--allow-outies", "-t", str(args.threads), "-x", str(args.max_mixmatch_density), "-o", output_prefix, compress, fastq_file1, fastq_file2]
         if profile:
             import cProfile
             cProfile.runctx('joinFun(call_string, args.verbose)', globals(), locals())
@@ -442,6 +491,7 @@ def parseArgs():
     parser.add_argument('--version', action='version', version="%(prog)s Version " + version_num)
     subparsers = parser.add_subparsers(help='commands', dest='command')
 
+    validateParser(subparsers)
     preprocessParser(subparsers)
     # splitreadsParser(subparsers)
     joinParser(subparsers)
@@ -461,6 +511,7 @@ def main():
     if lib_path not in sys.path:
         sys.path.insert(0, lib_path)
 
+    validate = validateCMD()
     preprocess = preprocessCMD()
     # splitreads = splitreadsCMD()
     join = joinCMD()
@@ -468,7 +519,7 @@ def main():
     abundance = abundanceCMD()
 
     # commands = {'preprocess': preprocess, 'splitreads': splitreads, 'join': join, 'classify': classify, 'abundance': abundance}
-    commands = {'preprocess': preprocess, 'join': join, 'classify': classify, 'abundance': abundance}
+    commands = {'validate': validate, 'preprocess': preprocess, 'join': join, 'classify': classify, 'abundance': abundance}
 
     args = parseArgs()
 

@@ -1,5 +1,5 @@
-# Misc functions
-
+# misc.py
+#
 import sys
 import os
 import errno
@@ -39,7 +39,7 @@ def parse_flash(fileinput_stream, verbose=True):
     for i, line in enumerate(fileinput_stream):
         if skip == 4:
             # parse version
-            sys.stdout.write('Using Flash_version:' + re.split(r' +', line.rstrip())[3] + '\n')
+            sys.stdout.write('Using Flash2 version:' + re.split(r' +', line.rstrip())[3] + '\n')
             skip = 3
             continue
         if skip == 3 and "Parameters" not in line:

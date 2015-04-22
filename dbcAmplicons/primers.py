@@ -1,20 +1,6 @@
-#!/usr/bin/env python
-
-# Copyright 2013, Institute for Bioninformatics and Evolutionary Studies
+# primers.py
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-# primer lookup file should look like, where Read is P5 or R1 or READ1 and P7 or R2 or READ2, 
+# primer lookup file should look like, where Read is P5 or R1 or READ1 and P7 or R2 or READ2,
 # the '#' character represents a comments and will be ignored
 # #Read    Pair_ID Primer_ID   Sequence
 # P5  16S 27F_YM1 GTAGAGTTTGATCCTGGCTCAG

@@ -1,19 +1,5 @@
-# py-abundance
-
-# Copyright 2013, Institute for Bioninformatics and Evolutionary Studies
+# abundance_app.py
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import sys
 import os
 import traceback
@@ -154,7 +140,7 @@ class abundanceApp:
             # check input fixrank files
             for ffile in fixrank_file:
                 self.ffixrank.extend(glob.glob(ffile))
-                if len(self.ffixrank) == 0 or not all(os.path.exists(f) for f in self.ffixrank):
+                if len(self.ffixrank) == 0 or not all(os.path.isfile(f) for f in self.ffixrank):
                     sys.stderr.write('ERROR:[abundance_app] fixrank file(s) not found\n')
                     raise
 

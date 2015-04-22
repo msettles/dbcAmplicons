@@ -1,19 +1,5 @@
-# py-classify
-
-# Copyright 2013, Institute for Bioninformatics and Evolutionary Studies
+# classify_app.py
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import sys
 import os
 import traceback
@@ -38,8 +24,7 @@ def rdpCall(query, output, gene, rdpPath, verbose):
     starttime = time.time()
     if verbose:
         sys.stderr.write("Starting rdp for file %s\n" % query)
-        sys.stderr.write(' '.join(rdp_call))
-        sys.stderr.write('\n')       
+        # sys.stderr.write(' '.join(rdp_call) + '\n')
     res = call(rdp_call)
     if res == 0:
         try:
@@ -130,9 +115,9 @@ class classifyApp:
                     run_out = IlluminaFastaOutput(output_prefix + "." + str(batch))
                     # process individual reads
                     for read in reads:
-#                        if minQ != None: # TODO: add trim read to TwoSequenceReadSet
-#                            read.trimRead(minQ, minL)
-#                        if read.goodRead == True:
+                        # if minQ != None: # TODO: add trim read to TwoSequenceReadSet
+                            # read.trimRead(minQ, minL)
+                        # if read.goodRead == True:
                         run_out.addRead(read.getJoinedFasta())
                     # Write out reads
                     run_out.writeReads()
@@ -172,5 +157,7 @@ class classifyApp:
         try:
             self.runSingle.close()
             self.runPairs.close()
+            for f in results.keys():
+                os.remove(f)
         except:
             pass
