@@ -1,10 +1,11 @@
-# Misc functions
-
+# misc.py
+#
 import sys
 import os
 import errno
 from subprocess import Popen
 from subprocess import PIPE
+import signal
 import glob
 import shlex
 
@@ -17,7 +18,13 @@ Gzip utilities, run gzip in a subprocess
 
 
 def sp_gzip_read(file):
-    p = Popen(shlex.split('gzip --decompress --to-stdout') + [file], stdout=PIPE, stderr=None, bufsize=-1)
+    p = Popen(shlex.split('gzip --decompress --to-stdout') + [file],
+        stdout=PIPE,
+        stderr=None,
+        bufsize=-1,
+        preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+    if p.returncode:
+        raise
     return p.stdout
 
 
@@ -32,7 +39,7 @@ def parse_flash(fileinput_stream, verbose=True):
     for i, line in enumerate(fileinput_stream):
         if skip == 4:
             # parse version
-            sys.stdout.write('Using Flash_version:' + re.split(r' +', line.rstrip())[3] + '\n')
+            sys.stdout.write('Using Flash2 version:' + re.split(r' +', line.rstrip())[3] + '\n')
             skip = 3
             continue
         if skip == 3 and "Parameters" not in line:

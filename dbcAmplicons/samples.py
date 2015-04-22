@@ -1,19 +1,5 @@
-#!/usr/bin/env python
-
-# Copyright 2013, Institute for Bioninformatics and Evolutionary Studies
+# samples.py
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 # sample sheet files should have at miniumum the 4 columns [SampleID,BarcodeID,PrimerPairID,ProjectID] order doesn't matter and should look something like
 # SampleID TubeID  BarcodeID   PrimerPairID    Vol Conc    Quantity    ProjectID   Investigator
 # 1    1   Hotel353    ITS-4_5 NA  NA  NA  Anahi-Pollen    Anahi
@@ -47,9 +33,10 @@ class sampleTable:
     """
     def __init__(self, samplefile):
         """
-        Initialize a new sampleTable object with the file sample table, parses and stores the sample information and
-        associated project. Class assumes the input file samplefile contains the following 4 columns
-        'SampleID','BarcodeID','PrimerPairID','ProjectID' (defined in the header) others columns in the file are allowed and ignored
+        Initialize a new sampleTable object with the file sample table, parses and stores the sample
+        information and associated project. Class assumes the input file samplefile contains the
+        following 4 columns 'SampleID','BarcodeID','PrimerPairID','ProjectID' (defined in the header)
+        others columns in the file are allowed and placed in Metadata
         """
         self.sampleCount = 0
         self.sampleTable = {}
@@ -106,8 +93,10 @@ class sampleTable:
                 row = row.rstrip()  # strip off newline
                 row = row.split('\t')  # split by tab
                 barcode = row[barcodeID_index]
-                sid = re.sub(r'[\\/:"\' ]+', ".", row[sampleID_index])  # replace unsafe characters from sampleID with '.'
-                pid = re.sub(r'[:"\'*?<>| ]+', ".", row[projectID_index])  # replace unsafe characters from projectID with '.'
+                # sid = re.sub(r'[\\/:"\' ]+', ".", row[sampleID_index])  # replace unsafe characters from sampleID with '.'
+                # pid = re.sub(r'[:"\'*?<>| ]+', ".", row[projectID_index])  # replace unsafe characters from projectID with '.'
+                sid = re.sub(r'[^a-zA-Z0-9_-]', ".", row[sampleID_index])  # replace unsafe characters from sampleID with '.'
+                pid = re.sub(r'[^a-zA-Z0-9_-]', ".", row[projectID_index])  # replace unsafe characters from projectID with '.'
                 projects.append(pid)
                 samples.append(sid)
                 for primer in row[primerID_index].split(','):
@@ -122,11 +111,15 @@ class sampleTable:
                             if sid not in self.sampleMetadata:
                                 self.sampleMetadata[sid] = {}
                                 self.sampleMetadata[sid][(sid, primer)] = {"PrimerPairID": primer, "BarcodeID": barcode, "SampleID": sid, "ProjectID": pid}
+                            else:
+                                self.sampleMetadata[sid][(sid, primer)] = {"PrimerPairID": primer, "BarcodeID": barcode, "SampleID": sid, "ProjectID": pid}
                     else:
                         self.sampleTable[barcode] = {}
                         self.sampleTable[barcode][primer] = [sid, pid]
                         if sid not in self.sampleMetadata:
                             self.sampleMetadata[sid] = {}
+                            self.sampleMetadata[sid][(sid, primer)] = {"PrimerPairID": primer, "BarcodeID": barcode, "SampleID": sid, "ProjectID": pid}
+                        else:
                             self.sampleMetadata[sid][(sid, primer)] = {"PrimerPairID": primer, "BarcodeID": barcode, "SampleID": sid, "ProjectID": pid}
                 # parse metadata
                 if len(metadata_index) > 0:
@@ -191,7 +184,7 @@ class sampleTable:
         Given a barcode and primer, return the associated project, "*" is allowed in the primer for 'any' primer match
         """
         if barcode in self.sampleMetadata:
-            # barcode, primer has already been assigned
+            # barcode, primer has already been assigned and barcode is sample_id
             return self.sampleMetadata[barcode][(barcode, primer)]["ProjectID"]
         try:
             sid = self.sampleTable[barcode]

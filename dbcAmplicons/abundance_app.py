@@ -1,19 +1,5 @@
-# py-abundance
-
-# Copyright 2013, Institute for Bioninformatics and Evolutionary Studies
+# abundance_app.py
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import sys
 import os
 import traceback
@@ -114,8 +100,8 @@ class fixrankLine:
         """
         Given a samplesTable object, assign a sample ID and project ID using the reads barcode and primer designation
         """
-        self.project = sTable.getProjectID(self.barcode, self.primer)
         self.sample = sTable.getSampleID(self.barcode, self.primer)
+        self.project = sTable.getProjectID(self.barcode, self.primer)
         self.goodRead = self.project is not None
         return 0
 
@@ -129,7 +115,7 @@ class abundanceApp:
     def __init__(self):
         self.verbose = False
 
-    def start(self, fixrank_file, samplesFile, output_prefix='table', rank='genus', threshold=0.5, biom=False, verbose=True, debug=False):
+    def start(self, fixrank_file, samplesFile, output_prefix='table', rank='genus', threshold=0.5, minsize=None, maxsize=None, biom=False, verbose=True, debug=False):
         """
             Start processing classification fixrank files
         """
@@ -154,7 +140,7 @@ class abundanceApp:
             # check input fixrank files
             for ffile in fixrank_file:
                 self.ffixrank.extend(glob.glob(ffile))
-                if len(self.ffixrank) == 0 or not all(os.path.exists(f) for f in self.ffixrank):
+                if len(self.ffixrank) == 0 or not all(os.path.isfile(f) for f in self.ffixrank):
                     sys.stderr.write('ERROR:[abundance_app] fixrank file(s) not found\n')
                     raise
 
@@ -164,10 +150,19 @@ class abundanceApp:
             primers = dict()
             sampleList = []
             sampleCounts = Counter()
+            discardedReads = 0
             for ffile in self.ffixrank:
                 with open(ffile, "rb") as infile:
                     for line in infile:
                         lrank = fixrankLine(line.rstrip('\n'), rank, threshold, biom)
+                        tax = lrank.getCall()
+                        if (minsize is not None or maxsize is not None) and tax[2] != "PAIR":
+                            if minsize is not None and int(tax[2]) < minsize:
+                                discardedReads += 1
+                                continue
+                            if maxsize is not None and int(tax[2]) > maxsize:
+                                discardedReads += 1
+                                continue
                         if evalSample:
                             lrank.assignRead(sTable)
                         if lrank.isOk():
@@ -177,7 +172,6 @@ class abundanceApp:
                             sampleCounts[lrank.getSampleID()] += 1
                             if lrank.getPrimer() not in primers[lrank.getSampleID()]:
                                 primers[lrank.getSampleID()].append(lrank.getPrimer())
-                            tax = lrank.getCall()
                             if tax[0] in abundanceTable.keys():
                                 abundanceTable[tax[0]][lrank.getSampleID()] += 1
                                 bootscore[tax[0]] += tax[1]
@@ -201,6 +195,8 @@ class abundanceApp:
                             sys.stderr.write("processed %s total lines, %s lines/second\n" % (lines, round(lines/(time.time() - lasttime), 0)))
             if self.verbose:
                 sys.stdout.write("%s lines processed in %s minutes\n" % (lines, round((time.time()-lasttime)/(60), 2)))
+                if discardedReads > -1:
+                    sys.stderr.write("discarded %s reads for size\n" % str(discardedReads))
                 sys.stderr.write("Writing output\n")
             # output files
             # biom format
@@ -209,10 +205,10 @@ class abundanceApp:
                 data = []
                 obs_ids = []
                 sampleList = sorted(sampleList)
-                sampleList_md = [{'primers': primers[v]} for v in sampleList]
-                if evalSample and sTable.hasMetadata:
-                    for i, v in enumerate(sampleList):
-                        sampleList_md[i].update(sTable.sampleMetadata[v]["Metadata"])
+                # sampleList_md = [{'id': v} for v in sampleList]
+                sampleList_md = [{'primers': ";".join(primers[v])} for v in sampleList]
+                for i, v in enumerate(sampleList):
+                    sampleList_md[i].update(sTable.sampleMetadata[v]["Metadata"])
 
                 # taxanomic keys and metadata
                 taxa_keys = sorted(abundanceTable.keys())
@@ -229,6 +225,7 @@ class abundanceApp:
 
                 def func(x): return x.split(';')
                 taxa_keys_md = [{'taxonomy': func(v), 'mean_rdp_bootstrap_value': mbootscore[v], 'mean_sequence_length_single': mtax_len_s[v], 'percentage_paired': mtax_len_p[v]} for v in taxa_keys]
+                # taxa_keys_md = [{'taxonomy': func(v)} for v in taxa_keys]
 
                 # build the data object
                 for i, taxa in enumerate(taxa_keys):
@@ -252,7 +249,7 @@ class abundanceApp:
                 except ImportError:
                     sys.stderr.write("Writing json formatted biom file to: %s\n" % (output_prefix + '.biom'))
                     with open(output_prefix + '.biom', 'w') as f:
-                        f.write(biomT.to_json("BIOM-Format 1.3.1"))
+                        f.write(biomT.to_json("dbcAmplicons"))
                 # if evalSample:
                 #     ab_name = output_prefix + '.biom'
                 # else:
