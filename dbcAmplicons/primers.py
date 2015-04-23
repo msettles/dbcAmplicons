@@ -34,6 +34,7 @@ class primerTable:
         self.P7id = {}
         self.P7pair = {}
         self.primers = []
+        # TODO: add in check for presense of both P5 and P7 in pair
         try:
             prfile = open(primerfile, 'r')
         except IOError:
