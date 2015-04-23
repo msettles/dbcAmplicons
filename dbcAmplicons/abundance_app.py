@@ -207,8 +207,9 @@ class abundanceApp:
                 sampleList = sorted(sampleList)
                 # sampleList_md = [{'id': v} for v in sampleList]
                 sampleList_md = [{'primers': ";".join(primers[v])} for v in sampleList]
-                for i, v in enumerate(sampleList):
-                    sampleList_md[i].update(sTable.sampleMetadata[v]["Metadata"])
+                if evalSample:
+                    for i, v in enumerate(sampleList):
+                        sampleList_md[i].update(sTable.sampleMetadata[v]["Metadata"])
 
                 # taxanomic keys and metadata
                 taxa_keys = sorted(abundanceTable.keys())

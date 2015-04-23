@@ -41,7 +41,7 @@ option_list <- list(
 parser <- OptionParser(usage = "%prog [options] basename",option_list=option_list)
 arguments <- parse_args(parser, positional_arguments = 1)
 
-#arguments <- list(options = list(program="consensus,ambiguities,occurrence",min_seq=5,min_freq=0.05,trimOne=0,trimTwo=0,reuse=TRUE,output="AlSoodani_A",procs=30),args="AlSoodani_A")
+#arguments <- list(options = list(program="consensus,ambiguities,occurrence",min_seq=5,min_freq=0.05,trimOne=0,trimTwo=0,reuse=TRUE,output="Jacobs",procs=30),args="Jacobs")
 
 opt <- arguments$options
 basename <- arguments$args
