@@ -94,9 +94,9 @@ class sampleTable:
                 row = row.split('\t')  # split by tab
                 barcode = row[barcodeID_index]
                 # sid = re.sub(r'[\\/:"\' ]+', ".", row[sampleID_index])  # replace unsafe characters from sampleID with '.'
-                # pid = re.sub(r'[:"\'*?<>| ]+', ".", row[projectID_index])  # replace unsafe characters from projectID with '.'
                 sid = re.sub(r'[^a-zA-Z0-9_-]', ".", row[sampleID_index])  # replace unsafe characters from sampleID with '.'
-                pid = re.sub(r'[^a-zA-Z0-9_-]', ".", row[projectID_index])  # replace unsafe characters from projectID with '.'
+                pid = re.sub(r'[:"\'*?<>| ]+', ".", row[projectID_index])  # replace unsafe characters from projectID with '.'
+                # pid = re.sub(r'[^a-zA-Z0-9_-]', ".", row[projectID_index])  # replace unsafe characters from projectID with '.'
                 projects.append(pid)
                 samples.append(sid)
                 for primer in row[primerID_index].split(','):
