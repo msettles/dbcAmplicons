@@ -49,8 +49,10 @@ profile = False
 # added support for output of biom format in abundance tables
 # version 0.6.1
 # added validate app, some pep modification and various tweeks
+# version 0.6.2
+# bugfixes and cleanup, merge customRDP, scripts, mapping with develop, close issue #1, varius bug fixes
 
-version_num = "v0.6.1-04222015"
+version_num = "v0.6.2-04262015"
 
 
 #####################################################################################
