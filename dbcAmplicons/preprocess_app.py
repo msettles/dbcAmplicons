@@ -29,6 +29,7 @@ class preprocessApp:
         evalPrimer = primerFile is not None
         evalSample = samplesFile is not None
         try:
+            v = validateApp()
             # read in primer sequences
             bcTable = barcodeTable(barcodesFile)
             if self.verbose:
@@ -38,12 +39,18 @@ class preprocessApp:
                 prTable = primerTable(primerFile)
                 if verbose:
                     sys.stdout.write("primer table length P5 Primer Sequences:%s, P7 Primer Sequences:%s\n" % (len(prTable.getP5sequences()), len(prTable.getP7sequences())))
+                if v.validatePrimer(prTable, debug) != 0:
+                    sys.stderr.write("Failed validation\n")
+                    self.clean()
+                    return 1
             if evalSample:
                 sTable = sampleTable(samplesFile)
                 if verbose:
                     sys.stdout.write("sample table length: %s, and %s projects.\n" % (sTable.getSampleNumber(), len(sTable.getProjectList())))
-                v = validateApp()
-                v.validateObjects(bcTable, prTable, sTable, debug)
+                if v.validateSample(bcTable, prTable, sTable, debug) != 0:
+                    sys.stderr.write("Failed validation\n")
+                    self.clean()
+                    return 1
 
             # output table
             try:

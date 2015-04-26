@@ -51,8 +51,10 @@ profile = False
 # added validate app, some pep modification and various tweeks
 # version 0.6.2
 # bugfixes and cleanup, merge customRDP, scripts, mapping with develop, close issue #1, varius bug fixes
+# version 0.6.3
+# addressed issue #11, validate pairs in primer file
 
-version_num = "v0.6.2-04262015"
+version_num = "v0.6.3-04262015"
 
 
 #####################################################################################

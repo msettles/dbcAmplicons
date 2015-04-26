@@ -4,7 +4,7 @@ RDP_PATH="/opt/RDPTools/classifier/dist/classifier.jar"
 
 ## test validation
 echo "Testing dbcAmplicons validate"
-dbcAmplicons validate -B barcodeLookupTable.txt -P primerLookupTable.txt -S sampleLookupTable-bd.txt
+dbcAmplicons validate -B barcodeLookupTable.txt -P primerLookupTable-bd.txt -S sampleLookupTable-bd.txt
 
 ## testing preprocess
 echo "Testing dbcAmplicons preprocess"
