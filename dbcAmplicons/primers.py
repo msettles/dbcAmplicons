@@ -76,6 +76,7 @@ class primerTable:
                         self.P7id[pseq] = [ID]
                         self.P7pair[pseq] = [PAIR]
         self.primers = sorted(list(set(self.primers)))
+
         prfile.close()
 
     def getPrimers(self):
