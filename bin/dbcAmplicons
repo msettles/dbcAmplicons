@@ -420,10 +420,10 @@ class classifyCMD:
         else:
             return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, rdpPath, args.gene, args.train, batchsize, args.minQ, args.minL, procs, verbose, debug)
 
-#####################################################################################
-# Compute an abundance table from classified reads in fixrank format
+
 def abundanceParser(subparsers):
     """
+    Compute an abundance table from classified reads in fixrank format
     abundanceParser parser parameters
     """
     #

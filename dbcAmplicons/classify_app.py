@@ -11,12 +11,13 @@ from dbcAmplicons import IlluminaFastaOutput
 from subprocess import call
 from multiprocessing import Pool
 
+
 def rdpCall(query, output, gene, train, rdpPath, verbose):
     '''
     rdpCall takes a query fasta and generates the rdp call for the file, gene should be one of 16srrna or fungallsu
     rdpPath should point to the classifier.jar as a part of RDPTools
     '''
-    if train != None:
+    if train is not None:
         rdp_call = ['java', '-Xmx2048M', '-Xms256M', '-XX:+UseParallelGC', '-XX:ParallelGCThreads=2', '-jar', rdpPath, 'classify', '-q', query, '-o', output, '-f', 'fixrank', '-t', train]
     else:
         if gene != "16srrna" and gene != "fungallsu" and gene != "fungalits_warcup" and gene != "fungalits_unite":

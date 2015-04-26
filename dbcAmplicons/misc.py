@@ -69,10 +69,7 @@ def parse_flash(fileinput_stream, verbose=True):
             data = re.split(': +', re.sub(r'\[FLASH\] +', '', line.rstrip()))
             if len(data) == 2:
                 name = re.sub(r' ', '_', data[0])
-                spacer = '\t'
-                if name in ['Innie_pairs','Outie_pairs']:
-                    spacer = '\t\t'
-                sys.stdout.write(spacer + name + ':' + data[1] + '\n')
+                sys.stdout.write(name + ':' + data[1] + '\n')
             continue
         elif skip == 0 and "Writing histogram files" in line:
             return(0)
