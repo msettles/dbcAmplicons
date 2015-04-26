@@ -12,19 +12,21 @@ from subprocess import call
 from multiprocessing import Pool
 
 
-def rdpCall(query, output, gene, rdpPath, verbose):
+def rdpCall(query, output, gene, train, rdpPath, verbose):
     '''
     rdpCall takes a query fasta and generates the rdp call for the file, gene should be one of 16srrna or fungallsu
     rdpPath should point to the classifier.jar as a part of RDPTools
     '''
-    if gene != "16srrna" and gene != "fungallsu" and gene != "fungalits_warcup" and gene != "fungalits_unite":
-        sys.stderr.write('ERROR:[rdpCall] incorrect gene string provided to rdp\n')
-        raise
-    rdp_call = ['java', '-Xmx2048M', '-Xms256M', '-XX:+UseParallelGC', '-XX:ParallelGCThreads=2', '-jar', rdpPath, 'classify', '-q', query, '-o', output, '-f', 'fixrank', '-g', gene]
+    if train is not None:
+        rdp_call = ['java', '-Xmx2048M', '-Xms256M', '-XX:+UseParallelGC', '-XX:ParallelGCThreads=2', '-jar', rdpPath, 'classify', '-q', query, '-o', output, '-f', 'fixrank', '-t', train]
+    else:
+        if gene != "16srrna" and gene != "fungallsu" and gene != "fungalits_warcup" and gene != "fungalits_unite":
+            sys.stderr.write('ERROR:[rdpCall] incorrect gene string provided to rdp\n')
+            raise
+        rdp_call = ['java', '-Xmx2048M', '-Xms256M', '-XX:+UseParallelGC', '-XX:ParallelGCThreads=2', '-jar', rdpPath, 'classify', '-q', query, '-o', output, '-f', 'fixrank', '-g', gene]
     starttime = time.time()
     if verbose:
         sys.stderr.write("Starting rdp for file %s\n" % query)
-        # sys.stderr.write(' '.join(rdp_call) + '\n')
     res = call(rdp_call)
     if res == 0:
         try:
@@ -63,17 +65,17 @@ class classifyApp:
     def __init__(self):
         self.verbose = False
 
-    def start(self, fastq_file1, fastq_file2, fastq_fileU, output_prefix, rdpPath='./classifier.jar', gene='16srrna', batchsize=10000, minQ=None, minL=0, procs=1, verbose=True, debug=False):
+    def start(self, fastq_file1, fastq_file2, fastq_fileU, output_prefix, rdpPath, gene='16srrna', train=None, batchsize=10000, minQ=None, minL=0, procs=1, verbose=True, debug=False):
         """
-            Start classifying double barcoded Illumina sequencing run
+        Start classifying double barcoded Illumina sequencing run
         """
         results = {}
         self.verbose = verbose
         try:
-            if (gene != '16srrna' and gene != 'fungallsu' and gene != "fungalits_warcup" and gene != "fungalits_unite"):
+            if (train is None and gene != '16srrna' and gene != 'fungallsu' and gene != "fungalits_warcup" and gene != "fungalits_unite"):
                 sys.stderr.write("ERROR:[classify] parameter -g (--gene) must be one of 16srrna or fungallsu or fungalits_warcup or fungalits_unite \n")
                 raise Exception
-            # establish and open the Illumin run
+            # establish and open the Illumina run
             if fastq_file1 is not None and fastq_file2 is not None:
                 self.runPairs = TwoReadIlluminaRun(fastq_file1, fastq_file2)
                 self.runPairs.open()
@@ -104,7 +106,7 @@ class classifyApp:
                     # Write out reads
                     run_out.writeReads()
                     rdp_out = output_prefix + "." + str(batch) + ".fixrank"
-                    results[rdp_out] = pool.apply_async(rdpCall, (run_out.output_prefix, rdp_out, gene, rdpPath, self.verbose))
+                    results[rdp_out] = pool.apply_async(rdpCall, (run_out.output_prefix, rdp_out, gene, train, rdpPath, self.verbose))
             if (self.runPairs is not None):
                 while 1:
                     # get next batch of reads
@@ -122,7 +124,7 @@ class classifyApp:
                     # Write out reads
                     run_out.writeReads()
                     rdp_out = output_prefix + "." + str(batch) + ".fixrank"
-                    results[rdp_out] = pool.apply_async(rdpCall, (run_out.output_prefix, rdp_out, gene, rdpPath, self.verbose))
+                    results[rdp_out] = pool.apply_async(rdpCall, (run_out.output_prefix, rdp_out, gene, train, rdpPath, self.verbose))
             allfinished = False
             while not allfinished:
                 time.sleep(1)

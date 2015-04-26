@@ -15,9 +15,4 @@ rm -rf dbcAmplicons/*.pyc
 rm -rf dbcAmplicons/*.so
 rm -rf dbcAmplicons.egg-info
 
-rm -rf bin/flash2-amp
-
-cd included-apps/FLASH
 make clean
-
-cd ../..

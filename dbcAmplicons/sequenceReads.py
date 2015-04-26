@@ -200,8 +200,8 @@ class FourSequenceReadSet:
         else:
             read1_name = "%s 1:N:0:%s %s|%s|%s|%s" % (self.name, self.sample, self.bc_1, self.barcode[1], self.bc_2, self.barcode[2])
             read2_name = "%s 2:N:0:%s %s|%s|%s|%s" % (self.name, self.sample, self.bc_1, self.barcode[1], self.bc_2, self.barcode[2])
-            r1 = '\n'.join([read1_name, self.read_1[0:self.trim_left], '+', self.qual_1[0:self.trim_right]])
-            r2 = '\n'.join([read2_name, self.read_2[0:self.trim_left], '+', self.qual_2[0:self.trim_right]])
+            r1 = '\n'.join([read1_name, self.read_1[0:self.trim_left], '+', self.qual_1[0:self.trim_left]])
+            r2 = '\n'.join([read2_name, self.read_2[0:self.trim_right], '+', self.qual_2[0:self.trim_right]])
         return [r1, r2]
 
 
@@ -241,6 +241,8 @@ class TwoSequenceReadSet:
             self.qual_1 = qual_1
             self.read_2 = read_2
             self.qual_2 = qual_2
+            self.trim_left = len(read_1)
+            self.trim_right = len(read_2)
             self.goodRead = False
         except IndexError:
             sys.stderr.write('ERROR:[TwoSequenceReadSet] Read names are not formatted in the expected manner\n')
@@ -258,14 +260,25 @@ class TwoSequenceReadSet:
         self.goodRead = self.project is not None
         return 0
 
+    def trimRead(self, minQ, minL):
+        """
+        Trim the read by a minQ score
+        """
+        if (trim_loaded):
+            trim_points = trim.trim(self.qual_1, self.qual_2, minQ)
+            self.trim_left = trim_points["left_trim"]
+            self.trim_right = trim_points["right_trim"]
+            if (self.trim_left < minL or self.trim_right < minL):
+                self.goodRead = False
+
     def getFastqSRA(self):
         """
         Create four line string ('\n' separator included) for the read pair, returning a length 2 vector (one for each read)
         """
         read1_name = "%s 1:N:0:" % (self.name)
         read2_name = "%s 2:N:0:" % (self.name)
-        r1 = '\n'.join([read1_name, self.read_1, '+', self.qual_1])
-        r2 = '\n'.join([read2_name, self.read_2, '+', self.qual_2])
+        r1 = '\n'.join([read1_name, self.read_1[0:self.trim_left], '+', self.qual_1[0:self.trim_left]])
+        r2 = '\n'.join([read2_name, self.read_2[0:self.trim_right], '+', self.qual_2[0:self.trim_right]])
         return [r1, r2]
 
     def getFastq(self):
@@ -278,8 +291,8 @@ class TwoSequenceReadSet:
         else:
             read1_name = "%s 1:N:0:%s %s" % (self.name, self.sample, self.barcode_string)
             read2_name = "%s 2:N:0:%s %s" % (self.name, self.sample, self.barcode_string)
-        r1 = '\n'.join([read1_name, self.read_1, '+', self.qual_1])
-        r2 = '\n'.join([read2_name, self.read_2, '+', self.qual_2])
+        r1 = '\n'.join([read1_name, self.read_1[0:self.trim_left], '+', self.qual_1[0:self.trim_left]])
+        r2 = '\n'.join([read2_name, self.read_2[0:self.trim_right], '+', self.qual_2[0:self.trim_right]])
         return [r1, r2]
 
     def getFourReads(self):
@@ -295,10 +308,10 @@ class TwoSequenceReadSet:
                 bc2 = self.barcode[8:16]
             else:
                 raise Exception("string in the barcode is not 16 characters")
-            r1 = '\n'.join([self.name + ' 1:N:0:', self.read_1, '+', self.qual_1])
+            r1 = '\n'.join([self.name + ' 1:N:0:', self.read_1[0:self.trim_left], '+', self.qual_1[0:self.trim_left]])
             r2 = '\n'.join([self.name + ' 2:N:0:', bc1, '+', 'C' * len(bc1)])  # Give barcodes and arbitary quality of Cs
             r3 = '\n'.join([self.name + ' 3:N:0:', bc2, '+', 'C' * len(bc2)])
-            r4 = '\n'.join([self.name + ' 4:N:0:', self.read_2, '+', self.qual_2])
+            r4 = '\n'.join([self.name + ' 4:N:0:', self.read_2[0:self.trim_right], '+', self.qual_2[0:self.trim_right]])
             return [r1, r2, r3, r4]
         except IndexError:
             sys.stderr.write('ERROR:[TwoSequenceReadSet] unable to exract barocode sequence from the read names\n')
@@ -318,8 +331,8 @@ class TwoSequenceReadSet:
         else:
             read1_name = "%s 1:N:0:%s:%i" % (name, self.sample, len(self.read_1))
             read2_name = "%s 2:N:0:%s:%i" % (name, self.sample, len(self.read_2))
-        r1 = '\n'.join([read1_name, self.read_1])
-        r2 = '\n'.join([read2_name, self.read_2])
+        r1 = '\n'.join([read1_name, self.read_1[0:self.trim_left]])
+        r2 = '\n'.join([read2_name, self.read_2[0:self.trim_right]])
         return [r1, r2]
 
     def getJoinedFasta(self):
@@ -327,7 +340,7 @@ class TwoSequenceReadSet:
         Create two line string ('\n' separator included) for the read pair, concatenating the two reads into a single returning length 1 vector (one read)
         """
         name = '>' + self.name[1:]
-        joined_seq = self.read_1 + misc.reverseComplement(self.read_2)
+        joined_seq = self.read_1[0:self.trim_left] + misc.reverseComplement(self.read_2[0:self.trim_right])
         if self.primer is not None:
             read1_name = "%s|%s:%s:PAIR" % (name, self.sample, self.primer)
         else:
