@@ -67,6 +67,7 @@ class classifyApp:
         """
             Start classifying double barcoded Illumina sequencing run
         """
+        results = {}
         self.verbose = verbose
         try:
             if (gene != '16srrna' and gene != 'fungallsu' and gene != "fungalits_warcup" and gene != "fungalits_unite"):
@@ -89,7 +90,6 @@ class classifyApp:
             lasttime = time.time()
             batch = 0
             pool = Pool(procs, maxtasksperchild=1)
-            results = {}
             if (self.runSingle is not None):
                 while 1:
                     # get next batch of reads
@@ -138,20 +138,20 @@ class classifyApp:
                     os.remove(f)
             if self.verbose:
                 sys.stdout.write("%s reads processed in %s minutes\n" % (batch, round((time.time()-lasttime)/(60), 2)))
-            self.clean()
+            self.clean(results)
             return 0
         except (KeyboardInterrupt, SystemExit):
-            self.clean()
+            self.clean(results)
             sys.stderr.write("%s unexpectedly terminated\n" % (__name__))
             return 1
         except:
-            self.clean()
+            self.clean(results)
             sys.stderr.write("A fatal error was encountered.\n")
             if debug:
                 sys.stderr.write("".join(traceback.format_exception(*sys.exc_info())))
             return 1
 
-    def clean(self):
+    def clean(self, results):
         if self.verbose:
             sys.stderr.write("Cleaning up.\n")
         try:
