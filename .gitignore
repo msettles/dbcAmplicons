@@ -1,6 +1,10 @@
+# Python egg
+*.egg-info
+
 # Object files
 *.o
 *.ko
+*.pyc
 
 # Libraries
 *.lib
@@ -16,6 +20,7 @@
 *.exe
 *.out
 *.app
+
 .Rproj.user
 ._DS_Store
 .DS_Store
@@ -23,3 +28,4 @@
 .RData
 *.Rproj
 *sublime-workspace
+*.sublime-project

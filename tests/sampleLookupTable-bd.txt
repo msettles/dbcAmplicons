@@ -15,7 +15,7 @@ SampleID	BarcodeID	PrimerPairID	ProjectID	Metadata
 14	Delta159	16S	subfolder/match_16S	B
 15	Delta160	16S	subfolder/match_16S	C
 16	Delta161	16S	subfolder/match_16S	D
-17	Delta162	16S	subfolder/match_16S	A
+17	Delta 162	16S	subfolder/match_16S	A
 18	Delta163	16S	subfolder/match_16S	B
 19	Delta164	16S	subfolder/match_16S	C
 20	Delta165	16S	subfolder/match_16S	D
@@ -38,7 +38,7 @@ SampleID	BarcodeID	PrimerPairID	ProjectID	Metadata
 37	Echo195	ITS	nomatch	A
 38	Echo196	ITS	nomatch	B
 39	Echo197	ITS	nomatch	C
-40	Echo198	ITS	nomatch	D
+40	echo198	ITS	nomatch	D
 41	Echo199	ITS	nomatch	A
 42	Echo200	ITS	nomatch	B
 43	Echo201	ITS	nomatch	C
@@ -54,7 +54,7 @@ SampleID	BarcodeID	PrimerPairID	ProjectID	Metadata
 53	Echo212	ITS	nomatch	A
 54	Echo213	ITS	nomatch	B
 55	Echo215	ITS	nomatch	C
-56	Echo217	ITS	nomatch	D
+56	Echo217	BOB	nomatch	D
 57	Echo223	ITS	nomatch	A
 58	Echo225	ITS	nomatch	B
 59	Echo230	ITS	nomatch	C
@@ -86,7 +86,7 @@ SampleID	BarcodeID	PrimerPairID	ProjectID	Metadata
 85	Foxtrot261	16S,ITS	match_twoprimer	A
 86	Foxtrot262	16S,ITS	match_twoprimer	B
 87	Foxtrot263	16S,ITS	match_twoprimer	C
-88	Foxtrot264	16S,ITS	match_twoprimer	D
+88	Foxtrot264	16S,ITS BOB	match_twoprimer	D
 89	Foxtrot265	16S,ITS	match_twoprimer	A
 90	Foxtrot266	16S,ITS	match_twoprimer	B
 91	Foxtrot267	16S,ITS	match_twoprimer	C
@@ -101,7 +101,7 @@ SampleID	BarcodeID	PrimerPairID	ProjectID	Metadata
 100	Foxtrot276	16S,ITS	match_twoprimer	D
 101	Foxtrot277	16S,ITS	match_twoprimer	A
 102	Foxtrot278	16S,ITS	match_twoprimer	B
-103	Foxtrot279	16S,ITS	match_twoprimer	C
+103	Foxtrot29	16S,ITS	match_twoprimer	C
 104	Foxtrot280	16S,ITS	match_twoprimer	D
 105	Foxtrot281	16S,ITS	match_twoprimer	A
 106	Foxtrot282	16S,ITS	match_twoprimer	B
