@@ -39,37 +39,40 @@ def parse_flash(fileinput_stream, verbose=True):
     for i, line in enumerate(fileinput_stream):
         if skip == 4:
             # parse version
-            sys.stdout.write('Using Flash2 version:' + re.split(r' +', line.rstrip())[3] + '\n')
+            sys.stdout.write('Using Flash2 version:' + re.split(r' +', line.rstrip())[3] + '\n\n')
             skip = 3
             continue
         if skip == 3 and "Parameters" not in line:
             continue
         elif skip == 3 and "Parameters" in line:
             skip = 2
+            sys.stdout.write("Parameters:\n")
             continue
-        elif skip == 2 and "Starting FASTQ readers and writer threads" not in line:
+        elif skip == 2 and "Starting reader and writer threads" not in line:
             # parse Parameters
             data = re.split(': +', re.sub(r'\[FLASH\] +', '', line.rstrip()))
             if len(data) == 2:
                 name = re.sub(r' ', '_', data[0])
                 if verbose:
-                    sys.stdout.write(name + ':' + data[1] + '\n')
+                    sys.stdout.write("   " + name + ':' + data[1] + '\n')
             continue
-        elif skip == 2 and "Starting FASTQ readers and writer threads" in line:
+        elif skip == 2 and "Starting reader and writer threads" in line:
             skip = 1
+            sys.stdout.write("\n")
             continue
         elif skip == 1 and "Read combination statistics" not in line:
             sys.stderr.write(re.sub(r'\[FLASH\] +', '', line))
             continue
         elif skip == 1 and "Read combination statistics" in line:
             skip = 0
+            sys.stdout.write("Output:\n")
             continue
         elif skip == 0 and "Writing histogram files" not in line:
             # parse read combination statistics
             data = re.split(': +', re.sub(r'\[FLASH\] +', '', line.rstrip()))
             if len(data) == 2:
                 name = re.sub(r' ', '_', data[0])
-                sys.stdout.write(name + ':' + data[1] + '\n')
+                sys.stdout.write("   " + name + ':' + data[1] + '\n')
             continue
         elif skip == 0 and "Writing histogram files" in line:
             return(0)
