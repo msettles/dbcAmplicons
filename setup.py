@@ -21,7 +21,7 @@ config = \
         'url': 'https://github.com/msettles/DBC_amplicons/py-dbcAmplicons',
         'download_url': 'https://github.com/msettles/DBC_amplicons/py-dbcAmplicons',
         'author_email': 'msettles@uidaho.edu',
-        'version': 'v0.6.3-04262015',
+        'version': 'v0.6.4-05122015',
         'install_requires': ['biom-format>=2.1.3'],
         'packages': ['dbcAmplicons'],
         'scripts': ['bin/dbcAmplicons', 'scripts/python/convert2ReadTo4Read.py', 'scripts/python/splitReadsBySample.py', 'scripts/R/reduce_amplicons.R'],
@@ -31,8 +31,8 @@ config = \
     }
 
 
-#FLASH2DIR = 'included-apps'
-#class dbcBuildExt(_build_ext):
+# FLASH2DIR = 'included-apps'
+# class dbcBuildExt(_build_ext):
 #    def run(self):
 #        find_flash2 = spawn.find_executable("flash2")
 #        if find_flash2 is None:
@@ -43,7 +43,7 @@ config = \
 #            config['scripts'].extend( 'included-apps/FLASH2/flash2' )
 #        _build_ext.run(self)
 
-#CMDCLASS = {"build_ext": dbcBuildExt}
-#setup(cmdclass=CMDCLASS, **config)
+# CMDCLASS = {"build_ext": dbcBuildExt}
+# setup(cmdclass=CMDCLASS, **config)
 #
 setup(**config)
