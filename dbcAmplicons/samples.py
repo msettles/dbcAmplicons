@@ -41,6 +41,7 @@ class sampleTable:
         self.sampleCount = 0
         self.sampleTable = {}
         self.sampleMetadata = {}
+        self.vhasMetadata = False
         projects = []
         samples = []
         try:
@@ -123,7 +124,7 @@ class sampleTable:
                             self.sampleMetadata[sid][(sid, primer)] = {"PrimerPairID": primer, "BarcodeID": barcode, "SampleID": sid, "ProjectID": pid}
                 # parse metadata
                 if len(metadata_index) > 0:
-                    self.hasMetadata = True
+                    self.vhasMetadata = True
                     self.sampleMetadata[sid]["Metadata"] = {}
                     for i, index in enumerate(metadata_index):
                         self.sampleMetadata[sid]["Metadata"][metadata_headers[i]] = row[index]
@@ -139,6 +140,12 @@ class sampleTable:
             sfile.close()
             raise
         sfile.close()
+
+    def hasMetadata(self):
+        """
+        whether or not the samplesheet also contains additional metadata
+        """
+        return self.vhasMetadata
 
     def getSampleNumber(self):
         """
