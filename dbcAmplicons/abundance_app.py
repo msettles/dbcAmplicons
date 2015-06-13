@@ -323,7 +323,7 @@ class abundanceApp:
 
             # output total counts and info (across all samples) for each taxa
             cntFile = open(output_prefix + '.taxa_info.txt', 'w')
-            cntFile.write("Taxon_Name\tMeanBootstrapValue\tMeanLengthSingles\tPercentageAsPairs\tTotal\n")
+            cntFile.write("Taxon_Name\tMeanBootstrapValue\tMeanLengthMerged\tPercentageAsPairs\tTotal\n")
             taxa_keys = sorted(abundanceTable.keys(), key=lambda s: s.lower())
 
             for abt in taxa_keys:
