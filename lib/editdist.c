@@ -1,39 +1,14 @@
-/* Modifications made by Matt Settles and fall under the Copyright below
- * Copyright 2013, Institute for Bioninformatics and Evolutionary Studies
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *    http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+/* 
+Contains 3 primary functions
 
-/* Original Copyright
- * Copyright (c) 2006 Damien Miller <djm@mindrot.org>
- *
- * Permission to use, copy, modify, and distribute this software for any
- * purpose with or without fee is hereby granted, provided that the above
- * copyright notice and this permission notice appear in all copies.
- *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
- * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
- * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- */
+### PRIMER ALIGNMENT
+bounded_edit_distance - edit distance bounded to the 5' end with restrictions to the 3' end
 
-//#include <sys/types.h>
-//#include <stdlib.h>
-//#include <string.h>
-//#include <stdio.h>
+edit_distance - standard edit distance
+
+### BARCODE ALIGNMENT
+hammingdist_distance - hamming distance 
+*/
 
 #include "Python.h"
 
@@ -41,11 +16,12 @@
 typedef unsigned __int8 u_int8_t;
 #endif
 
-#define EDITDIST_VERSION    "0.5"
+#define EDITDIST_VERSION    "0.6"
 
 /* $Id: editdist.c,v 1.5 2007/05/03 23:36:36 djm Exp $ */
 /* $Id: editdist.c,v 0.4 2013/12/31 mls $ */
 /* $Id: editdist.c,v 0.4 2014/4/17 mls added hamming distnace */
+/* $Id: editdist.c,v 0.6 2015/6/13 mls change to allow for faster processing */
 
 #ifndef MIN
 # define MIN(a, b) (((a) < (b)) ? (a) : (b))
@@ -67,9 +43,8 @@ bounded_edit_distance(const char *a, int alen, const char *b, int blen, int k, i
     int i, j;
     int *current, *previous, *tmpl, add, del, chg;
     Tuple val = { k+1, alen };
-    /* a (primer) should always be < b (read) + k */
-//  if (alen > (blen-k)) {
-    if (alen > (blen)) {
+    /* a (primer) should always be < b (read) */
+    if (alen > blen) {
         return (val);
     }
 
@@ -231,10 +206,10 @@ editdist_distance(PyObject *self, PyObject *args)
 }
 
 /*
-Compute the Levenstein distance between a and b 
+Compute the hamming distance between a and b 
 */
 static int
-hammingdist_distance(const char *a, int alen, const char *b, int blen)
+hammingdist_distance(const char *a, int alen, const char *b, int blen, int score)
 {
     int i, diff;
 
@@ -250,6 +225,9 @@ hammingdist_distance(const char *a, int alen, const char *b, int blen)
     for (i = 0; i < alen; i++){
         if (a[i] != b[i])
             diff++;
+        if (diff > score){
+            return (diff);
+        }
     }
     return (diff);
 }
@@ -266,7 +244,8 @@ hamming_distance(PyObject *self, PyObject *args)
 
     if (!PyArg_ParseTuple(args, "s#s#", &a, &alen, &b, &blen))
                 return NULL;
-    r = hammingdist_distance(a, alen, b, blen);
+
+    r = hammingdist_distance(a, alen, b, blen, blen);
     if (r == -2) {
         PyErr_SetString(PyExc_SystemError, "Bad Arguments");
         return NULL;
@@ -274,6 +253,45 @@ hamming_distance(PyObject *self, PyObject *args)
     return PyInt_FromLong(r);
 }
 
+PyDoc_STRVAR(hamming_distance_list_doc,
+"distance(a, b) -> int\n\
+    Calculates hamming distance between a string and a list of strings\n");
+
+static PyObject *
+hamming_distance_list(PyObject *self, PyObject *args)
+{
+    char *b;
+    int blen, b, s, r;
+    PyListObject* barcode_list = NULL;
+
+    if (!PyArg_ParseTuple(args, "O!s#", &PyList_Type, &barcode_list_o, &b, &blen)){
+        return NULL;
+    }
+
+    b = 0; // set the initial best barcode to the first
+    s = blen; // set the initial score to the length of the barcode
+
+    Py_ssize_t barcode_list_o_length = PyList_GET_SIZE(barcode_list_o);
+    for (Py_ssize_t i = 0; i < barcode_list_o_length; i++) {
+        PyObject * barcode_o = PyList_GET_ITEM(barcode_list_o, i);
+        if (PyString_Check(barcode_o)) {
+            r = hammingdist_distance(PyString_AS_STRING(barcode_o), (int)PyString_GET_SIZE(barcode_o), b, blen, s);
+            if (r == -2) {
+                PyErr_SetString(PyExc_SystemError, "Bad Arguments");
+                return NULL;
+            } else if ( r < s ){
+                b = (int)i;
+                s = r;
+            }
+        } else {
+            PyErr_SetString(PyExc_TypeError,
+                "first argument must be a list of strings");
+            return NULL;
+        }
+    }
+    Py_DECREF(barcode_list);
+    return Py_BuildValue("ii", b, s);
+}
 
 static PyMethodDef editdist_methods[] = {
     {   "distance", (PyCFunction)editdist_distance,
@@ -282,7 +300,9 @@ static PyMethodDef editdist_methods[] = {
         METH_VARARGS,   bounded_editdist_distance_doc       },
     {   "hamming_distance", (PyCFunction)hamming_distance,
         METH_VARARGS,    hamming_distance_doc       },
-    {NULL, NULL, 0, NULL }  /* sentinel */
+    {   "hamming_distance_list", (PyCFunction)hamming_distance_list,
+        METH_VARARGS,    hamming_distance_list_doc  },
+    {   NULL, NULL, 0, NULL }  /* sentinel */
 };
 
 PyDoc_STRVAR(module_doc, "Calculate Hamming distance, Levenshtein's edit distance, and a edge bounded Levenshtein's edit distance.\n");
