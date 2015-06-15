@@ -261,16 +261,13 @@ static PyObject *
 hamming_distance_list(PyObject *self, PyObject *args)
 {
     char *b;
-    int blen, b, s, r;
-    PyListObject* barcode_list = NULL;
+    int blen = 0, c = 0, s = 0, r = 0;
 
-    if (!PyArg_ParseTuple(args, "O!s#", &PyList_Type, &barcode_list_o, &b, &blen)){
+    PyListObject* barcode_list_o = NULL;
+
+    if (!PyArg_ParseTuple(args, "O!s#i", &PyList_Type, &barcode_list_o, &b, &blen, &s)){
         return NULL;
     }
-
-    b = 0; // set the initial best barcode to the first
-    s = blen; // set the initial score to the length of the barcode
-
     Py_ssize_t barcode_list_o_length = PyList_GET_SIZE(barcode_list_o);
     for (Py_ssize_t i = 0; i < barcode_list_o_length; i++) {
         PyObject * barcode_o = PyList_GET_ITEM(barcode_list_o, i);
@@ -280,7 +277,7 @@ hamming_distance_list(PyObject *self, PyObject *args)
                 PyErr_SetString(PyExc_SystemError, "Bad Arguments");
                 return NULL;
             } else if ( r < s ){
-                b = (int)i;
+                c = (int)i;
                 s = r;
             }
         } else {
@@ -289,8 +286,8 @@ hamming_distance_list(PyObject *self, PyObject *args)
             return NULL;
         }
     }
-    Py_DECREF(barcode_list);
-    return Py_BuildValue("ii", b, s);
+//    Py_DECREF(barcode_list_o);
+    return Py_BuildValue("ii", c, s);
 }
 
 static PyMethodDef editdist_methods[] = {

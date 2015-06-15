@@ -19,20 +19,38 @@ except ImportError:
     trim_loaded = False
 
 
-def barcodeDist(b_1, b_2):
+def barcodeDist(b_l, b_2, max_diff):
     # ------------------- calculate distance between two barcode sequences ------------------------------
     """
     gets edit distnace between two equal-length barcode strings
     """
+    bc = None
+    bc_mismatch = max_diff+1
+
     if editdist_loaded:
-        return editdist.hamming_distance(b_1, b_2)
-    elif len(b_1) == len(b_2) and len(b_1) > 0:
-        return sum(map(lambda x: x[0] != x[1], zip(b_1, b_2)))
+        bc_i, bc_mismatch = editdist.hamming_distance_list(b_l, b_2, max_diff+1)
+
     else:
-        sys.stderr.write("ERROR:[barcodeDist] lengths of barcodes and index read do not match!\n")
-        sys.stderr.write("Target: %s" % b_1)
-        sys.stderr.write("Index read: %s" % b_2)
-        raise Exception
+        for key in b_l:
+    #        if editdist_loaded:
+    #            dist = editdist.hamming_distance(key, b_2)
+            if len(key) == len(b_2) and len(b_2) > 0:
+                sys.stderr.write("WARNING: not using the editdist c code")
+                dist = sum(map(lambda x: x[0] != x[1], zip(key, b_2)))
+            else:
+                sys.stderr.write("ERROR:[barcodeDist] lengths of barcodes and index read do not match!\n")
+                sys.stderr.write("Target: %s" % key)
+                sys.stderr.write("Index read: %s" % b_2)
+                raise Exception
+
+            if dist < bc_mismatch:
+                bc = key
+                bc_mismatch = dist
+    if bc_mismatch > max_diff:
+        bc = None
+    else:
+        bc = b_l[bc_i]
+    return (bc, bc_mismatch)
 
 
 def primerDist(primer, read, max_diff, end_match):
@@ -91,21 +109,11 @@ class FourSequenceReadSet:
         assign a barcode pair ID from the reads barcodes.
         """
         # Barcode One Matching
-        bc1 = None
-        bc1Mismatch = max_diff+1
-        for key in bcTable.getP7():
-            bcdist = barcodeDist(key, self.bc_1)
-            if bcdist < bc1Mismatch:
-                bc1 = key
-                bc1Mismatch = bcdist
+        bc1, bc1Mismatch = barcodeDist(bcTable.getP7(), self.bc_1, max_diff)
+
         # Barcode Two Matching
-        bc2 = None
-        bc2Mismatch = max_diff+1
-        for key in bcTable.getP5():
-            bcdist = barcodeDist(key, self.bc_2)
-            if bcdist < bc2Mismatch:
-                bc2 = key
-                bc2Mismatch = bcdist
+        bc2, bc2Mismatch = barcodeDist(bcTable.getP5(), self.bc_2, max_diff)
+
         # Barcode Pair Matching
         self.barcode = [bcTable.getMatch(bc1, bc2), bc1Mismatch, bc2Mismatch]
         self.goodRead = self.barcode[0] != None
