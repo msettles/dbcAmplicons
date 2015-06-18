@@ -22,7 +22,7 @@ except ImportError:
 def barcodeDist(b_l, b_2, max_diff):
     # ------------------- calculate distance between two barcode sequences ------------------------------
     """
-    gets edit distnace between two equal-length barcode strings
+    gets edit distance between two equal-length barcode strings
     """
     bc = None
     bc_mismatch = max_diff+1
@@ -31,9 +31,7 @@ def barcodeDist(b_l, b_2, max_diff):
         bc_i, bc_mismatch = editdist.hamming_distance_list(b_l, b_2, max_diff+1)
 
     else:
-        for key in b_l:
-    #        if editdist_loaded:
-    #            dist = editdist.hamming_distance(key, b_2)
+        for i, key in enumerate(b_l):
             if len(key) == len(b_2) and len(b_2) > 0:
                 sys.stderr.write("WARNING: not using the editdist c code")
                 dist = sum(map(lambda x: x[0] != x[1], zip(key, b_2)))
@@ -44,7 +42,7 @@ def barcodeDist(b_l, b_2, max_diff):
                 raise Exception
 
             if dist < bc_mismatch:
-                bc = key
+                bc = i
                 bc_mismatch = dist
     if bc_mismatch > max_diff:
         bc = None
@@ -53,24 +51,40 @@ def barcodeDist(b_l, b_2, max_diff):
     return (bc, bc_mismatch)
 
 
-def primerDist(primer, read, max_diff, end_match):
+def primerDist(primer_l, read, max_diff, end_match):
     # ------------------- calculate distance between primer sequence and first part of read ------------------------------
     """
     gets edit distance between primer and read sequence
     """
+    pr = None
+    prMismatch = max_diff+1
+    prPosition = 0
+
     if editdist_loaded:
-        return editdist.bounded_distance(primer, read, max_diff, end_match)
+        pr_i, prMismatch, prPosition = editdist.bounded_distance_list(primer_l, read, max_diff, end_match)
+
     else:
-        read = read[0:len(primer)]
-        if end_match == 0:
-            dist = sum(map(lambda x: x[0] != x[1], zip(read, primer)))
-        else:
-            dist = sum(map(lambda x: x[0] != x[1], zip(read[:-end_match], primer[:-end_match])))
-            for i in range(len(primer)-end_match, len(primer)):
-                if read[i] != primer[i]:
-                    dist += 100
-                    return [dist, len(primer)]
-        return [dist, len(primer)]
+        for i, key in enumerate(primer_l):
+            read = read[0:len(key)]
+            if end_match == 0:
+                dist = sum(map(lambda x: x[0] != x[1], zip(read, key)))
+            else:
+                dist = sum(map(lambda x: x[0] != x[1], zip(read[:-end_match], key[:-end_match])))
+                for i in range(len(key)-end_match, len(key)):
+                    if read[i] != key[i]:
+                        dist += 100
+            if dist < prMismatch:
+                pr_i = i
+                prMismatch = dist
+                prPosition = len(key)
+
+    if prMismatch > max_diff:
+        pr = None
+        prPosition = 0
+    else:
+        pr = primer_l[pr_i]
+
+    return (pr, prMismatch, prPosition)
 
 
 class FourSequenceReadSet:
@@ -126,26 +140,12 @@ class FourSequenceReadSet:
         required number of end match bases (final endmatch bases must match) assign a primer pair ID from the read
         sequences.
         """
-        # Barcode One Matching
-        pr1 = None
-        pr1Mismatch = max_diff+1
-        pr1Position = 0
-        for key in prTable.getP5sequences():
-            prdist = primerDist(key, self.read_1, max_diff, endmatch)
-            if prdist[0] < pr1Mismatch:
-                pr1 = key
-                pr1Mismatch = prdist[0]
-                pr1Position = prdist[1]
-        # Barcode Two Matching
-        pr2 = None
-        pr2Mismatch = max_diff+1
-        pr2Position = 0
-        for key in prTable.getP7sequences():
-            prdist = primerDist(key, self.read_2, max_diff, endmatch)
-            if prdist[0] < pr2Mismatch:
-                pr2 = key
-                pr2Mismatch = prdist[0]
-                pr2Position = prdist[1]
+        # Primer One Matching
+        pr1, pr1Mismatch, pr1Position = primerDist(prTable.getP5sequences(), self.read_1, max_diff, endmatch)
+
+        # Primer One Matching
+        pr2, pr2Mismatch, pr2Position = primerDist(prTable.getP7sequences(), self.read_2, max_diff, endmatch)
+
         # Barcode Pair Matching
         combined_pr = prTable.getMatch(pr1, pr2)
         self.goodRead = self.goodRead and combined_pr[0] != None and pr1Mismatch <= max_diff and pr2Mismatch <= max_diff

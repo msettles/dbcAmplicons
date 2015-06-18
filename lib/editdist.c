@@ -27,6 +27,10 @@ typedef unsigned __int8 u_int8_t;
 # define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #endif
 
+#ifndef MIN3
+# define MIN3(a, b, c) MIN(MIN(a, b), c)
+#endif
+
 typedef struct Tuple {
     int dist;
     int pos;
@@ -42,7 +46,7 @@ bounded_edit_distance(const char *a, int alen, const char *b, int blen, int k, i
     // a is primer, b is seq, k is max error and m is end matches
     int i, j;
     int *current, *previous, *tmpl, add, del, chg;
-    Tuple val = { k+1, alen };
+    Tuple val = { k+1, alen }; // dist and position
     /* a (primer) should always be < b (read) */
     if (alen > blen) {
         return (val);
@@ -52,12 +56,12 @@ bounded_edit_distance(const char *a, int alen, const char *b, int blen, int k, i
         val.dist = -2;
         return (val);
     }
-    if ((previous = calloc(alen + 1, sizeof(*previous))) == NULL) {
+    if ((previous = calloc(alen - m + 1, sizeof(*previous))) == NULL) {
         free(previous);
         val.dist = -1;
         return (val);
     }
-    if ((current = calloc(alen + 1, sizeof(*current))) == NULL) {
+    if ((current = calloc(alen - m + 1, sizeof(*current))) == NULL) {
         free(current);
         val.dist = -1;
         return (val);
@@ -66,7 +70,7 @@ bounded_edit_distance(const char *a, int alen, const char *b, int blen, int k, i
     for (i = 0; i < alen - m + 1; i++)
         previous[i] = i;
 
-    for (i = 1; i < alen - m + k + 1 ; i++) {
+    for (i = 1; i < alen - m + k + 1 ; i++) { // outer loop is the read
         if (i > 1) {
             memset(previous, 0, (alen - m + 1) * sizeof(*previous));
             tmpl = previous;
@@ -74,26 +78,29 @@ bounded_edit_distance(const char *a, int alen, const char *b, int blen, int k, i
             current = tmpl;
         }
         current[0] = i;
-        for (j = 1; j < alen -m + 1; j++) {
+        for (j = 1; j < alen - m + 1; j++) { // inner loop is the primer
             add = previous[j] + 1;
             del = current[j - 1] + 1;
             chg = previous[j - 1];
             if (a[j - 1] != b[i - 1])
                 chg++;
-            current[j] = MIN(add, del);
-            current[j] = MIN(current[j], chg);
+            current[j] = MIN3(add, del, chg);
+//            current[j] = MIN(add, del);
+//            current[j] = MIN(current[j], chg);
         }
         if (current[alen - m] <= val.dist ){
             val.dist = current[alen - m ]; // bottom right node, global alignment
             val.pos = i+m;
         }
     }
+    if (val.dist <= k){
+        for (i = 1; i <= m; i++){
+            if (a[alen - i] != b[val.pos - i]){
+                val.dist = val.dist+100; // penalty of 100 for not meeting end match criteria
+                break;          
+            }       
+    }
 
-    for (i = 1; i <= m; i++){
-        if (a[alen - i] != b[val.pos - i]){
-            val.dist = val.dist+100; // penelty of 100 for not meeting end match criteria
-            break;          
-        }       
     }
     free(previous);
     free(current);
@@ -125,6 +132,53 @@ bounded_editdist_distance(PyObject *self, PyObject *args)
         return NULL;
     }
     return Py_BuildValue("ii", r.dist, r.pos);
+}
+
+PyDoc_STRVAR(bounded_editdist_distance_list_doc,
+"bounded_edit_distance(a, b, k, m) -> int, int\n\
+    Calculates the bounded Levenshtein's edit distance between  a list of strings and a string with bound \"k\" and \"m\" matching bases at end\n");
+
+static PyObject *
+bounded_editdist_distance_list(PyObject *self, PyObject *args)
+{
+    Tuple r, s;
+    char *b;
+    int blen, c = 0, k = 0, m = 0; // c = current index of best, k = maxdist, m = finalmatch
+
+    PyListObject* primer_list_o = NULL;
+
+    if (!PyArg_ParseTuple(args, "O!s#ii", &PyList_Type, &primer_list_o, &b, &blen, &k, &m)){
+        return NULL;
+    }
+    Py_ssize_t primer_list_o_length = PyList_GET_SIZE(primer_list_o);
+
+    for (Py_ssize_t i = 0; i < primer_list_o_length; i++) {
+        PyObject * primer_o = PyList_GET_ITEM(primer_list_o, i);
+        if (PyString_Check(primer_o)) {
+            r = bounded_edit_distance(PyString_AS_STRING(primer_o), (int)PyString_GET_SIZE(primer_o), b, blen, k, m);
+            if (r.dist== -1) {
+                PyErr_SetString(PyExc_MemoryError, "Out of memory");
+                return NULL;
+            } else if (r.dist== -2) {
+                PyErr_SetString(PyExc_SystemError, "Bad Arguments");
+                return NULL;
+            } else if ( i == 0){
+                c = 0;
+                s = r;
+            } else if ( r.dist < s.dist ){
+                c = (int)i;
+                s = r;
+            } else if ( s.dist == 0){ // can't get better than a perfect match!
+                break;
+            }
+        } else {
+            PyErr_SetString(PyExc_TypeError,
+                "first argument must be a list of strings");
+            return NULL;
+        }
+    }
+
+    return Py_BuildValue("iii", c, s.dist, s.pos);
 }
 
 /*
@@ -279,6 +333,8 @@ hamming_distance_list(PyObject *self, PyObject *args)
             } else if ( r < s ){
                 c = (int)i;
                 s = r;
+            } else if ( s == 0 ){ // can't get better than a perfect match!
+                break;
             }
         } else {
             PyErr_SetString(PyExc_TypeError,
@@ -295,6 +351,8 @@ static PyMethodDef editdist_methods[] = {
         METH_VARARGS,   editdist_distance_doc       },
     {   "bounded_distance", (PyCFunction)bounded_editdist_distance,
         METH_VARARGS,   bounded_editdist_distance_doc       },
+    {   "bounded_distance_list", (PyCFunction)bounded_editdist_distance_list,
+        METH_VARARGS,   bounded_editdist_distance_list_doc       },
     {   "hamming_distance", (PyCFunction)hamming_distance,
         METH_VARARGS,    hamming_distance_doc       },
     {   "hamming_distance_list", (PyCFunction)hamming_distance_list,
