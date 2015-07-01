@@ -102,13 +102,13 @@ class primerTable:
         Determine if two primers are matching primers and return the
         primer pair name and two id names
         """
-        if seq1 in self.P5pair.keys():
+        if seq1 != None and seq1 in self.P5pair.keys():
             pair1 = self.P5pair[seq1]
             id1 = self.P5id[seq1]
         else:
             pair1 = None
             id1 = [None]
-        if seq2 in self.P7pair.keys():
+        if seq2 != None and seq2 in self.P7pair.keys():
             pair2 = self.P7pair[seq2]
             id2 = self.P7id[seq2]
         else:

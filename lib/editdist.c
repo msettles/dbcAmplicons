@@ -28,8 +28,9 @@ typedef unsigned __int8 u_int8_t;
 #endif
 
 typedef struct Tuple {
-    int dist;
-    int pos;
+    int dist; // The edit distance
+    int spos; // Matching Start Position
+    int epos; // Matching End Position
 } Tuple;
 
 /* 
@@ -37,12 +38,12 @@ compute the Levenstein distance between a (primer) and b (sequence read)
 pegged to the 5' end and bounded by edit distance k
 */
 struct Tuple
-bounded_edit_distance(const char *primer, int primerlen, const char *seq, int seqlen, int k, int m)
+bounded_edit_distance(const char *primer, int primerlen, const char *seq, int seqlen, int f, int k, int m)
 {
-    // k is max error and m is end matches
-    unsigned int i, j, lastdiag, olddiag, cmin;
+    // f is the pre-primer float value, k is max error and m is end matches
+    unsigned int x, i, j, lastdiag, olddiag, cmin;
     unsigned int column[primerlen - m + 1];
-    Tuple val = { k+1, primerlen }; // dist and position
+    Tuple val = { k+1, 0, primerlen}; // dist and positions
     /* a (primer) should always be < b (read) */
     if (primerlen > seqlen) { // primer should never be greater than the seq
         val.dist = -2;
@@ -53,27 +54,29 @@ bounded_edit_distance(const char *primer, int primerlen, const char *seq, int se
         val.dist = -2;
         return (val);
     }
-    for (i = 1; i <= primerlen - m; i++)
-        column[i] = i;
-
-    for (i = 1; i <= primerlen - m + k ; i++) { // outer loop is the read
-        column[0] = i;
-        cmin = i;
-        for (j = 1, lastdiag = i-1; j <= primerlen - m ; j++) { // inner loop is the primer
-            olddiag = column[j];
-            column[j] = MIN3(column[j] + 1, column[j-1] + 1, lastdiag + (primer[j-1] == seq[i-1] ? 0 : 1));
-            lastdiag = olddiag;
-            if (column[j] < cmin) cmin = column[j];
-        }
-        if (cmin > k) break;
-        if (column[primerlen - m] <= val.dist ){
-            val.dist = column[primerlen - m ]; // bottom right node, global alignment
-            val.pos = i+m;
+    for (x = 0; x <= f; x++) {
+        for (i = 1; i <= primerlen - m; i++)
+            column[i] = i;
+        for (i = 1; i <= primerlen - m + k ; i++) { // outer loop is the read
+            column[0] = i;
+            cmin = i;
+            for (j = 1, lastdiag = i-1; j <= primerlen - m ; j++) { // inner loop is the primer
+                olddiag = column[j];
+                column[j] = MIN3(column[j] + 1, column[j-1] + 1, lastdiag + (primer[j-1] == seq[x+i-1] ? 0 : 1));
+                lastdiag = olddiag;
+                if (column[j] < cmin) cmin = column[j];
+            }
+            if (cmin > k) break; // if the smallest value in the column is > max error break
+            if (column[primerlen - m] <= val.dist ){
+                val.dist = column[primerlen - m ]; // bottom right node, global alignment
+                val.spos = x;
+                val.epos = x+i+m;
+            }
         }
     }
     if (val.dist <= k){
         for (i = 1; i <= m; i++){
-            if (primer[primerlen - i] != seq[val.pos - i]){
+            if (primer[primerlen - i] != seq[val.epos - i]){
                 val.dist = val.dist+100; // penalty of 100 for not meeting end match criteria
                 break;          
             }       
@@ -84,19 +87,19 @@ bounded_edit_distance(const char *primer, int primerlen, const char *seq, int se
 
 
 PyDoc_STRVAR(bounded_editdist_distance_doc,
-"bounded_edit_distance(a, b, k, m) -> int, int\n\
-    Calculates the bounded Levenshtein's edit distance between strings \"a\" and \"b\" with bound \"k\" and \"m\" matching bases at end\n");
+"bounded_edit_distance(a, b, f, k, m) -> int, int\n\
+    Calculates the bounded Levenshtein's edit distance between strings \"a\" and \"b\" with pre-string fload f, bound \"k\" and \"m\" matching bases at end\n");
 
 static PyObject *
 bounded_editdist_distance(PyObject *self, PyObject *args)
 {
     Tuple r;
     char *primer, *seq;
-    int primerlen, seqlen, k, m;
+    int primerlen, seqlen, f, k, m;
 
-    if (!PyArg_ParseTuple(args, "s#s#ii", &primer, &primerlen, &seq, &seqlen, &k, &m))
+    if (!PyArg_ParseTuple(args, "s#s#ii", &primer, &primerlen, &seq, &seqlen, &f, &k, &m))
                 return NULL;
-    r = bounded_edit_distance(primer, primerlen, seq, seqlen, k, m);
+    r = bounded_edit_distance(primer, primerlen, seq, seqlen, f, k, m);
     if (r.dist== -1) {
         PyErr_SetString(PyExc_MemoryError, "Out of memory");
         return NULL;
@@ -105,7 +108,7 @@ bounded_editdist_distance(PyObject *self, PyObject *args)
         PyErr_SetString(PyExc_SystemError, "Bad Arguments");
         return NULL;
     }
-    return Py_BuildValue("ii", r.dist, r.pos);
+    return Py_BuildValue("iii", r.dist, r.spos, r.epos);
 }
 
 PyDoc_STRVAR(bounded_editdist_distance_list_doc,
@@ -117,11 +120,11 @@ bounded_editdist_distance_list(PyObject *self, PyObject *args)
 {
     Tuple r, s;
     char *seq;
-    int seqlen, c = 0, k = 0, m = 0; // c = current index of best, k = maxdist, m = finalmatch
+    int seqlen, c = 0, f = 0, k = 0, m = 0; // c = current index of best, k = maxdist, m = finalmatch
 
     PyListObject* primer_list_o = NULL;
 
-    if (!PyArg_ParseTuple(args, "O!s#ii", &PyList_Type, &primer_list_o, &seq, &seqlen, &k, &m)){
+    if (!PyArg_ParseTuple(args, "O!s#iii", &PyList_Type, &primer_list_o, &seq, &seqlen, &f, &k, &m)){
         return NULL;
     }
     Py_ssize_t primer_list_o_length = PyList_GET_SIZE(primer_list_o);
@@ -129,7 +132,7 @@ bounded_editdist_distance_list(PyObject *self, PyObject *args)
     for (Py_ssize_t i = 0; i < primer_list_o_length; i++) {
         PyObject * primer_o = PyList_GET_ITEM(primer_list_o, i);
         if (PyString_Check(primer_o)) {
-            r = bounded_edit_distance(PyString_AS_STRING(primer_o), (int)PyString_GET_SIZE(primer_o), seq, seqlen, k, m);
+            r = bounded_edit_distance(PyString_AS_STRING(primer_o), (int)PyString_GET_SIZE(primer_o), seq, seqlen, f, k, m);
             if (r.dist== -1) {
                 PyErr_SetString(PyExc_MemoryError, "Out of memory");
                 return NULL;
@@ -152,7 +155,7 @@ bounded_editdist_distance_list(PyObject *self, PyObject *args)
         }
     }
 
-    return Py_BuildValue("iii", c, s.dist, s.pos);
+    return Py_BuildValue("iiii", c, s.dist, s.spos, s.epos);
 }
 
 /*
