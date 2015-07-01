@@ -119,6 +119,7 @@ static PyObject *
 bounded_editdist_distance_list(PyObject *self, PyObject *args)
 {
     Tuple r, s;
+    Py_ssize_t i;
     char *seq;
     int seqlen, c = 0, f = 0, k = 0, m = 0; // c = current index of best, k = maxdist, m = finalmatch
 
@@ -129,7 +130,7 @@ bounded_editdist_distance_list(PyObject *self, PyObject *args)
     }
     Py_ssize_t primer_list_o_length = PyList_GET_SIZE(primer_list_o);
 
-    for (Py_ssize_t i = 0; i < primer_list_o_length; i++) {
+    for (i = 0; i < primer_list_o_length; i++) {
         PyObject * primer_o = PyList_GET_ITEM(primer_list_o, i);
         if (PyString_Check(primer_o)) {
             r = bounded_edit_distance(PyString_AS_STRING(primer_o), (int)PyString_GET_SIZE(primer_o), seq, seqlen, f, k, m);
@@ -292,6 +293,7 @@ static PyObject *
 hamming_distance_list(PyObject *self, PyObject *args)
 {
     char *b;
+    Py_ssize_t i;
     int blen = 0, c = 0, s = 0, r = 0;
 
     PyListObject* barcode_list_o = NULL;
@@ -300,7 +302,7 @@ hamming_distance_list(PyObject *self, PyObject *args)
         return NULL;
     }
     Py_ssize_t barcode_list_o_length = PyList_GET_SIZE(barcode_list_o);
-    for (Py_ssize_t i = 0; i < barcode_list_o_length; i++) {
+    for (i = 0; i < barcode_list_o_length; i++) {
         PyObject * barcode_o = PyList_GET_ITEM(barcode_list_o, i);
         if (PyString_Check(barcode_o)) {
             r = hammingdist_distance(PyString_AS_STRING(barcode_o), (int)PyString_GET_SIZE(barcode_o), b, blen, s);
