@@ -165,7 +165,7 @@ class FourSequenceReadSet:
         """
         self.project = sTable.getProjectID(self.barcode[0], self.primer[0])
         self.sample = sTable.getSampleID(self.barcode[0], self.primer[0])
-        self.goodRead = self.goodRead and self.project is not None
+        self.goodRead = self.project is not None
         if self.goodRead:
             return 1
         else:
