@@ -41,7 +41,7 @@ struct Tuple
 bounded_edit_distance(const char *primer, int primerlen, const char *seq, int seqlen, int f, int k, int m)
 {
     // f is the pre-primer float value, k is max error and m is end matches
-    unsigned int x, i, j, lastdiag, olddiag, cmin;
+    unsigned int x, i, j, l, lastdiag, olddiag, cmin;
     unsigned int column[primerlen - m + 1];
     Tuple val = { k+1, 0, primerlen}; // dist and positions
     /* a (primer) should always be < b (read) */
@@ -68,18 +68,15 @@ bounded_edit_distance(const char *primer, int primerlen, const char *seq, int se
             }
             if (cmin > k) break; // if the smallest value in the column is > max error break
             if (column[primerlen - m] <= val.dist ){
-                val.dist = column[primerlen - m ]; // bottom right node, global alignment
-                val.spos = x;
-                val.epos = x+i+m;
+                for (l = 1; l <= m; l++){
+                    if (primer[primerlen - l] != seq[x + i + m - l]){
+                        break;
+                    }
+                    val.dist = column[primerlen - m ]; // bottom right node, global alignment
+                    val.spos = x;
+                    val.epos = x + i + m;
+                }
             }
-        }
-    }
-    if (val.dist <= k){
-        for (i = 1; i <= m; i++){
-            if (primer[primerlen - i] != seq[val.epos - i]){
-                val.dist = val.dist+100; // penalty of 100 for not meeting end match criteria
-                break;          
-            }       
         }
     }
     return (val);
