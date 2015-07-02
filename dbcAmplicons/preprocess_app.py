@@ -96,12 +96,12 @@ class preprocessApp:
                     bcsuccesscount += read.assignBarcode(bcTable, barcodeMaxDiff)  # barcode
                     if evalPrimer:  # primer
                         prsuccesscount += read.assignPrimer(prTable, dedup_float, primerMaxDiff, primerEndMatch)
-                    if evalSample and read.goodRead:  # sample
-                        sampsuccesscount += read.assignRead(sTable)  # barcode + primer 
+                    if evalSample:  # sample
+                        sampsuccesscount += read.assignRead(sTable)  # barcode + primer
                     if minQ is not None and read.goodRead:
                         trimsuccesscount += read.trimRead(minQ, minL)
                     if read.goodRead is True:
-                        identified_count +=1
+                        identified_count += 1
                         if evalSample:
                             self.run_out[read.getProject()].addRead(read.getFastq(kprimer))
                         else:
