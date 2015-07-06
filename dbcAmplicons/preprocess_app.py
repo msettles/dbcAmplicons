@@ -43,6 +43,8 @@ class preprocessApp:
                     sys.stderr.write("Failed validation\n")
                     self.clean()
                     return 1
+            else:
+                prTable = None
             if evalSample:
                 sTable = sampleTable(samplesFile)
                 if verbose:
