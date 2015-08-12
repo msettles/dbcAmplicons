@@ -21,7 +21,7 @@ class preprocessApp:
     def __init__(self):
         self.verbose = False
 
-    def start(self, fastq_file1, fastq_file2, fastq_file3, fastq_file4, output_prefix, barcodesFile, primerFile, samplesFile, barcodeMaxDiff=1, primerMaxDiff=4, primerEndMatch=4, batchsize=10000, uncompressed=False, output_unidentified=False, minQ=None, minL=0, verbose=True, debug=False, kprimer=False, test=False):
+    def start(self, fastq_file1, fastq_file2, fastq_file3, fastq_file4, output_prefix, barcodesFile, primerFile, samplesFile, barcodeMaxDiff=1, dedup_float=4, primerMaxDiff=4, primerEndMatch=4, batchsize=10000, uncompressed=False, output_unidentified=False, minQ=None, minL=0, verbose=True, debug=False, kprimer=False, test=False):
         """
         Start preprocessing double barcoded Illumina sequencing run, perform
         """
@@ -43,6 +43,8 @@ class preprocessApp:
                     sys.stderr.write("Failed validation\n")
                     self.clean()
                     return 1
+            else:
+                prTable = None
             if evalSample:
                 sTable = sampleTable(samplesFile)
                 if verbose:
@@ -63,10 +65,13 @@ class preprocessApp:
             except:
                 sys.stderr.write("ERROR: Can't open file %s for writing\n" % bctable_name)
                 raise
-            # setup output files
             barcode_counts = {}
+            bcsuccesscount = 0
+            prsuccesscount = 0
+            sampsuccesscount = 0
+            trimsuccesscount = 0
             identified_count = 0
-            unidentified_count = 0
+            # setup output files
             self.run_out = {}
             if evalSample:
                 for project in sTable.getProjectList():
@@ -81,61 +86,83 @@ class preprocessApp:
             # establish and open the Illumina run
             self.run = FourReadIlluminaRun(fastq_file1, fastq_file2, fastq_file3, fastq_file4)
             self.run.open()
-            lasttime = time.time()
+            totaltime = time.time()
             while 1:
+                lasttime = time.time()
                 # get next batch of reads
                 reads = self.run.next(batchsize)
                 if len(reads) == 0:
                     break
                 # process individual reads
                 for read in reads:
-                    read.assignBarcode(bcTable, barcodeMaxDiff)  # barcode
-                    if evalPrimer and read.goodRead:  # primer
-                        read.assignPrimer(prTable, primerMaxDiff, primerEndMatch)
+                    bcsuccesscount += read.assignBarcode(bcTable, barcodeMaxDiff)  # barcode
+                    if evalPrimer:  # primer
+                        prsuccesscount += read.assignPrimer(prTable, dedup_float, primerMaxDiff, primerEndMatch)
                     if evalSample:  # sample
-                        read.assignRead(sTable)  # barcode
-                    if minQ is not None:
-                        read.trimRead(minQ, minL)
+                        sampsuccesscount += read.assignRead(sTable)  # barcode + primer
+                    if minQ is not None and read.goodRead:
+                        trimsuccesscount += read.trimRead(minQ, minL)
                     if read.goodRead is True:
                         identified_count += 1
                         if evalSample:
                             self.run_out[read.getProject()].addRead(read.getFastq(kprimer))
                         else:
                             self.run_out["Identified"].addRead(read.getFastq(kprimer))
-                        # Record data for final barcode table
-                        if read.getBarcode() in barcode_counts:
-                            if evalPrimer and read.getPrimer() == None:
-                                barcode_counts[read.getBarcode()]['-'] += 1
-                            elif evalPrimer:
-                                barcode_counts[read.getBarcode()][read.getPrimer()] += 1
-                            else:
-                                barcode_counts[read.getBarcode()]["Total"] += 1
+                    else:
+                        if output_unidentified:
+                            self.run_out["Unidentified"].addRead(read.getFastq(True))
+                    ###############################################
+                    # Record data for final barcode table
+                    if read.getBarcode() == None and '-' in barcode_counts:
+                        if evalPrimer and read.getPrimer() == None:
+                            barcode_counts['-']['-'] += 1
+                        elif evalPrimer:
+                            barcode_counts['-'][read.getPrimer()] += 1
                         else:
-                            # setup blank primer count table
+                            barcode_counts['-']["Total"] += 1
+                    elif read.getBarcode() in barcode_counts:
+                        if evalPrimer and read.getPrimer() == None:
+                            barcode_counts[read.getBarcode()]['-'] += 1
+                        elif evalPrimer:
+                            barcode_counts[read.getBarcode()][read.getPrimer()] += 1
+                        else:
+                            barcode_counts[read.getBarcode()]["Total"] += 1
+                    else:
+                        # setup blank primer count table for the new barcode
+                        if read.getBarcode() == None:
+                            barcode_counts['-'] = {}
+                            if evalPrimer:
+                                for pr in prTable.getPrimers():
+                                    barcode_counts['-'][pr] = 0
+                                barcode_counts['-']['-'] = 0
+                                if read.getPrimer() == None:
+                                    barcode_counts['-']['-'] = 1
+                                else:
+                                    barcode_counts['-'][read.getPrimer()] = 1
+                            else:
+                                barcode_counts['-']["Total"] = 1
+                        else:
                             barcode_counts[read.getBarcode()] = {}
                             if evalPrimer:
                                 for pr in prTable.getPrimers():
                                     barcode_counts[read.getBarcode()][pr] = 0
-                                    barcode_counts[read.getBarcode()]['-'] = 0
+                                barcode_counts[read.getBarcode()]['-'] = 0
                                 if read.getPrimer() == None:
-                                    barcode_counts[read.getBarcode()]['-'] += 1
+                                    barcode_counts[read.getBarcode()]['-'] = 1
                                 else:
-                                    barcode_counts[read.getBarcode()][read.getPrimer()] += 1
+                                    barcode_counts[read.getBarcode()][read.getPrimer()] = 1
                             else:
                                 barcode_counts[read.getBarcode()]["Total"] = 1
-                    else:
-                        unidentified_count += 1
-                        if output_unidentified:
-                            self.run_out["Unidentified"].addRead(read.getFastq(True))
+
                 # Write out reads
                 for key in self.run_out:
                     self.run_out[key].writeReads()
                 if self.verbose:
-                    sys.stderr.write("processed %s total reads, %s Reads/second, %s identified reads(%s%%), %s unidentified reads\n" % (self.run.count(), round(self.run.count()/(time.time() - lasttime), 0), identified_count, round((float(identified_count)/float(self.run.count()))*100, 1), unidentified_count))
+                    sys.stderr.write("processed %s total reads, %s Reads/second, %s identified reads(%s%%), %s unidentified reads\n" % (self.run.count(), round(batchsize/(time.time() - lasttime), 0), identified_count, round((float(identified_count)/float(self.run.count()))*100, 1), self.run.count()-identified_count))
                 if test:  # exit after the first batch to test the inputs
                     break
             if self.verbose:
-                    sys.stdout.write("%s reads processed in %s minutes, %s (%s%%) identified\n\n" % (self.run.count(), round((time.time()-lasttime)/(60), 2), identified_count, round((float(identified_count)/float(self.run.count()))*100, 1)))
+                    sys.stdout.write("%s reads processed in %s minutes, %s (%s%%) identified\n\n" % (self.run.count(), round((time.time()-totaltime)/(60), 2), identified_count, round((float(identified_count)/float(self.run.count()))*100, 1)))
             # Write out barcode and primer table
             if (identified_count > 0):
                 # write out header line
@@ -156,7 +183,27 @@ class preprocessApp:
                     else:
                         continue
                     bcFile.write(txt + '\n')
+                if '-' in bckeys:
+                    if evalPrimer:
+                        txt = 'None'
+                        for pr in prTable.getPrimers():
+                            txt = '\t'.join([txt, str(barcode_counts['-'][pr])])
+                        txt = "\t".join([txt, str(barcode_counts['-']['-'])])
+                    else:
+                        txt = "\t".join(['None', str(barcode_counts['-']["Total"])])
+                    bcFile.write(txt + '\n')
+
             # write out project table
+            sys.stdout.write("%s reads (%s%% of total run) successfully identified barcode\n" % (bcsuccesscount, round((float(bcsuccesscount)/float(self.run.count()))*100, 1)))
+            if evalPrimer:  # primer
+                sys.stdout.write("%s reads (%s%% of total run) successfully identified barcode and primer\n" % (prsuccesscount, round((float(prsuccesscount)/float(self.run.count()))*100, 1)))
+            if evalSample:  # sample
+                sys.stdout.write("%s reads (%s%% of total run) successfully assigned to sample\n" % (sampsuccesscount, round((float(sampsuccesscount)/float(self.run.count()))*100, 1)))
+            if minQ is not None:
+                sys.stdout.write("%s reads (%s%% of total run) successfully pass trimming criteria\n" % (trimsuccesscount, round((float(trimsuccesscount)/float(self.run.count()))*100, 1)))
+
+            sys.stdout.write("%s reads (%s%% of total run) unidentified\n\n" % (self.run.count()-identified_count, round((float(self.run.count()-identified_count)/float(self.run.count()))*100, 1)))
+
             if evalSample and self.verbose:
                 for key in self.run_out:
                     sys.stdout.write("%s reads (%s%% of total run) found for project\t%s\n" % (self.run_out[key].count(), round((float(self.run_out[key].count())/float(self.run.count()))*100, 1), key))
