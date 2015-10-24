@@ -15,6 +15,8 @@ import argparse
 from subprocess import Popen
 from subprocess import PIPE
 from subprocess import STDOUT
+from subprocess import check_call
+from subprocess import CalledProcessError
 from multiprocessing import cpu_count
 
 from distutils import spawn
@@ -55,8 +57,10 @@ profile = False
 # addressed issue #11, validate pairs in primer file
 # version 0.6.4
 # modified abundance output, flash output and reporting, fix issue #12
+# version 0.6.5
+# Show error message and download for RDP when not found
 
-version_num = "v0.6.4-05122015"
+version_num = "v0.6.5-05152015"
 
 
 #####################################################################################
@@ -409,6 +413,22 @@ class classifyCMD:
         batchsize = args.batchsize
         procs = args.procs
         rdpPath = args.rdpPath
+
+        if os.path.isfile(rdpPath) is not True:
+            rdp_download = "https://github.com/rdpstaff/RDPTools"
+            sys.stderr.write("RDP classifier.jar not found, please download and install from: %s\n" % rdp_download)
+            sys.exit()
+
+        rdp_call = ['java', '-Xmx2048M', '-Xms256M', '-XX:+UseParallelGC', '-XX:ParallelGCThreads=2', '-jar', rdpPath]
+        if verbose:
+            sys.stderr.write("Testing the RDP Classifier\n")
+        try:
+            with open(os.devnull, 'w') as devnull:
+                check_call(rdp_call, stderr=devnull, stdout=devnull)
+        except CalledProcessError:
+            rdp_download = "https://github.com/rdpstaff/RDPTools"
+            sys.stderr.write("RDP classifier.jar not found, please download and install from: %s\n" % rdp_download)
+            sys.exit()
 
         if (procs > cpu_count()):
             sys.stderr.write("The number of processors specified [%s] is greater than the number available [%s], exiting application\n" % (str(procs), str(cpu_count())))
