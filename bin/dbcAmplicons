@@ -60,7 +60,7 @@ profile = False
 # version 0.6.5
 # Show error message and download for RDP when not found
 
-version_num = "v0.6.5-05152015"
+version_num = "v0.6.5-10242015"
 
 
 #####################################################################################
