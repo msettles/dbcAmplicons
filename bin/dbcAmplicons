@@ -59,8 +59,10 @@ profile = False
 # modified abundance output, flash output and reporting, fix issue #12
 # version 0.6.5
 # Show error message and download for RDP when not found
+# version 0.6.6
+# Added support for variable length barcodes in convert2ReadTo4Read.py
 
-version_num = "v0.6.5-10242015"
+version_num = "v0.6.6-11262015"
 
 
 #####################################################################################

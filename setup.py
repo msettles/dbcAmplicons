@@ -3,12 +3,8 @@
 
 try:
     from setuptools import setup, Extension
-#    from setuptools.command.build_ext import build_ext as _build_ext
-#    from setuptools import spawn
 except ImportError:
     from distutils.core import setup, Extension
-#    from distutils.command.build_ext import build_ext as _build_ext
-#    from distutils import spawn
 
 
 editdist = Extension('editdist', sources=['lib/editdist.c'])
@@ -21,8 +17,8 @@ config = \
         'url': 'https://github.com/msettles/dbcAmplicons',
         'download_url': 'https://github.com/msettles/dbcAmplicons',
         'author_email': 'settles@ucdavis.edu',
-        'version': 'v0.6.5-11242015',
-        'install_requires': ['biom-format>=2.1.3', 'h5py'],
+        'version': 'v0.6.6-11262015',
+        'install_requires': ['biom-format>=2.1.3'],
         'packages': ['dbcAmplicons'],
         'scripts': ['bin/dbcAmplicons', 'scripts/python/convert2ReadTo4Read.py', 'scripts/python/splitReadsBySample.py', 'scripts/R/reduce_amplicons.R'],
         'name': 'dbcAmplicons',
@@ -30,20 +26,4 @@ config = \
         'ext_modules': [editdist, trim]
     }
 
-
-# FLASH2DIR = 'included-apps'
-# class dbcBuildExt(_build_ext):
-#    def run(self):
-#        find_flash2 = spawn.find_executable("flash2")
-#        if find_flash2 is None:
-#            flash2dld = ['bash', '-c', 'wget', '-o',FLASH2DIR + '/master.zip', 'https://github.com/dstreett/FLASH2/archive/master.zip']
-#            spawn(cmd=flash2dld, dry_run=self.dry_run)
-#            flash2cmd = ['bash', '-c', 'cd ' + FLASH2DIR + ' && make']
-#            spawn(cmd=flash2cmd, dry_run=self.dry_run)
-#            config['scripts'].extend( 'included-apps/FLASH2/flash2' )
-#        _build_ext.run(self)
-
-# CMDCLASS = {"build_ext": dbcBuildExt}
-# setup(cmdclass=CMDCLASS, **config)
-#
 setup(**config)
