@@ -12,8 +12,9 @@ profile = False
 
 # version 0.0.1
 # initial release
-
-version_num = "v0.0.1-6172014"
+# version 0.0.2
+# modify for generic barcode lengths when processing reads/barcodes with Casava
+version_num = "v0.0.2-11242015"
 
 
 class convertApp:
@@ -24,7 +25,7 @@ class convertApp:
     def __init__(self):
         self.verbose = False
 
-    def start(self, fastq_file1, fastq_file2, output_prefix, batchsize=100000, uncompressed=False, verbose=True, debug=False):
+    def start(self, fastq_file1, fastq_file2, barcode1, barcode2, output_prefix, batchsize=100000, uncompressed=False, verbose=True, debug=False):
         """
         Start conversion of double barcoded Illumina sequencing run from two to four reads
         """
@@ -44,7 +45,7 @@ class convertApp:
                     break
                 # process individual reads
                 for read in reads:
-                    self.run_out.addRead(read.getFourReads())
+                    self.run_out.addRead(read.getFourReads(bc1_length=barcode1, bc2_length=barcode2))
                 # Write out reads
                 self.run_out.writeReads()
                 if self.verbose:
@@ -84,24 +85,25 @@ class convertCMD:
 
     def execute(self, args):
         # ----------------------- options output prefix -----------------------
+        output_prefix = args.output_base
         if args.output_base is None:
             output_prefix = "DBCreads"
-        elif args.output_base is not None:
-            output_prefix = args.output_base
         uncompressed = args.uncompressed
         # ----------------------- other options ------------
         debug = args.debug
         verbose = not args.verbose
         batchsize = args.batchsize
+        barcode1 = args.barcode1
+        barcode2 = args.barcode2
 
         app = convertApp()
 
         if profile:
             import cProfile
-            cProfile.runctx('app.start(args.fastq_file1, arg.fastq_file2, output_prefix, batchsize, uncompressed, verbose, debug)', globals(), locals())
+            cProfile.runctx('app.start(args.fastq_file1, arg.fastq_file2, barcode1, barcode2, output_prefix, batchsize, uncompressed, verbose, debug)', globals(), locals())
             return 255
         else:
-            return app.start(args.fastq_file1, args.fastq_file2, output_prefix, batchsize, uncompressed, verbose, debug)
+            return app.start(args.fastq_file1, args.fastq_file2, barcode1, barcode2, output_prefix, batchsize, uncompressed, verbose, debug)
 
 
 def parseArgs():
@@ -112,6 +114,10 @@ def parseArgs():
         description='convert2ReadTo4Read, a python script for back converting 2 Illumina sequence reads that have been processed for their barcodes back to a four read set to be reprocessed using dbcAmplicons',
         epilog='For questions or comments, please contact Matt Settles <msettles@uidaho.edu>', add_help=True)
     parser.add_argument('--version', action='version', version="%(prog)s Version " + version_num)
+    parser.add_argument('-p', '--barcode1', help='Barcode 1 length [default: %(default)s], will become Read 2',
+                        type=int, dest='barcode1', default=8)
+    parser.add_argument('-q', '--barcode2', help='Barcode 2 length [default: %(default)s], will become Read 3',
+                        type=int, dest='barcode2', default=8)
     parser.add_argument('-b', '--batchsize', help='batch size to process reads in [default: %(default)s]',
                         type=int, dest='batchsize', default=100000)
     parser.add_argument('-O', '--output_path', help='path for output files [default: %(default)s]',
