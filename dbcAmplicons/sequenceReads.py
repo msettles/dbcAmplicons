@@ -244,16 +244,19 @@ class TwoSequenceReadSet:
             self.name = split_name[0]
             self.barcode = split_name[1].split(":")[3]
             self.sample = self.barcode
+            # dbcAmplicons processed, Primer and Barcode Identified
             if (len(split_name) == 4):
                 self.primer_string1 = split_name[3]
                 self.primer_string2 = name_2.split(" ")[3]
                 self.primer = split_name[1].split(":")[4]
                 self.barcode_string = split_name[2]
+            # dbcAmplicons processed, Barcode only Identified
             elif (len(split_name) == 3):
                 self.primer_string1 = None
                 self.primer_string2 = None
                 self.primer = None
                 self.barcode_string = split_name[2]
+            # Casava processed, check for barcode in the second string
             else:
                 self.primer_string1 = None
                 self.primer_string2 = None
@@ -317,7 +320,7 @@ class TwoSequenceReadSet:
         r2 = '\n'.join([read2_name, self.read_2[0:self.trim_right], '+', self.qual_2[0:self.trim_right]])
         return [r1, r2]
 
-    def getFourReads(self):
+    def getFourReads(self, bc1_length=8, bc2_length=8):
         """
         Create four line string ('\n' separator included) for the read set, returning a length 4 vector (one for each read)
         """
@@ -325,15 +328,15 @@ class TwoSequenceReadSet:
             if self.barcode_string is not None:
                 bc1 = self.barcode_string.split('|')[0]
                 bc2 = self.barcode_string.split('|')[2]
-            elif len(self.barcode) is 16:  # assume 8 bp barcodes for now
-                bc1 = self.barcode[0:8]
-                bc2 = self.barcode[8:16]
+            elif len(self.barcode) is (bc1_length+bc2_length):
+                bc1 = self.barcode[:bc1_length]
+                bc2 = self.barcode[bc1_length:]
             else:
-                raise Exception("string in the barcode is not 16 characters")
-            r1 = '\n'.join([self.name + ' 1:N:0:', self.read_1[0:self.trim_left], '+', self.qual_1[0:self.trim_left]])
-            r2 = '\n'.join([self.name + ' 2:N:0:', bc1, '+', 'C' * len(bc1)])  # Give barcodes and arbitary quality of Cs
-            r3 = '\n'.join([self.name + ' 3:N:0:', bc2, '+', 'C' * len(bc2)])
-            r4 = '\n'.join([self.name + ' 4:N:0:', self.read_2[0:self.trim_right], '+', self.qual_2[0:self.trim_right]])
+                raise Exception("string in the barcode is not %s characters" % str(bc1_length+bc2_length))
+            r1 = '\n'.join([self.name + ' 1:Y:0:', self.read_1[0:self.trim_left], '+', self.qual_1[0:self.trim_left]])
+            r2 = '\n'.join([self.name + ' 2:Y:0:', bc1, '+', 'C' * len(bc1)])  # Give barcodes and arbitary quality of Cs
+            r3 = '\n'.join([self.name + ' 3:Y:0:', bc2, '+', 'C' * len(bc2)])
+            r4 = '\n'.join([self.name + ' 4:Y:0:', self.read_2[0:self.trim_right], '+', self.qual_2[0:self.trim_right]])
             return [r1, r2, r3, r4]
         except IndexError:
             sys.stderr.write('ERROR:[TwoSequenceReadSet] unable to exract barocode sequence from the read names\n')
