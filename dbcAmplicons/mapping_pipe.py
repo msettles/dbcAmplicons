@@ -1,6 +1,5 @@
 
 import os
-import shutil
 import tempfile
 from contextlib import contextmanager
 from subprocess import Popen
@@ -13,6 +12,54 @@ from multiprocessing import Process
 index = 'chloroplast_16S.fasta'
 fastq1 = 'TestData10K_R1.fastq.gz'
 fastq2 = 'TestData10K_R2.fastq.gz'
+
+#Template
+# bowtie2 -x caplanStuff -U <(zcat ../../CaplanShit/00-RawData/Sample_GCCAAT/GCCAAT_R1.fastq.gz| sed 's, ,_,g')
+
+def sp_bowtie_index(ref):
+    if os.path.isfile(ref):
+        if os.path.isfile(ref + '.rev.2.bt2'):
+            print 'Found bowtie2 index for %s' % ref
+            return 0
+        else:
+            call = 'bowtie2-build'
+            call = call + ' ' + ref = ' ' + ref
+            p = Popen(shlex.split( call,
+                      stdout=None,
+                      stderr=None,
+                      bufsize=-1,
+                      preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+            if p.returncode:
+                print 'Something in bowtie2-build went wrong'
+                raise
+            # system call, check for return
+            return 0
+    else:
+        print "%s Reference file not found" % ref
+        return 1
+    print 'Something in bowtie2-build went wrong'
+    raise
+
+
+def sp_bowtie_screen(pe1, pe2, se, ref):
+    # build the call,
+    # each file must first go through awk to replace spaces with a parsable character
+    call = 'bowtie2'
+    if os.path.isfile(ref):
+        call = call + ' -x ' + ref
+    else:
+        print "Unexpected error:", sys.exc_info()[0]
+        raise
+    if (pe1 is not None and pe2 is not None):
+
+    p = Popen(shlex.split('gzip --decompress --to-stdout') + [file],
+              stdout=PIPE,
+              stderr=None,
+              bufsize=-1,
+              preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+    if p.returncode:
+        raise
+    return p.stdout
 
 
 @contextmanager
@@ -27,10 +74,10 @@ def create_named_pipe():
 
 def sp_gzip_read(file):
     p = Popen(shlex.split('gzip --decompress --to-stdout') + [file],
-        stdout=PIPE,
-        stderr=None,
-        bufsize=-1,
-        preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+              stdout=PIPE,
+              stderr=None,
+              bufsize=-1,
+              preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
     if p.returncode:
         raise
     return p.stdout
@@ -40,8 +87,10 @@ class fastqIter:
     " A simple file iterator that returns 4 lines for fast fastq iteration. "
     def __init__(self, handle):
         self.inf = handle
+
     def __iter__(self):
         return self
+
     def next(self):
         lines = {'id': self.inf.readline().strip(),
                  'seq': self.inf.readline().strip(),
@@ -52,12 +101,13 @@ class fastqIter:
             raise StopIteration
         else:
             return lines
+
     @staticmethod
     def parse(handle):
         return fastqIter(handle)
+
     def close(self):
         self.inf.close()
-
 
 
 def sp_bowtie2_read(indx, fq1, fq2):
@@ -113,10 +163,6 @@ with create_named_pipe() as outR1:
                 output = sam_out[0]
 
 
-
-
-
-
 outR2 = create_named_pipe()
 
 
@@ -126,7 +172,6 @@ def openFile(f):
 
 # Res[0] is the sam file output, Res[1] is the stderr bowtie2 'report'
 Res = sp_bowtie2_read(index, fastq1, fastq2)
-
 
 
 with named_pipe() as path:

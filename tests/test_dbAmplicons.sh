@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-RDP_PATH="/opt/RDPTools/classifier/dist/classifier.jar"
+RDP_PATH="/opt/RDPTools/classifier.jar"
 
 ## test validation
 echo "Testing dbcAmplicons validate"
