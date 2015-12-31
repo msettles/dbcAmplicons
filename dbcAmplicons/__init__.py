@@ -26,5 +26,6 @@ from illuminaRun import IlluminaFastaOutput
 from validate_app import validateApp
 from preprocess_app import preprocessApp
 from splitreads_app import splitreadsApp
+from screening_app import screeningApp
 from classify_app import classifyApp
 from abundance_app import abundanceApp
