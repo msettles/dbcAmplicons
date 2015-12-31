@@ -16,7 +16,7 @@ fastq2 = 'TestData10K_R2.fastq.gz'
 #Template
 # bowtie2 -x caplanStuff -U <(zcat ../../CaplanShit/00-RawData/Sample_GCCAAT/GCCAAT_R1.fastq.gz| sed 's, ,_,g')
 
-def sp_bowtie_index(ref):
+def sp_bowtie2_index(ref):
     if os.path.isfile(ref):
         if os.path.isfile(ref + '.rev.2.bt2'):
             print 'Found bowtie2 index for %s' % ref
@@ -41,7 +41,7 @@ def sp_bowtie_index(ref):
     raise
 
 
-def sp_bowtie_screen(pe1, pe2, se, ref):
+def sp_bowtie2_screen(pe1, pe2, se, ref):
     # build the call,
     # each file must first go through awk to replace spaces with a parsable character
     call = 'bowtie2'
