@@ -132,7 +132,7 @@ class FourSequenceReadSet:
         # Barcode Pair Matching
         self.barcode = [bcTable.getMatch(bc1, bc2), bc1Mismatch, bc2Mismatch]
         self.sample = self.barcode[0]
-        self.goodRead = self.barcode[0] != None
+        self.goodRead = self.barcode[0] is not None
         if self.goodRead:
             return 1
         else:
@@ -152,8 +152,8 @@ class FourSequenceReadSet:
 
         # Barcode Pair Matching
         combined_pr = prTable.getMatch(pr1, pr2)
-        self.primer = [combined_pr[0], combined_pr[1], pr2Mismatch, pr1StartPosition, pr1EndPosition, combined_pr[2], pr2Mismatch, pr2StartPosition, pr2EndPosition]
-        self.goodRead = self.goodRead and combined_pr[0] != None
+        self.primer = [combined_pr[0], combined_pr[1], pr1Mismatch, pr1StartPosition, pr1EndPosition, combined_pr[2], pr2Mismatch, pr2StartPosition, pr2EndPosition]
+        self.goodRead = self.goodRead and combined_pr[0] is not None
         if self.goodRead:
             return 1
         else:
