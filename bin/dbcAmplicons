@@ -379,7 +379,7 @@ def screeningParser(subparsers):
     screening_parser.add_argument('-o', '--overwrite', help='If a bowtie2 index already exits overwrite it [default: %(default)s]',
                                   action='store_true', dest='overwrite', default=False)
     screening_parser.add_argument('-s', '--sensitivity', help='bowtie2 sensitivity to use 0=--very-fast-local, 1=--fast-local, 2=--sensitive-local, 3=--very-sensitive-local [default: %(default)s]',
-                                  type=int, dest='sensitivity', default=1)
+                                  type=int, dest='sensitivity', default=2)
     screening_parser.add_argument('-S', '--strict', help='strict mapping, with pairs require both reads to successfully map against a reference sequence to consider the pair mapped [default: %(default)s]',
                                   action='store_true', dest='strict', default=False)
     screening_parser.add_argument('-O', '--output_path', help='path (and prefix) for output files [default: %(default)s]',
