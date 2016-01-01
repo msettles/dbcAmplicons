@@ -6,6 +6,7 @@ rm -rf tests/splitreads
 rm -rf tests/allSamples/
 rm -rf tests/out.txt
 rm -rf tests/Amplicon_Raw_fastq/*Unidentified*
+rm -rf tests/Amplicon_Raw_fastq/test_map.fa.*
 rm -rf tests/Amplicon_Raw_fastq/*Identified*
 rm -rf tests/Amplicon_Raw_fastq/*Barcodes*
 

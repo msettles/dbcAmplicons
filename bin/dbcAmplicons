@@ -330,14 +330,14 @@ class joinCMD:
         else:
             compress = '-z'
         if not os.path.isfile(args.fastq_file1):
-            sys.stderr.write("File: %s not found" % args.fastq_file1)
+            sys.stderr.write("File: %s not found\n" % args.fastq_file1)
             sys.exit()
         fastq_file1 = os.path.realpath(args.fastq_file1)
 
         if args.fastq_file2 is None:
             fastq_file2 = misc.infer_read_file_name(fastq_file1, "2")
         elif not os.path.isfile(args.fastq_file2):
-            sys.stderr.write("File: %s not found" % args.fastq_file2)
+            sys.stderr.write("File: %s not found\n" % args.fastq_file2)
             sys.exit()
         else:
             fastq_file2 = args.fastq_file2
@@ -370,12 +370,18 @@ def screeningParser(subparsers):
     screening_parser = subparsers.add_parser('screen', help='screen reads using bowtie2 and a reference sequence file')
     screening_parser.add_argument('-p', '--processors', help='number of processors to use in bowtie2, [default: %(default)s]',
                                   type=int, dest='procs', default=1)
+    screening_parser.add_argument('-u', '--uncompressed', help='leave output files uncompressed [default: %(default)s]',
+                                  action='store_true', dest='uncompressed', default=False)
     screening_parser.add_argument('-R', '--reference', help='reference fasta file to screen reads against',
-                                  action='store', type=str, dest='reference', default=None, required=True, nargs=1)
-    screening_parser.add_argument('-s', '--strict', help='strict mapping, with pairs require both reads to successfully map against a reference sequence to consider the pair mapped [default: %(default)s]',
+                                  action='store', type=str, dest='reference', metavar='reference.fasta', default=None, required=True)
+    screening_parser.add_argument('-o', '--overwrite', help='If a bowtie2 index already exits overwrite it [default: %(default)s]',
+                                  action='store_true', dest='overwrite', default=False)
+    screening_parser.add_argument('-s', '--sensitivity', help='bowtie2 sensitivity to use 0=--very-fast-local, 1=--fast-local, 2=--sensitive-local, 3=--very-sensitive-local [default: %(default)s]',
+                                  type=int, dest='sensitivity', default=1)
+    screening_parser.add_argument('-S', '--strict', help='strict mapping, with pairs require both reads to successfully map against a reference sequence to consider the pair mapped [default: %(default)s]',
                                   action='store_true', dest='strict', default=False)
     screening_parser.add_argument('-O', '--output_path', help='path (and prefix) for output files [default: %(default)s]',
-                                  action='store', type=str, dest='output_base', metavar='outputPrefix', default='classify')
+                                  action='store', type=str, dest='output_base', metavar='outputPrefix', default='screening')
     screening_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq two file set',
                                   action='store', type=str, default=None, required=False, nargs='+')
     screening_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq two file set',
@@ -406,6 +412,12 @@ class screenCMD:
         verbose = not args.verbose
         procs = args.procs
         strict = args.strict
+        overwrite = args.overwrite
+        uncompressed = args.uncompressed
+        sensitivity = args.sensitivity
+        if sensitivity < 0 or sensitivity > 3:
+            sys.stderr.write("Sensitivity parameter must be in the range of 0 and 3\n")
+            sys.exit()
 
         bowtie2_path = spawn.find_executable("bowtie2")
         if bowtie2_path is None:
@@ -422,10 +434,10 @@ class screenCMD:
 
         if profile:
             import cProfile
-            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, reference, output_prefix, strict, procs, verbose, debug)', globals(), locals())
+            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, reference, overwrite, sensitivity, output_prefix, strict, procs, uncompressed, verbose, debug)', globals(), locals())
             return 255
         else:
-            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, reference, output_prefix, strict, procs, verbose, debug)
+            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, reference, overwrite, sensitivity, output_prefix, strict, procs, uncompressed, verbose, debug)
 
 
 #####################################################################################
@@ -592,6 +604,7 @@ def parseArgs():
     preprocessParser(subparsers)
     # splitreadsParser(subparsers)
     joinParser(subparsers)
+    screeningParser(subparsers)
     classifyParser(subparsers)
     abundanceParser(subparsers)
 

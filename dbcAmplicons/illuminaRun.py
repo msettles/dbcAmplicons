@@ -424,31 +424,31 @@ class IlluminaFourReadOutput:
         self.B2 = []
         self.mcount = 0
         if self.uncompressed is True:
-            if os.path.isfile(self.output_prefix + '_R1_001.fastq'):
+            if os.path.isfile(self.output_prefix + '_R1.fastq'):
                 sys.stderr.write('WARNING:[IlluminaFourReadOutput] File with prefix: %s exists, DELETING\n' % self.output_prefix)
                 try:
-                    os.remove(self.output_prefix + '_R1_001.fastq')
-                    os.remove(self.output_prefix + '_R2_001.fastq')
-                    os.remove(self.output_prefix + '_R3_001.fastq')
-                    os.remove(self.output_prefix + '_R4_001.fastq')
+                    os.remove(self.output_prefix + '_R1.fastq')
+                    os.remove(self.output_prefix + '_R2.fastq')
+                    os.remove(self.output_prefix + '_R3.fastq')
+                    os.remove(self.output_prefix + '_R4.fastq')
                 except:
                     sys.stderr.write('WARNING:[IlluminaFourReadOutput] Cannot delete file with prefix: %s\n' % self.output_prefix)
                     raise
         else:
-            if os.path.isfile(self.output_prefix + '_R1_001.fastq.gz'):
+            if os.path.isfile(self.output_prefix + '_R1.fastq.gz'):
                 sys.stderr.write('WARNING:[IlluminaFourReadOutput] File with prefix: %s exists, DELETING\n' % self.output_prefix)
                 try:
-                        os.remove(self.output_prefix + '_R1_001.fastq.gz')
-                        os.remove(self.output_prefix + '_R2_001.fastq.gz')
-                        os.remove(self.output_prefix + '_R3_001.fastq.gz')
-                        os.remove(self.output_prefix + '_R4_001.fastq.gz')
+                        os.remove(self.output_prefix + '_R1.fastq.gz')
+                        os.remove(self.output_prefix + '_R2.fastq.gz')
+                        os.remove(self.output_prefix + '_R3.fastq.gz')
+                        os.remove(self.output_prefix + '_R4.fastq.gz')
                 except:
                     sys.stderr.write('WARNING:[IlluminaFourReadOutput] Cannot delete file with prefix: %s\n' % self.output_prefix)
                     raise
 
     def open(self):
         """
-        Open the four read files for writing, appending _R1_001.fastq and _R2_001.fastq (mimic illumina file format) to the output_prefix.
+        Open the four read files for writing, appending _R1.fastq and _R2.fastq (mimic illumina file format) to the output_prefix.
         Create directories as needed.
         """
         if self.isOpen:
@@ -456,15 +456,15 @@ class IlluminaFourReadOutput:
         try:
             misc.make_sure_path_exists(os.path.dirname(self.output_prefix))
             if self.uncompressed is True:
-                self.R1f = open(self.output_prefix + '_R1_001.fastq', 'a')
-                self.R2f = open(self.output_prefix + '_R2_001.fastq', 'a')
-                self.R3f = open(self.output_prefix + '_R3_001.fastq', 'a')
-                self.R4f = open(self.output_prefix + '_R4_001.fastq', 'a')
+                self.R1f = open(self.output_prefix + '_R1.fastq', 'a')
+                self.R2f = open(self.output_prefix + '_R2.fastq', 'a')
+                self.R3f = open(self.output_prefix + '_R3.fastq', 'a')
+                self.R4f = open(self.output_prefix + '_R4.fastq', 'a')
             else:
-                self.R1f = gzip.open(self.output_prefix + '_R1_001.fastq.gz', 'ab')
-                self.R2f = gzip.open(self.output_prefix + '_R2_001.fastq.gz', 'ab')
-                self.R3f = gzip.open(self.output_prefix + '_R3_001.fastq.gz', 'ab')
-                self.R4f = gzip.open(self.output_prefix + '_R4_001.fastq.gz', 'ab')
+                self.R1f = gzip.open(self.output_prefix + '_R1.fastq.gz', 'ab')
+                self.R2f = gzip.open(self.output_prefix + '_R2.fastq.gz', 'ab')
+                self.R3f = gzip.open(self.output_prefix + '_R3.fastq.gz', 'ab')
+                self.R4f = gzip.open(self.output_prefix + '_R4.fastq.gz', 'ab')
         except:
             sys.stderr.write('ERROR:[IlluminaFourReadOutput] Cannot write reads to file with prefix: %s\n' % self.output_prefix)
             raise
@@ -649,18 +649,18 @@ class IlluminaOneReadOutput:
         self.mcount = 0
         self.R1 = []
         if self.uncompressed is True:
-            if os.path.isfile(self.output_prefix + '_R1.fastq'):
+            if os.path.isfile(self.output_prefix + '_SE.fastq'):
                 sys.stderr.write('WARNING:[IlluminaOneReadOutput] File with prefix: %s exists, DELETING\n' % self.output_prefix)
                 try:
-                    os.remove(self.output_prefix + '_R1.fastq')
+                    os.remove(self.output_prefix + '_SE.fastq')
                 except:
                     sys.stderr.write('WARNING:[IlluminaOneReadOutput] Cannot delete file with prefix: %s\n' % self.output_prefix)
                     raise
         else:
-            if os.path.isfile(self.output_prefix + '_R1.fastq.gz'):
+            if os.path.isfile(self.output_prefix + '_SE.fastq.gz'):
                 sys.stderr.write('WARNING:[IlluminaOneReadOutput] File with prefix: %s exists, DELETING\n' % self.output_prefix)
                 try:
-                    os.remove(self.output_prefix + '_R1.fastq.gz')
+                    os.remove(self.output_prefix + '_SE.fastq.gz')
                 except:
                     sys.stderr.write('WARNING:[IlluminaOneReadOutput] Cannot delete file with prefix: %s\n' % self.output_prefix)
                     raise
@@ -675,9 +675,9 @@ class IlluminaOneReadOutput:
         try:
             misc.make_sure_path_exists(os.path.dirname(self.output_prefix))
             if self.uncompressed is True:
-                self.R1f = open(self.output_prefix + '.fastq', 'a')
+                self.R1f = open(self.output_prefix + '_SE.fastq', 'a')
             else:
-                self.R1f = gzip.open(self.output_prefix + '.fastq.gz', 'ab')
+                self.R1f = gzip.open(self.output_prefix + '_SE.fastq.gz', 'ab')
         except:
             sys.stderr.write('ERROR:[IlluminaOneReadOutput] Cannot write reads to file with prefix: %s\n' % self.output_prefix)
             raise

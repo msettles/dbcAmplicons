@@ -104,7 +104,7 @@ class preprocessApp:
                             self.run_out["Identified"].addRead(read.getFastq(kprimer))
                         # Record data for final barcode table
                         if read.getBarcode() in barcode_counts:
-                            if evalPrimer and read.getPrimer() == None:
+                            if evalPrimer and read.getPrimer() is None:
                                 barcode_counts[read.getBarcode()]['-'] += 1
                             elif evalPrimer:
                                 barcode_counts[read.getBarcode()][read.getPrimer()] += 1
@@ -117,7 +117,7 @@ class preprocessApp:
                                 for pr in prTable.getPrimers():
                                     barcode_counts[read.getBarcode()][pr] = 0
                                     barcode_counts[read.getBarcode()]['-'] = 0
-                                if read.getPrimer() == None:
+                                if read.getPrimer() is None:
                                     barcode_counts[read.getBarcode()]['-'] += 1
                                 else:
                                     barcode_counts[read.getBarcode()][read.getPrimer()] += 1
