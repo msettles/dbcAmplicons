@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-RDP_PATH="/opt/RDPTools/classifier/dist/classifier.jar"
+RDP_PATH="/opt/RDPTools/classifier.jar"
 
 ## test validation
 echo "Testing dbcAmplicons validate"
@@ -29,7 +29,7 @@ echo "Testing convert2ReadTo4Read"
 convert2ReadTo4Read.py -O backtest/test -1 Amplicon_Raw_fastq/Hkates_R1.40k.fastq.gz
 
 echo "Testing dbcAmplicons preprocess post convert2ReadTo4Read back test"
-dbcAmplicons preprocess -B barcodeLookupTable.txt -O backtest/test2 -1 backtest/test_R1_001.fastq.gz
+dbcAmplicons preprocess -B barcodeLookupTable.txt -O backtest/test2 -1 backtest/test_R1.fastq.gz
 
 echo "Testing splitReadsBySample paired reads"
 splitReadsBySample.py -O allSamples -1 Amplicon_Raw_fastq/Hkates_R1.40k.fastq.gz -2 Amplicon_Raw_fastq/Hkates_R2.40k.fastq.gz --debug
@@ -37,6 +37,8 @@ splitReadsBySample.py -O allSamples -1 Amplicon_Raw_fastq/Hkates_R1.40k.fastq.gz
 echo "Testing splitReadsBySample single reads"
 splitReadsBySample.py -O allSamples -U Amplicon_Raw_fastq/Hkates_R1.40k.fastq.gz --debug
 
+echo "Testing screening"
+dbcAmplicons screen -R Amplicon_Raw_fastq/test_map.fa -1 Amplicon_Raw_fastq/Hkates_R1.40k.fastq.gz -2 Amplicon_Raw_fastq/Hkates_R2.40k.fastq.gz -U Amplicon_Raw_fastq/Hkates_R1.40k.fastq.gz --debug -s 2  -o
 #echo "Removing folders and files"
 #rm -rf allSamples backtest join preprocess splitreads out.txt
 
