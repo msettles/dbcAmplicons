@@ -63,8 +63,10 @@ profile = False
 # Added support for variable length barcodes in convert2ReadTo4Read.py
 # version 0.7.0
 # Reworked all the barcode and primer to be faster, implementation of deduplication code
+# version 0.8.0
+# Merged in deduplication code, fixed error in c primer alignment of last 4 bases added --test to classify
 
-version_num = "v0.7.0-02082016"
+version_num = "v0.8.0-03222016"
 
 
 #####################################################################################
