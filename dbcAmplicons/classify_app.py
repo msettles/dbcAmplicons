@@ -65,7 +65,7 @@ class classifyApp:
     def __init__(self):
         self.verbose = False
 
-    def start(self, fastq_file1, fastq_file2, fastq_fileU, output_prefix, rdpPath, gene='16srrna', train=None, batchsize=10000, minQ=None, minL=0, procs=1, verbose=True, debug=False):
+    def start(self, fastq_file1, fastq_file2, fastq_fileU, output_prefix, rdpPath, gene='16srrna', train=None, batchsize=10000, minQ=None, minL=0, procs=1, test=False, verbose=True, debug=False):
         """
         Start classifying double barcoded Illumina sequencing run
         """
@@ -107,6 +107,8 @@ class classifyApp:
                     run_out.writeReads()
                     rdp_out = output_prefix + "." + str(batch) + ".fixrank"
                     results[rdp_out] = pool.apply_async(rdpCall, (run_out.output_prefix, rdp_out, gene, train, rdpPath, self.verbose))
+                    if test:
+                        break
             if (self.runPairs is not None):
                 while 1:
                     # get next batch of reads
@@ -125,6 +127,9 @@ class classifyApp:
                     run_out.writeReads()
                     rdp_out = output_prefix + "." + str(batch) + ".fixrank"
                     results[rdp_out] = pool.apply_async(rdpCall, (run_out.output_prefix, rdp_out, gene, train, rdpPath, self.verbose))
+                    if test:
+                        break
+
             allfinished = False
             while not allfinished:
                 time.sleep(1)
