@@ -70,7 +70,7 @@ class validateApp:
                 for sampl_primer in samplesObject.sampleTable[sampl_barcode]:
                     if sampl_primer in ['*', '-']:
                         continue
-                    if sampl_primer not in primerObject.primers:
+                    if primerObject is not None and sampl_primer not in primerObject.primers:
                         failed = True
                         sys.stdout.write("ERROR:[validate] primer pair %s not found associated with barcode %s, sample %s in project %s\n"
                             % (sampl_primer, sampl_barcode,

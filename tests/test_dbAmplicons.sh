@@ -8,7 +8,7 @@ dbcAmplicons validate -B barcodeLookupTable.txt -P primerLookupTable-bd.txt -S s
 
 ## testing preprocess
 echo "Testing dbcAmplicons preprocess"
-dbcAmplicons preprocess -b 15001 -q 10 -l 200 -S sampleLookupTable.txt -B barcodeLookupTable.txt -P primerLookupTable.txt -1 Amplicon_Raw_fastq/Test100K_16S_R1_001.fastq.gz Amplicon_Raw_fastq/test40k_R1_001.fastq.gz -O preprocess/trimL --debug
+dbcAmplicons preprocess -b 15001 -q 10 -l 200 -S sampleLookupTable.txt -B barcodeLookupTable.txt -P primerLookupTable-dedup.txt -f 6 -1 Amplicon_Raw_fastq/Test100K_16S_R1_001.fastq.gz Amplicon_Raw_fastq/test40k_R1_001.fastq.gz -O preprocess/trimL --debug
 
 #echo "Testing dbcAmplicons splitreads"
 #dbcAmplicons splitreads -b 15001 -S sampleLookupTable.txt -1 preprocess/trimL_R1.fastq.gz -O splitreads --debug

@@ -217,16 +217,16 @@ class abundanceApp:
                                     tax_len[lrank.getCall()]["PAIR"] = 0
                                     tax_len[lrank.getCall()]["SINGLE"] = int(lrank.getSize())
                         lines += 1
-                        if lines % 100000 is 0:
+                        if lines % 100000 is 0 and self.verbose:
                             sys.stderr.write("processed %s total lines, %s lines/second\n" % (lines, round(lines/(time.time() - lasttime), 0)))
-            if self.verbose:
-                sys.stdout.write("%s lines processed in %s minutes\n" % (lines, round((time.time()-lasttime)/(60), 2)))
+            sys.stdout.write("%s lines processed in %s minutes\n" % (lines, round((time.time()-lasttime)/(60), 2)))
 
-                sys.stderr.write("Classification numbers (reads):\n")
-                for level in tax_level_counts:
-                    sys.stderr.write("   %s:\t%i\n" % (level, tax_level_counts[level]))
-                if discardedReads > 0:
-                    sys.stderr.write("discarded %s reads for size\n" % str(discardedReads))
+            sys.stdout.write("Classification numbers (reads):\n")
+            for level in tax_level_counts:
+                sys.stdout.write("   %s:\t%i\n" % (level, tax_level_counts[level]))
+            if discardedReads > 0:
+                sys.stdout.write("discarded %s reads for size\n" % str(discardedReads))
+            if self.verbose:
                 sys.stderr.write("Writing output\n")
 
             def calc_single_len(single, pairs, total):

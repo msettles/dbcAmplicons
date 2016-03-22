@@ -19,40 +19,73 @@ except ImportError:
     trim_loaded = False
 
 
-def barcodeDist(b_1, b_2):
+def barcodeDist(b_l, b_2, max_diff):
     # ------------------- calculate distance between two barcode sequences ------------------------------
     """
-    gets edit distnace between two equal-length barcode strings
+    gets edit distance between two equal-length barcode strings
     """
+    bc = None
+    bc_mismatch = max_diff+1
+
     if editdist_loaded:
-        return editdist.hamming_distance(b_1, b_2)
-    elif len(b_1) == len(b_2) and len(b_1) > 0:
-        return sum(map(lambda x: x[0] != x[1], zip(b_1, b_2)))
+        bc_i, bc_mismatch = editdist.hamming_distance_list(b_l, b_2, max_diff+1)
+
     else:
-        sys.stderr.write("ERROR:[barcodeDist] lengths of barcodes and index read do not match!\n")
-        sys.stderr.write("Target: %s" % b_1)
-        sys.stderr.write("Index read: %s" % b_2)
-        raise Exception
+        for i, key in enumerate(b_l):
+            if len(key) == len(b_2) and len(b_2) > 0:
+                dist = sum(map(lambda x: x[0] != x[1], zip(key, b_2)))
+            else:
+                sys.stderr.write("ERROR:[barcodeDist] lengths of barcodes and index read do not match!\n")
+                sys.stderr.write("Target: %s" % key)
+                sys.stderr.write("Index read: %s" % b_2)
+                raise Exception
+
+            if dist < bc_mismatch:
+                bc = i
+                bc_mismatch = dist
+    if bc_mismatch > max_diff:
+        bc = None
+    else:
+        bc = b_l[bc_i]
+    return (bc, bc_mismatch)
 
 
-def primerDist(primer, read, max_diff, end_match):
+def primerDist(primer_l, read, dedup_float, max_diff, end_match):
     # ------------------- calculate distance between primer sequence and first part of read ------------------------------
     """
     gets edit distance between primer and read sequence
     """
+    pr = None
+    prMismatch = max_diff+1
+    prStartPosition = 0
+    prEndPosition = 0
+
     if editdist_loaded:
-        return editdist.bounded_distance(primer, read, max_diff, end_match)
+        pr_i, prMismatch, prStartPosition, prEndPosition = editdist.bounded_distance_list(primer_l, read, dedup_float, max_diff, end_match)
+
     else:
-        read = read[0:len(primer)]
-        if end_match == 0:
-            dist = sum(map(lambda x: x[0] != x[1], zip(read, primer)))
-        else:
-            dist = sum(map(lambda x: x[0] != x[1], zip(read[:-end_match], primer[:-end_match])))
-            for i in range(len(primer)-end_match, len(primer)):
-                if read[i] != primer[i]:
-                    dist += 100
-                    return [dist, len(primer)]
-        return [dist, len(primer)]
+        for i, key in enumerate(primer_l):
+            read = read[0:len(key)]
+            if end_match == 0:
+                dist = sum(map(lambda x: x[0] != x[1], zip(read, key)))
+            else:
+                dist = sum(map(lambda x: x[0] != x[1], zip(read[:-end_match], key[:-end_match])))
+                for i in range(len(key)-end_match, len(key)):
+                    if read[i] != key[i]:
+                        dist += 100
+            if dist < prMismatch:
+                pr_i = i
+                prMismatch = dist
+                prEndPosition = len(key)
+
+    if prMismatch > max_diff:
+        pr = None
+        prStartPosition = 0
+        prEndPosition = 0
+    else:
+        pr = primer_l[pr_i]
+
+    return (pr, prMismatch, prStartPosition, prEndPosition)
 
 
 class FourSequenceReadSet:
@@ -71,7 +104,7 @@ class FourSequenceReadSet:
         being labeled as a good read.
         """
         self.barcode = [None, 0, 0]  # when filled, a vector of length 3 [barcodePairID, editdist1, editdist2]
-        self.primer = [None, None, 0, 0, None, 0, 0]  # when filled, a vector of length 7 [primerPairID,primerID1,editdist1,readendpos1, primerID2,editdist2,readendpos2]
+        self.primer = [None, None, 0, 0, 0, None, 0, 0, 0]  # when filled, a vector of length 7 [primerPairID,primerID1,editdist1,readendpos1, primerID2,editdist2,readendpos2]
         self.sample = None
         self.project = None
         self.name = name
@@ -91,58 +124,40 @@ class FourSequenceReadSet:
         assign a barcode pair ID from the reads barcodes.
         """
         # Barcode One Matching
-        bc1 = None
-        bc1Mismatch = max_diff+1
-        for key in bcTable.getP7():
-            bcdist = barcodeDist(key, self.bc_1)
-            if bcdist < bc1Mismatch:
-                bc1 = key
-                bc1Mismatch = bcdist
+        bc1, bc1Mismatch = barcodeDist(bcTable.getP7(), self.bc_1, max_diff)
+
         # Barcode Two Matching
-        bc2 = None
-        bc2Mismatch = max_diff+1
-        for key in bcTable.getP5():
-            bcdist = barcodeDist(key, self.bc_2)
-            if bcdist < bc2Mismatch:
-                bc2 = key
-                bc2Mismatch = bcdist
+        bc2, bc2Mismatch = barcodeDist(bcTable.getP5(), self.bc_2, max_diff)
+
         # Barcode Pair Matching
         self.barcode = [bcTable.getMatch(bc1, bc2), bc1Mismatch, bc2Mismatch]
-        self.goodRead = self.barcode[0] != None
         self.sample = self.barcode[0]
-        return 0
+        self.goodRead = self.barcode[0] is not None
+        if self.goodRead:
+            return 1
+        else:
+            return 0
 
-    def assignPrimer(self, prTable, max_diff, endmatch):
+    def assignPrimer(self, prTable, dedup_float, max_diff, endmatch):
         """
         Given a primerTable object, the maximum number of allowed difference (mismatch, insertion, deletions) and the
         required number of end match bases (final endmatch bases must match) assign a primer pair ID from the read
         sequences.
         """
-        # Barcode One Matching
-        pr1 = None
-        pr1Mismatch = max_diff+1
-        pr1Position = 0
-        for key in prTable.getP5sequences():
-            prdist = primerDist(key, self.read_1, max_diff, endmatch)
-            if prdist[0] < pr1Mismatch:
-                pr1 = key
-                pr1Mismatch = prdist[0]
-                pr1Position = prdist[1]
-        # Barcode Two Matching
-        pr2 = None
-        pr2Mismatch = max_diff+1
-        pr2Position = 0
-        for key in prTable.getP7sequences():
-            prdist = primerDist(key, self.read_2, max_diff, endmatch)
-            if prdist[0] < pr2Mismatch:
-                pr2 = key
-                pr2Mismatch = prdist[0]
-                pr2Position = prdist[1]
+        # Primer One Matching
+        pr1, pr1Mismatch, pr1StartPosition, pr1EndPosition = primerDist(prTable.getP5sequences(), self.read_1, dedup_float, max_diff, endmatch)
+
+        # Primer One Matching
+        pr2, pr2Mismatch, pr2StartPosition, pr2EndPosition = primerDist(prTable.getP7sequences(), self.read_2, dedup_float, max_diff, endmatch)
+
         # Barcode Pair Matching
         combined_pr = prTable.getMatch(pr1, pr2)
-        self.goodRead = self.goodRead and combined_pr[0] != None and pr1Mismatch <= max_diff and pr2Mismatch <= max_diff
-        self.primer = [combined_pr[0], combined_pr[1], pr2Mismatch, pr1Position, combined_pr[2], pr2Mismatch, pr2Position]
-        return 0
+        self.primer = [combined_pr[0], combined_pr[1], pr1Mismatch, pr1StartPosition, pr1EndPosition, combined_pr[2], pr2Mismatch, pr2StartPosition, pr2EndPosition]
+        self.goodRead = self.goodRead and combined_pr[0] is not None
+        if self.goodRead:
+            return 1
+        else:
+            return 0
 
     def assignRead(self, sTable):
         """
@@ -151,7 +166,10 @@ class FourSequenceReadSet:
         self.project = sTable.getProjectID(self.barcode[0], self.primer[0])
         self.sample = sTable.getSampleID(self.barcode[0], self.primer[0])
         self.goodRead = self.project is not None
-        return 0
+        if self.goodRead:
+            return 1
+        else:
+            return 0
 
     def trimRead(self, minQ, minL):
         """
@@ -161,8 +179,12 @@ class FourSequenceReadSet:
             trim_points = trim.trim(self.qual_1, self.qual_2, minQ)
             self.trim_left = trim_points["left_trim"]
             self.trim_right = trim_points["right_trim"]
-            if ((self.trim_left-self.primer[3]) < minL or (self.trim_right-self.primer[6]) < minL):
+            if ((self.trim_left-self.primer[4]) < minL or (self.trim_right-self.primer[8]) < minL):
                 self.goodRead = False
+        if self.goodRead:
+            return 1
+        else:
+            return 0
 
     def getBarcode(self):
         """
@@ -193,10 +215,10 @@ class FourSequenceReadSet:
         Create four line string ('\n' separator included) for the read pair, returning a length 2 vector (one for each read)
         """
         if self.primer[0] is not None and kprimer is False:
-            read1_name = "%s 1:N:0:%s:%s %s|%s|%s|%s %s|%s|%s" % (self.name, self.sample, self.primer[0], self.bc_1, self.barcode[1], self.bc_2, self.barcode[2], self.primer[1], self.primer[2], self.primer[3])
-            read2_name = "%s 2:N:0:%s:%s %s|%s|%s|%s %s|%s|%s" % (self.name, self.sample, self.primer[0], self.bc_1, self.barcode[1], self.bc_2, self.barcode[2], self.primer[4], self.primer[5], self.primer[6])
-            r1 = '\n'.join([read1_name, self.read_1[self.primer[3]:self.trim_left], '+', self.qual_1[self.primer[3]:self.trim_left]])
-            r2 = '\n'.join([read2_name, self.read_2[self.primer[6]:self.trim_right], '+', self.qual_2[self.primer[6]:self.trim_right]])
+            read1_name = "%s 1:N:0:%s:%s %s|%s|%s|%s %s|%s|%s|%s" % (self.name, self.sample, self.primer[0], self.bc_1, self.barcode[1], self.bc_2, self.barcode[2], self.primer[1], self.primer[2], self.primer[4], self.read_1[0:self.primer[3]])
+            read2_name = "%s 2:N:0:%s:%s %s|%s|%s|%s %s|%s|%s|%s" % (self.name, self.sample, self.primer[0], self.bc_1, self.barcode[1], self.bc_2, self.barcode[2], self.primer[5], self.primer[6], self.primer[8], self.read_2[0:self.primer[7]])
+            r1 = '\n'.join([read1_name, self.read_1[self.primer[4]:self.trim_left], '+', self.qual_1[self.primer[4]:self.trim_left]])
+            r2 = '\n'.join([read2_name, self.read_2[self.primer[8]:self.trim_right], '+', self.qual_2[self.primer[8]:self.trim_right]])
         else:
             read1_name = "%s 1:N:0:%s %s|%s|%s|%s" % (self.name, self.sample, self.bc_1, self.barcode[1], self.bc_2, self.barcode[2])
             read2_name = "%s 2:N:0:%s %s|%s|%s|%s" % (self.name, self.sample, self.bc_1, self.barcode[1], self.bc_2, self.barcode[2])

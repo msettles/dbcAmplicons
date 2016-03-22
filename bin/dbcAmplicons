@@ -23,7 +23,48 @@ from distutils import spawn
 
 profile = False
 
-version_num = "v0.6.7-12312015"
+# version 0.3.0
+# initial release add support for preprocess and splitreads
+# version 0.4.0
+# add support for multiple input files
+# version 0.5.0
+# reconfigure repository and interface
+# version 0.5.1
+# added support for rdp classification
+# version 0.5.2
+# rdp classification and abundance table generation available
+# version 0.5.3
+# added support for project with no primers
+# version 0.5.4
+# added convert2ReadTo4Read.py script in scripts folder, minor edits to main dbcAmplicons application
+# version 0.5.5
+# added support for gzip in a separate process and ability to infer read file names
+# version 0.5.6
+# added support for Fluidgm down stream processing of samples, in scripts/R
+# version 0.5.7
+# increased speed in gzip read, and bug fixes
+# version 0.5.8
+# fixed bug in barcodes mismatches, added two new flags to preprocess keep primer and test
+# version 0.5.9
+# added script to split by sample, appending output files through iterations
+# version 0.6.0
+# added support for output of biom format in abundance tables
+# version 0.6.1
+# added validate app, some pep modification and various tweeks
+# version 0.6.2
+# bugfixes and cleanup, merge customRDP, scripts, mapping with develop, close issue #1, varius bug fixes
+# version 0.6.3
+# addressed issue #11, validate pairs in primer file
+# version 0.6.4
+# modified abundance output, flash output and reporting, fix issue #12
+# version 0.6.5
+# Show error message and download for RDP when not found
+# version 0.6.6
+# Added support for variable length barcodes in convert2ReadTo4Read.py
+# version 0.7.0
+# Reworked all the barcode and primer to be faster, implementation of deduplication code
+
+version_num = "v0.7.0-02082016"
 
 
 #####################################################################################
@@ -94,6 +135,8 @@ def preprocessParser(subparsers):
                                    type=int, dest='primerdiff', default=4)
     preprocess_parser.add_argument('-e', '--primerend', help='required number of matching bases at end of primer [default: %(default)s]',
                                    type=int, dest='primerend', default=4)
+    preprocess_parser.add_argument('-f', '--dedup_float', help='number of bases preceeding primer used to deduplicate reads [default: %(default)s]',
+                                   type=int, dest='dedup_float', default=0)
     preprocess_parser.add_argument('-S', '--sample_metadata', help='file with sample metadata',
                                    action='store', type=str, dest='samples_file', metavar='FILENAME', default=None)
     preprocess_parser.add_argument('-q', '--minQ', help="trim 3' end of sequences to minQ [default: %(default)s]",
@@ -165,10 +208,10 @@ class preprocessCMD:
 
         if profile:
             import cProfile
-            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)', globals(), locals())
+            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, args.dedup_float, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)', globals(), locals())
             return 255
         else:
-            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)
+            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, args.dedup_float, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)
 
 
 #####################################################################################
@@ -310,7 +353,7 @@ class joinCMD:
             sys.exit()
 
         # System call, try adding Popen and CString to capture output
-        call_string = [flash_path, "--max-overlap", str(600), "--allow-outies", "-t", str(args.threads), "-x", str(args.max_mixmatch_density), "-o", output_prefix, compress, fastq_file1, fastq_file2]
+        call_string = [flash_path, "-Q", "10", "--max-overlap", str(600), "--allow-outies", "-t", str(args.threads), "-x", str(args.max_mixmatch_density), "-o", output_prefix, compress, fastq_file1, fastq_file2]
         if profile:
             import cProfile
             cProfile.runctx('joinFun(call_string, args.verbose)', globals(), locals())
@@ -433,6 +476,8 @@ def classifyParser(subparsers):
                                  action='store', type=str, default=None, required=False, nargs='+')
     classify_parser.add_argument('-U', metavar="single", dest='fastq_file3', help='single-end amplicon, typically from joined paired reads',
                                  action='store', type=str, default=None, required=False, nargs='+')
+    classify_parser.add_argument('--test', help='exit after the first batch in order to test the inputs',
+                                 action='store_true', dest="test", default=False)
     classify_parser.add_argument('-v', '--silent', help='silences verbose output [default: %(default)s]',
                                  action='store_true', dest='verbose', default=False)
     classify_parser.add_argument('--debug', help='show traceback on error',
@@ -484,10 +529,10 @@ class classifyCMD:
 
         if profile:
             import cProfile
-            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, rdpPath, args.gene, args.train, batchsize, args.minQ, args.minL, procs, verbose, debug)', globals(), locals())
+            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, rdpPath, args.gene, args.train, batchsize, args.minQ, args.minL, procs, args.test, verbose, debug)', globals(), locals())
             return 255
         else:
-            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, rdpPath, args.gene, args.train, batchsize, args.minQ, args.minL, procs, verbose, debug)
+            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, rdpPath, args.gene, args.train, batchsize, args.minQ, args.minL, procs, args.test, verbose, debug)
 
 
 def abundanceParser(subparsers):
@@ -557,7 +602,7 @@ def parseArgs():
     """
     parser = argparse.ArgumentParser(
         description='dbcAmplicons, a python package for preprocessing of massively multiplexed, dual barcoded Illumina Amplicons',
-        epilog='For questions or comments, please contact Matt Settles <msettles@uidaho.edu>', add_help=True)
+        epilog='For questions or comments, please contact Matt Settles <settles@ucdavis.edu>', add_help=True)
     parser.add_argument('--version', action='version', version="%(prog)s Version " + version_num)
     subparsers = parser.add_subparsers(help='commands', dest='command')
 
