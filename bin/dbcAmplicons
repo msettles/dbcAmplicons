@@ -205,6 +205,9 @@ class preprocessCMD:
         elif args.output_base is not None and sFile is not None:
             output_prefix = args.output_base
 
+        from dbcAmplicons import misc
+        misc.make_sure_path_exists(os.path.dirname(output_prefix))
+
         from dbcAmplicons import preprocessApp
         app = preprocessApp()
 
