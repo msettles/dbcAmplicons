@@ -10,6 +10,12 @@ except ImportError:
 editdist = Extension('editdist', sources=['lib/editdist.c'])
 trim = Extension('trim', sources=['lib/trim.c'])
 
+try:
+    version_num = open("VERSION", "r+").readline().strip()
+except:
+    sys.stderr.write("Error retrieving version_number")
+
+
 config = \
     {
         'description': 'Processing of Illumina double barcoded amplicon projects',
@@ -17,7 +23,7 @@ config = \
         'url': 'https://github.com/msettles/dbcAmplicons',
         'download_url': 'https://github.com/msettles/dbcAmplicons',
         'author_email': 'settles@ucdavis.edu',
-        'version': 'v0.8.0-03222016',
+        'version': version_num,
         'install_requires': ['biom-format>=2.1.3'],
         'packages': ['dbcAmplicons'],
         'scripts': ['bin/dbcAmplicons', 'scripts/python/convert2ReadTo4Read.py', 'scripts/python/splitReadsBySample.py', 'scripts/R/reduce_amplicons.R'],
