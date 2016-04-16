@@ -82,7 +82,7 @@ def validateParser(subparsers):
     validate_parser.add_argument('-B', '--barcodes_file', help='file with barcodes',
                                  action='store', type=str, dest='barcodes_file', metavar='FILENAME', required=True)
     validate_parser.add_argument('-P', '--primer_file', help='file with primers',
-                                 action='store', type=str, dest='primer_file', metavar='FILENAME', required=True)
+                                 action='store', type=str, dest='primer_file', metavar='FILENAME', required=False)
     validate_parser.add_argument('-S', '--sample_metadata', help='file with sample metadata',
                                  action='store', type=str, dest='samples_file', metavar='FILENAME', required=True)
     validate_parser.add_argument('-v', '--silent', help='silences verbose output [default: %(default)s]',
@@ -269,6 +269,9 @@ class splitreadsCMD:
         verbose = not args.verbose
         batchsize = args.batchsize
 
+        from dbcAmplicons import misc
+        misc.make_sure_path_exists(os.path.dirname(output_prefix))
+
         from dbcAmplicons import splitreadsApp
         app = splitreadsApp()
 
@@ -334,6 +337,7 @@ class joinCMD:
 
         from dbcAmplicons import misc
         misc.make_sure_path_exists(os.path.dirname(output_prefix))
+
         if args.uncompressed:
             compress = ""
         else:
@@ -416,6 +420,9 @@ class screenCMD:
         reference = args.reference
         # ----------------------- options output prefix -----------------------
         output_prefix = args.output_base
+        from dbcAmplicons import misc
+        misc.make_sure_path_exists(os.path.dirname(output_prefix))
+
         # ----------------------- other options ------------
         debug = args.debug
         verbose = not args.verbose
@@ -500,6 +507,9 @@ class classifyCMD:
     def execute(self, args):
         # ----------------------- options output prefix -----------------------
         output_prefix = args.output_base
+        from dbcAmplicons import misc
+        misc.make_sure_path_exists(os.path.dirname(output_prefix))
+
         # ----------------------- other options ------------
         debug = args.debug
         verbose = not args.verbose
@@ -529,6 +539,7 @@ class classifyCMD:
         if (args.train is None and args.gene != '16srrna' and args.gene != 'fungallsu' and args.gene != "fungalits_warcup" and args.gene != "fungalits_unite"):
             sys.stderr.write("parameter -g (--gene) must be one of 16srrna or fungallsu or fungalits_warcup or fungalits_unite\n")
             sys.exit()
+        
         from dbcAmplicons import classifyApp
         app = classifyApp()
 
@@ -565,6 +576,8 @@ def abundanceParser(subparsers):
                                   action='store', type=str, default=None, required=True, nargs='+')
     abundance_parser.add_argument('-b', '--biom', help='output biom formatted file [default: %(default)s]',
                                   action='store_true', dest='biom', default=False)
+    abundance_parser.add_argument('-H', '--hdf5', help='output biom formatted file in hdf5 [default: %(default)s]',
+                                  action='store_true', dest='hdf5', default=False)
     abundance_parser.add_argument('-v', '--silent', help='verbose output [default: %(default)s]',
                                   action='store_true', dest='verbose', default=False)
     abundance_parser.add_argument('--debug', help='show traceback on error',
@@ -584,6 +597,9 @@ class abundanceCMD:
         sFile = args.samples_file
         # ----------------------- options output prefix -----------------------
         output_prefix = args.output_base
+        from dbcAmplicons import misc
+        misc.make_sure_path_exists(os.path.dirname(output_prefix))
+
         # ----------------------- other options ------------
         debug = args.debug
         verbose = not args.verbose
@@ -593,10 +609,10 @@ class abundanceCMD:
 
         if profile:
             import cProfile
-            cProfile.runctx('app.start(args.fixrank_file, sFile, output_prefix, args.rank, args.threshold, args.minsize, args.maxsize, args.biom verbose, debug)', globals(), locals())
+            cProfile.runctx('app.start(args.fixrank_file, sFile, output_prefix, args.rank, args.threshold, args.minsize, args.maxsize, args.biom, args.hdf5, verbose, debug)', globals(), locals())
             return 255
         else:
-            return app.start(args.fixrank_file, sFile, output_prefix, args.rank, args.threshold, args.minsize, args.maxsize, args.biom, verbose, debug)
+            return app.start(args.fixrank_file, sFile, output_prefix, args.rank, args.threshold, args.minsize, args.maxsize, args.biom, args.hdf5, verbose, debug)
 
 
 #####################################################################################

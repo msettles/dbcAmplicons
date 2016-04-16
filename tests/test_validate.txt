@@ -1,0 +1,90 @@
+barcode table length: 864
+primer table length P5 Primer (expanded) Sequences:12, P7 Primer (expanded) Sequences:12
+sample table length: 208, and 5 projects.
+ERROR:[validate] barcode Delta 162 not found in barcode table
+ERROR:[validate] barcode echo198 not found in barcode table
+ERROR:[validate] primer pair BOB not found associated with barcode Echo217, sample 56 in project nomatch
+ERROR:[validate] primer pair ITS BOB not found associated with barcode Foxtrot264, sample 88 in project match_twoprimer
+ERROR:[validate] barcode Foxtrot29 not found in barcode table
+barcode table length: 864
+primer table length P5 Primer Sequences:8, P7 Primer Sequences:2
+sample table length: 208, and 5 projects.
+140000 reads processed in 0.63 minutes, 52835 (37.7%) identified
+
+112292 reads (80.2% of total run) successfully identified barcode
+89574 reads (64.0% of total run) successfully identified barcode and primer
+78917 reads (56.4% of total run) successfully assigned to sample
+52835 reads (37.7% of total run) successfully pass trimming criteria
+87165 reads (62.3% of total run) unidentified
+
+17894 reads (12.8% of total run) found for project	match_twoprimersecond
+21821 reads (15.6% of total run) found for project	match_twoprimer
+1488 reads (1.1% of total run) found for project	subfolder/match_16S
+11632 reads (8.3% of total run) found for project	match_wildcard
+0 reads (0.0% of total run) found for project	nomatch
+Using Flash2 version:is
+
+Parameters:
+   Min_overlap:10
+   Min_overlap_outie:35
+   Max_overlap:600
+   Max_mismatch_density:0.250000
+   Allow_"outie"_pairs:true
+   Cap_mismatch_quals:false
+   Combiner_threads:4
+   Input_format:FASTQ, phred_offset=33
+   Output_format:FASTQ, phred_offset=33, gzip
+
+Output:
+   Total_pairs:21821
+   Discarded_pairs:10
+   Percent_Discarded:0.05%
+   Combined_pairs:16342
+   Innie_pairs:16342 (100.00% of combined)
+   Outie_pairs:0 (0.00% of combined)
+   Uncombined_pairs:5469
+   Percent_combined:74.93%
+21811 reads processed in 2.0 minutes
+21811 lines processed in 0.01 minutes
+Classification numbers (reads):
+   domain:	90
+   phylum:	16
+   class:	44
+   order:	198
+   family:	1274
+   genus:	20189
+   species:	0
+   isolate:	0
+sample table length: 208, and 5 projects.
+21811 lines processed in 0.01 minutes
+Classification numbers (reads):
+   domain:	90
+   phylum:	16
+   class:	44
+   order:	198
+   family:	1274
+   genus:	20189
+   species:	0
+   isolate:	0
+sample table length: 208, and 5 projects.
+21811 lines processed in 0.01 minutes
+Classification numbers (reads):
+   domain:	90
+   phylum:	16
+   class:	44
+   order:	198
+   family:	1274
+   genus:	20189
+   species:	0
+   isolate:	0
+40000 reads processed in 0.51 minutes
+barcode table length: 864
+40000 reads processed in 0.49 minutes, 39186 (98.0%) identified
+
+39186 reads (98.0% of total run) successfully identified barcode
+814 reads (2.0% of total run) unidentified
+
+Successfully indexed Amplicon_Raw_fastq/test_map.fa
+bowtie2 -I 0 -X 1500 --sensitive-local -p 1 -x Amplicon_Raw_fastq/test_map.fa -1 <(gunzip -c Amplicon_Raw_fastq/Hkates_R1.40k.fastq.gz| sed 's, ,_:_,g') -2 <(gunzip -c Amplicon_Raw_fastq/Hkates_R2.40k.fastq.gz| sed 's, ,_:_,g') -U <(gunzip -c Amplicon_Raw_fastq/Hkates_R1.40k.fastq.gz| sed 's, ,_:_,g')
+Processed: 100000, PE in ref: 1044, SE in ref: 528
+Records processed: 120000, PE in ref: 1044, SE in ref: 1046

@@ -47,7 +47,7 @@ class sampleTable:
         try:
             sfile = open(samplefile, 'r')
         except IOError:
-            sys.stderr.write('ERROR:[Samples] cannot open\n', samplefile)
+            sys.stderr.write('ERROR:[Samples] cannot open %s\n' % samplefile)
             raise
         f = sfile.next()  # read the file
         header = f.rstrip()
@@ -58,7 +58,7 @@ class sampleTable:
             del metadata_index[sampleID_index]
         except ValueError:
             try:
-                sampleID_index == vheader.index("#SampleID")
+                sampleID_index = vheader.index("#SampleID")
                 del metadata_index[metadata_index.index(sampleID_index)]
             except ValueError:
                 sys.stderr.write('ERROR:[Samples] Column "SampleID" was not found in the samples table\n')

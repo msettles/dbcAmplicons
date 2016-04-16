@@ -66,14 +66,20 @@ class validateApp:
             for sampl_barcode in samplesObject.sampleTable:
                 if sampl_barcode not in barcodesObject.IDS:
                     failed = True
-                    sys.stdout.write("ERROR:[validate] barcode %s not found in barcode table\n" % sampl_barcode)
+                    sys.stderr.write("ERROR:[validate] barcode %s not found in barcode table\n" % sampl_barcode)
                 for sampl_primer in samplesObject.sampleTable[sampl_barcode]:
-                    if sampl_primer in ['*', '-']:
+                    if sampl_primer in ['-']:
                         continue
-                    if primerObject is not None and sampl_primer not in primerObject.primers:
+                    elif primerObject is None:
                         failed = True
-                        sys.stdout.write("ERROR:[validate] primer pair %s not found associated with barcode %s, sample %s in project %s\n"
-                            % (sampl_primer, sampl_barcode,
+                        sys.stderr.write("ERROR:[validate] primers found in sample sheet but no primer file provided\n")
+                        raise
+                    elif sampl_primer in ['*']:
+                        continue
+                    elif sampl_primer not in primerObject.primers:
+                        failed = True
+                        sys.stderr.write("ERROR:[validate] primer pair %s not found associated with barcode %s, sample %s in project %s\n"
+                                % (sampl_primer, sampl_barcode,
                                 samplesObject.sampleTable[sampl_barcode][sampl_primer][0],
                                 samplesObject.sampleTable[sampl_barcode][sampl_primer][1]))
             if failed:

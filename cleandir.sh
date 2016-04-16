@@ -10,6 +10,7 @@ rm -rf tests/Amplicon_Raw_fastq/test_map.fa.*
 rm -rf tests/Amplicon_Raw_fastq/*Identified*
 rm -rf tests/Amplicon_Raw_fastq/*Barcodes*
 rm -rf tests/screening*
+rm -rf tests/test_output.txt
 
 rm -rf dist
 rm -rf build
