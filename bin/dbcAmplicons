@@ -18,56 +18,16 @@ from subprocess import STDOUT
 from subprocess import check_call
 from subprocess import CalledProcessError
 from multiprocessing import cpu_count
+import urllib2
 
 from distutils import spawn
 
+try:
+    from dbcAmplicons import version_num
+except ImportError:
+    version_num = "error importing version number"
+
 profile = False
-
-# version 0.3.0
-# initial release add support for preprocess and splitreads
-# version 0.4.0
-# add support for multiple input files
-# version 0.5.0
-# reconfigure repository and interface
-# version 0.5.1
-# added support for rdp classification
-# version 0.5.2
-# rdp classification and abundance table generation available
-# version 0.5.3
-# added support for project with no primers
-# version 0.5.4
-# added convert2ReadTo4Read.py script in scripts folder, minor edits to main dbcAmplicons application
-# version 0.5.5
-# added support for gzip in a separate process and ability to infer read file names
-# version 0.5.6
-# added support for Fluidgm down stream processing of samples, in scripts/R
-# version 0.5.7
-# increased speed in gzip read, and bug fixes
-# version 0.5.8
-# fixed bug in barcodes mismatches, added two new flags to preprocess keep primer and test
-# version 0.5.9
-# added script to split by sample, appending output files through iterations
-# version 0.6.0
-# added support for output of biom format in abundance tables
-# version 0.6.1
-# added validate app, some pep modification and various tweeks
-# version 0.6.2
-# bugfixes and cleanup, merge customRDP, scripts, mapping with develop, close issue #1, varius bug fixes
-# version 0.6.3
-# addressed issue #11, validate pairs in primer file
-# version 0.6.4
-# modified abundance output, flash output and reporting, fix issue #12
-# version 0.6.5
-# Show error message and download for RDP when not found
-# version 0.6.6
-# Added support for variable length barcodes in convert2ReadTo4Read.py
-# version 0.7.0
-# Reworked all the barcode and primer to be faster, implementation of deduplication code
-# version 0.8.0
-# Merged in deduplication code, fixed error in c primer alignment of last 4 bases added --test to classify
-
-version_num = "v0.8.0-03222016"
-
 
 #####################################################################################
 # Validate the sample, barcode and primer files
@@ -82,7 +42,7 @@ def validateParser(subparsers):
     validate_parser.add_argument('-B', '--barcodes_file', help='file with barcodes',
                                  action='store', type=str, dest='barcodes_file', metavar='FILENAME', required=True)
     validate_parser.add_argument('-P', '--primer_file', help='file with primers',
-                                 action='store', type=str, dest='primer_file', metavar='FILENAME', required=True)
+                                 action='store', type=str, dest='primer_file', metavar='FILENAME', required=False)
     validate_parser.add_argument('-S', '--sample_metadata', help='file with sample metadata',
                                  action='store', type=str, dest='samples_file', metavar='FILENAME', required=True)
     validate_parser.add_argument('-v', '--silent', help='silences verbose output [default: %(default)s]',
@@ -205,6 +165,9 @@ class preprocessCMD:
         elif args.output_base is not None and sFile is not None:
             output_prefix = args.output_base
 
+        from dbcAmplicons import misc
+        misc.make_sure_path_exists(os.path.dirname(output_prefix))
+
         from dbcAmplicons import preprocessApp
         app = preprocessApp()
 
@@ -265,6 +228,9 @@ class splitreadsCMD:
         debug = args.debug
         verbose = not args.verbose
         batchsize = args.batchsize
+
+        from dbcAmplicons import misc
+        misc.make_sure_path_exists(os.path.dirname(output_prefix))
 
         from dbcAmplicons import splitreadsApp
         app = splitreadsApp()
@@ -331,6 +297,7 @@ class joinCMD:
 
         from dbcAmplicons import misc
         misc.make_sure_path_exists(os.path.dirname(output_prefix))
+
         if args.uncompressed:
             compress = ""
         else:
@@ -413,6 +380,9 @@ class screenCMD:
         reference = args.reference
         # ----------------------- options output prefix -----------------------
         output_prefix = args.output_base
+        from dbcAmplicons import misc
+        misc.make_sure_path_exists(os.path.dirname(output_prefix))
+
         # ----------------------- other options ------------
         debug = args.debug
         verbose = not args.verbose
@@ -497,6 +467,9 @@ class classifyCMD:
     def execute(self, args):
         # ----------------------- options output prefix -----------------------
         output_prefix = args.output_base
+        from dbcAmplicons import misc
+        misc.make_sure_path_exists(os.path.dirname(output_prefix))
+
         # ----------------------- other options ------------
         debug = args.debug
         verbose = not args.verbose
@@ -526,6 +499,7 @@ class classifyCMD:
         if (args.train is None and args.gene != '16srrna' and args.gene != 'fungallsu' and args.gene != "fungalits_warcup" and args.gene != "fungalits_unite"):
             sys.stderr.write("parameter -g (--gene) must be one of 16srrna or fungallsu or fungalits_warcup or fungalits_unite\n")
             sys.exit()
+        
         from dbcAmplicons import classifyApp
         app = classifyApp()
 
@@ -562,6 +536,8 @@ def abundanceParser(subparsers):
                                   action='store', type=str, default=None, required=True, nargs='+')
     abundance_parser.add_argument('-b', '--biom', help='output biom formatted file [default: %(default)s]',
                                   action='store_true', dest='biom', default=False)
+    abundance_parser.add_argument('-H', '--hdf5', help='output biom formatted file in hdf5 [default: %(default)s]',
+                                  action='store_true', dest='hdf5', default=False)
     abundance_parser.add_argument('-v', '--silent', help='verbose output [default: %(default)s]',
                                   action='store_true', dest='verbose', default=False)
     abundance_parser.add_argument('--debug', help='show traceback on error',
@@ -581,6 +557,9 @@ class abundanceCMD:
         sFile = args.samples_file
         # ----------------------- options output prefix -----------------------
         output_prefix = args.output_base
+        from dbcAmplicons import misc
+        misc.make_sure_path_exists(os.path.dirname(output_prefix))
+
         # ----------------------- other options ------------
         debug = args.debug
         verbose = not args.verbose
@@ -590,10 +569,10 @@ class abundanceCMD:
 
         if profile:
             import cProfile
-            cProfile.runctx('app.start(args.fixrank_file, sFile, output_prefix, args.rank, args.threshold, args.minsize, args.maxsize, args.biom verbose, debug)', globals(), locals())
+            cProfile.runctx('app.start(args.fixrank_file, sFile, output_prefix, args.rank, args.threshold, args.minsize, args.maxsize, args.biom, args.hdf5, verbose, debug)', globals(), locals())
             return 255
         else:
-            return app.start(args.fixrank_file, sFile, output_prefix, args.rank, args.threshold, args.minsize, args.maxsize, args.biom, verbose, debug)
+            return app.start(args.fixrank_file, sFile, output_prefix, args.rank, args.threshold, args.minsize, args.maxsize, args.biom, args.hdf5, verbose, debug)
 
 
 #####################################################################################
@@ -604,8 +583,8 @@ def parseArgs():
     """
     parser = argparse.ArgumentParser(
         description='dbcAmplicons, a python package for preprocessing of massively multiplexed, dual barcoded Illumina Amplicons',
-        epilog='For questions or comments, please contact Matt Settles <settles@ucdavis.edu>', add_help=True)
-    parser.add_argument('--version', action='version', version="%(prog)s Version " + version_num)
+        epilog='For questions or comments, please contact Matt Settles <settles@ucdavis.edu>\n%(prog)s version:' + version_num, add_help=True)
+    parser.add_argument('--version', action='version', version="%(prog)s version: " + version_num)
     subparsers = parser.add_subparsers(help='commands', dest='command')
 
     validateParser(subparsers)

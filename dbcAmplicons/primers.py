@@ -38,7 +38,7 @@ class primerTable:
         try:
             prfile = open(primerfile, 'r')
         except IOError:
-            sys.stderr.write('ERROR:[Primers] Error cannot open\n', primerfile)
+            sys.stderr.write('ERROR:[Primers] Error cannot open %s\n' % primerfile)
             raise
         f = prfile.readlines()
         line = 0

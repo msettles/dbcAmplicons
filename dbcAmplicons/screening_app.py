@@ -195,14 +195,14 @@ class screeningApp:
                             if (flag & 0x10):  # reverse complement
                                 line2[9] = reverseComplement(line2[9])
                                 line2[10] = reverse(line2[10])
-                            self.run_out["mapped_singles"].addRead(['\n'.join(['@' + line2[0].replace('_:_', ' '), line2[9], line2[10]])])
+                            self.run_out["mapped_singles"].addRead(['\n'.join(['@' + line2[0].replace('_:_', ' '), line2[9], '+', line2[10]])])
                             mapped_singles_count += 1
                         else:  # UNMAPPED
                             ID = line2[0]
                             if (flag & 0x10):  # reverse complement
                                 line2[9] = reverseComplement(line2[9])
                                 line2[10] = reverse(line2[10])
-                            self.run_out["unmapped_singles"].addRead(['\n'.join(['@' + line2[0].replace('_:_', ' '), line2[9], line2[10]])])
+                            self.run_out["unmapped_singles"].addRead(['\n'.join(['@' + line2[0].replace('_:_', ' '), line2[9], '+', line2[10]])])
                             unmapped_singles_count += 1
                         continue
                     # Handle PE:
@@ -216,7 +216,7 @@ class screeningApp:
                                 if (flag & 0x10):  # reverse complement
                                     line2[9] = reverseComplement(line2[9])
                                     line2[10] = reverse(line2[10])
-                                r1 = '\n'.join(['@' + line2[0].replace('_:_', ' '), line2[9], line2[10]])  # sequence + qual
+                                r1 = '\n'.join(['@' + line2[0].replace('_:_', ' '), line2[9], '+', line2[10]])  # sequence + qual
                                 if ID in PE2:
                                     self.run_out["mapped_pairs"].addRead([r1, PE2[ID]])
                                     del PE2[ID]
@@ -229,7 +229,7 @@ class screeningApp:
                                 if (flag & 0x10):  # reverse complement
                                     line2[9] = reverseComplement(line2[9])
                                     line2[10] = reverse(line2[10])
-                                r2 = '\n'.join(['@' + line2[0].replace('_:_', ' '), line2[9], line2[10]])
+                                r2 = '\n'.join(['@' + line2[0].replace('_:_', ' '), line2[9], '+', line2[10]])
                                 if ID in PE1:
                                     self.run_out["mapped_pairs"].addRead([PE1[ID], r2])
                                     del PE1[ID]
@@ -243,7 +243,7 @@ class screeningApp:
                                 if (flag & 0x10):  # reverse complement
                                     line2[9] = reverseComplement(line2[9])
                                     line2[10] = reverse(line2[10])
-                                r1 = '\n'.join(['@' + line2[0].replace('_:_', ' '), line2[9], line2[10]])  # sequence + qual
+                                r1 = '\n'.join(['@' + line2[0].replace('_:_', ' '), line2[9], '+', line2[10]])  # sequence + qual
                                 if ID in PE2:
                                     self.run_out["unmapped_pairs"].addRead([r1, PE2[ID]])
                                     del PE2[ID]
@@ -256,7 +256,7 @@ class screeningApp:
                                 if (flag & 0x10):  # reverse complement
                                     line2[9] = reverseComplement(line2[9])
                                     line2[10] = reverse(line2[10])
-                                r2 = '\n'.join(['@' + line2[0].replace('_:_', ' '), line2[9], line2[10]])
+                                r2 = '\n'.join(['@' + line2[0].replace('_:_', ' '), line2[9], '+', line2[10]])
                                 if ID in PE1:
                                     self.run_out["unmapped_pairs"].addRead([PE1[ID], r1])
                                     del PE1[ID]

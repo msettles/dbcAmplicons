@@ -130,13 +130,13 @@ class abundanceApp:
     def __init__(self):
         self.verbose = False
 
-    def start(self, fixrank_file, samplesFile, output_prefix='table', rank='genus', threshold=0.5, minsize=None, maxsize=None, biom=False, verbose=True, debug=False):
+    def start(self, fixrank_file, samplesFile, output_prefix='table', rank='genus', threshold=0.5, minsize=None, maxsize=None, biom=False, hdf5=False, verbose=True, debug=False):
         """
             Start processing classification fixrank files
         """
         self.verbose = verbose
         evalSample = samplesFile is not None
-        if biom:
+        if biom or hdf5:
             try:
                 import biom
             except ImportError:
@@ -196,7 +196,7 @@ class abundanceApp:
                                 sampleList.append(lrank.getSampleID())
                                 primers[lrank.getSampleID()] = []
                             sampleCounts[lrank.getSampleID()] += 1
-                            if lrank.getPrimer() not in primers[lrank.getSampleID()]:
+                            if lrank.getPrimer() is not None and lrank.getPrimer() not in primers[lrank.getSampleID()]:
                                 primers[lrank.getSampleID()].append(lrank.getPrimer())
                             if lrank.getCall() in abundanceTable.keys():
                                 abundanceTable[lrank.getCall()][lrank.getSampleID()] += 1
@@ -236,11 +236,12 @@ class abundanceApp:
                     return 0
             # output files
             # biom format
-            if biom:
+            if biom or hdf5:
                 # generate table formats
                 data = []
                 obs_ids = []
                 sampleList = sorted(sampleList, key=lambda s: s.lower())
+                
                 sampleList_md = [{'primers': ";".join(primers[v])} for v in sampleList]
                 if evalSample:
                     if sTable.hasMetadata() is True:
@@ -267,19 +268,25 @@ class abundanceApp:
 
                 # build the biom Table object
                 biomT = biom.Table(data=data, observation_ids=obs_ids, sample_ids=sampleList,
-                    observation_metadata=taxa_keys_md, sample_metadata=sampleList_md,
-                    input_is_dense=True,
-                    table_id=None, type="OTU table", create_date=None, generated_by="dbcAmplicons",
-                    observation_group_metadata=None, sample_group_metadata=None)
-                try:
-                    import h5py1  # Temporarily deactive h5py output (DISABLED)
-                    sys.stderr.write("Writing hd5 formatted biom file to: %s\n" % (output_prefix + '.biom'))
-                    with h5py.File(output_prefix + '.biom', 'w') as f:
-                        biomT.to_hdf5(f, "dbcAmplicons")
-                except ImportError:
-                    sys.stderr.write("Writing json formatted biom file to: %s\n" % (output_prefix + '.biom'))
-                    with open(output_prefix + '.biom', 'w') as f:
-                        f.write(biomT.to_json("dbcAmplicons"))
+                                   observation_metadata=taxa_keys_md, sample_metadata=sampleList_md,
+                                   input_is_dense=True,
+                                   table_id=None, type="OTU table", create_date=None, generated_by="dbcAmplicons",
+                                   observation_group_metadata=None, sample_group_metadata=None)
+
+                if hdf5:
+                    try:
+                        import h5py  # Temporarily deactive h5py output (DISABLED)
+                        sys.stderr.write("Writing hd5 formatted biom file to: %s\n" % (output_prefix + '.biom'))
+                        with h5py.File(output_prefix + '.biom', 'w') as f:
+                            biomT.to_hdf5(f, "dbcAmplicons")
+                    except ImportError:
+                        sys.stderr.write("h5py Import Error: Writing json formatted biom file to: %s\n" % (output_prefix + '.biom'))
+                        with open(output_prefix + '.biom', 'w') as f:
+                            f.write(biomT.to_json("dbcAmplicons"))
+                else:
+                        sys.stderr.write("Writing json formatted biom file to: %s\n" % (output_prefix + '.biom'))
+                        with open(output_prefix + '.biom', 'w') as f:
+                            f.write(biomT.to_json("dbcAmplicons"))
 
             # abundance and proportions tables
             else:
@@ -328,10 +335,10 @@ class abundanceApp:
 
             for abt in taxa_keys:
                 cntFile.write(str(abt) + '\t' +
-                    str(round(bootscore[abt]/sum(abundanceTable[abt].values()), 3)) + '\t' +
-                    str(calc_single_len(tax_len[abt]["SINGLE"], tax_len[abt]["PAIR"], sum(abundanceTable[abt].values()))) + '\t' +
-                    str(round(tax_len[abt]["PAIR"]/(sum(abundanceTable[abt].values())), 3)) + '\t' +
-                    str(sum(abundanceTable[abt].values())) + '\n')
+                              str(round(bootscore[abt]/sum(abundanceTable[abt].values()), 3)) + '\t' +
+                              str(calc_single_len(tax_len[abt]["SINGLE"], tax_len[abt]["PAIR"], sum(abundanceTable[abt].values()))) + '\t' +
+                              str(round(tax_len[abt]["PAIR"]/(sum(abundanceTable[abt].values())), 3)) + '\t' +
+                              str(sum(abundanceTable[abt].values())) + '\n')
             if self.verbose:
                 sys.stderr.write("finished in %s minutes\n" % (round((time.time()-lasttime)/(60), 2)))
             self.clean()
