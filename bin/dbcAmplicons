@@ -583,7 +583,7 @@ def parseArgs():
     """
     parser = argparse.ArgumentParser(
         description='dbcAmplicons, a python package for preprocessing of massively multiplexed, dual barcoded Illumina Amplicons',
-        epilog='For questions or comments, please contact Matt Settles <settles@ucdavis.edu>\n%(prog)s version:' + version_num, add_help=True)
+        epilog='For questions or comments, please contact Matt Settles <settles@ucdavis.edu>\n%(prog)s version: ' + version_num, add_help=True)
     parser.add_argument('--version', action='version', version="%(prog)s version: " + version_num)
     subparsers = parser.add_subparsers(help='commands', dest='command')
 
