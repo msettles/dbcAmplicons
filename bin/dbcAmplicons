@@ -18,16 +18,16 @@ from subprocess import STDOUT
 from subprocess import check_call
 from subprocess import CalledProcessError
 from multiprocessing import cpu_count
+import urllib2
 
 from distutils import spawn
 
-profile = False
-
 try:
-    version_num = open("VERSION", "r+").readline().strip()
-except:
-    sys.stderr.write("Error retrieving version_number")
+    from dbcAmplicons import version_num
+except ImportError:
+    version_num = "error importing version number"
 
+profile = False
 
 #####################################################################################
 # Validate the sample, barcode and primer files
@@ -583,8 +583,8 @@ def parseArgs():
     """
     parser = argparse.ArgumentParser(
         description='dbcAmplicons, a python package for preprocessing of massively multiplexed, dual barcoded Illumina Amplicons',
-        epilog='For questions or comments, please contact Matt Settles <settles@ucdavis.edu>\nversion: %s' % version_num, add_help=True)
-    parser.add_argument('--version', action='version', version="%(prog)s Version " + version_num)
+        epilog='For questions or comments, please contact Matt Settles <settles@ucdavis.edu>\n%(prog)s version:' + version_num, add_help=True)
+    parser.add_argument('--version', action='version', version="%(prog)s version: " + version_num)
     subparsers = parser.add_subparsers(help='commands', dest='command')
 
     validateParser(subparsers)
