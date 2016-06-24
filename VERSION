@@ -1,4 +1,4 @@
-0.8.1-20160418
+0.8.2-20160623
 
 version 0.3.0
 initial release add support for preprocess and splitreads
@@ -44,3 +44,7 @@ version 0.8.0
 Merged in deduplication code, fixed error in c primer alignment of last 4 bases added --test to classify
 version 0.8.1
 Numerous bug/issue fixes, fix bug in screen, added code to check version and prompt for update when github is newer
+version 0.8.2
+Added new subscript preprocPair_with_inlineBC.py to convert 2 read inline barcode exp to the four read type needed for dbcAmplicons
+
+

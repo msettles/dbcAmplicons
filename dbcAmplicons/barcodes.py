@@ -26,6 +26,8 @@ class barcodeTable:
         Initialize a new barcodeTable object with the file barcode table, parses and stores the barcode information
         """
         self.barcodes = {}
+        self.bcPairP7 = {}
+        self.bcPairP5 = {}
         self.P5 = []
         self.P7 = []
         self.IDS = []
@@ -60,6 +62,9 @@ class barcodeTable:
                 self.P7.extend([P7BC])
             self.IDS.extend([ID])
             self.barcodes["%s%s" % (P7BC, P5BC)] = [ID, 0, 0]
+            self.bcPairP7[P7BC] = P5BC
+            self.bcPairP5[P5BC] = P7BC
+
         bcfile.close()
 
     def getLength(self):
@@ -92,5 +97,21 @@ class barcodeTable:
         """
         try:
             return(self.barcodes["%s%s" % (bc1, bc2)][0])
+        except KeyError:
+            return (None)
+    def getMatchP5(self, bc2):
+        """
+        Determine if two barcodes have a matching barcode pair id, else return None
+        """
+        try:
+            return(self.bcPairP5[bc2])
+        except KeyError:
+            return (None)
+    def getMatchP7(self, bc1):
+        """
+        Determine if two barcodes have a matching barcode pair id, else return None
+        """
+        try:
+            return(self.bcPairP7[bc1])
         except KeyError:
             return (None)

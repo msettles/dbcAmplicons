@@ -179,7 +179,7 @@ class FourSequenceReadSet:
             trim_points = trim.trim(self.qual_1, self.qual_2, minQ)
             self.trim_left = trim_points["left_trim"]
             self.trim_right = trim_points["right_trim"]
-            if ((self.trim_left-self.primer[4]) < minL or (self.trim_right-self.primer[8]) < minL):
+            if ((self.trim_left - self.primer[4]) < minL or (self.trim_right - self.primer[8]) < minL):
                 self.goodRead = False
         if self.goodRead:
             return 1
@@ -328,11 +328,11 @@ class TwoSequenceReadSet:
             if self.barcode_string is not None:
                 bc1 = self.barcode_string.split('|')[0]
                 bc2 = self.barcode_string.split('|')[2]
-            elif len(self.barcode) is (bc1_length+bc2_length):
+            elif len(self.barcode) is (bc1_length + bc2_length):
                 bc1 = self.barcode[:bc1_length]
                 bc2 = self.barcode[bc1_length:]
             else:
-                raise Exception("string in the barcode is not %s characters" % str(bc1_length+bc2_length))
+                raise Exception("string in the barcode is not %s characters" % str(bc1_length + bc2_length))
             r1 = '\n'.join([self.name + ' 1:Y:0:', self.read_1[0:self.trim_left], '+', self.qual_1[0:self.trim_left]])
             r2 = '\n'.join([self.name + ' 2:Y:0:', bc1, '+', 'C' * len(bc1)])  # Give barcodes and arbitary quality of Cs
             r3 = '\n'.join([self.name + ' 3:Y:0:', bc2, '+', 'C' * len(bc2)])
@@ -344,6 +344,59 @@ class TwoSequenceReadSet:
         except:
             sys.stderr.write('ERROR:[TwoSequenceReadSet] Unknown error occured generating four read set\n')
             raise
+
+    def getFourReadsInline(self, bcTable, bc1_length=8, bc2_length=0, max_diff=1, flip=False):
+        """
+        Create four line string ('\n' separator included) for the read set, returning a length 4 vector (one for each read)
+        """
+        """
+        Given a barcodeTable object and the maximum number of allowed difference (mismatch, insertion, deletions)
+        assign a barcode pair ID from the reads barcodes.
+        """
+        vflip = False
+        # Barcode One Matching
+        if bc1_length > 0:
+            bc1, bc1Mismatch = barcodeDist(bcTable.getP7(), self.read_1[:bc1_length], max_diff)
+            if flip:
+                bc1f, bc1fMismatch = barcodeDist(bcTable.getP7(), self.read_2[:bc1_length], max_diff)
+                if bc1fMismatch < bc1Mismatch:  # flip produces a better match reverse the reads
+                    vflip = True
+                    bc1 = bc1f
+                    bc1Mismatch = bc1fMismatch
+                    # Barcode Two Matching (with barcoce 1 present)
+                    tmp = self.read_1
+                    self.read_1 = self.read_2
+                    self.read_2 = tmp
+            if bc2_length > 0:
+                bc2, bc2Mismatch = barcodeDist(bcTable.getP5(), self.read_2[:bc2_length], max_diff)
+            else:
+                bc2, bc2Mismatch = (bcTable.getMatchP7(bc1), 0)
+        # Barcode Two Matching (when no barcode 1 present)
+        elif bc2_length > 0:
+            bc2, bc2Mismatch = barcodeDist(bcTable.getP5(), self.read_2[:bc2_length], max_diff)
+            if flip:
+                bc2f, bc2fMismatch = barcodeDist(bcTable.getP5(), self.read_1[:bc2_length], max_diff)
+                if bc2fMismatch < bc2Mismatch:  # flip produces a better match rever the reads
+                    vflip = True
+                    bc2 = bc2f
+                    bc2Mismatch = bc2fMismatch
+                    tmp = self.read_1
+                    self.read_1 = self.read_2
+                    self.read_2 = tmp
+            bc1, bc1Mismatch = (bcTable.getMatchP5(bc2), 0)
+        else:
+            sys.stderr.write('ERROR:[TwoSequenceReadSet] barcodes length both 0 in four read inline bc set\n')
+            raise
+
+        # check if bc found
+        if bc1 is None or bc2 is None:
+            return []
+
+        r1 = '\n'.join([self.name + ' 1:Y:0:', self.read_1[bc1_length:], '+', self.qual_1[bc1_length:]])
+        r2 = '\n'.join([self.name + ' 2:Y:0:', bc1, '+', 'C' * len(bc1)])  # Give barcodes and arbitary quality of Cs
+        r3 = '\n'.join([self.name + ' 3:Y:0:', bc2, '+', 'C' * len(bc2)])
+        r4 = '\n'.join([self.name + ' 4:Y:0:', self.read_2[bc2_length:], '+', self.qual_2[bc2_length:]])
+        return [r1, r2, r3, r4, vflip]
 
     def getFasta(self):
         """

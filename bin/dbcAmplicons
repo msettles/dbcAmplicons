@@ -18,7 +18,6 @@ from subprocess import STDOUT
 from subprocess import check_call
 from subprocess import CalledProcessError
 from multiprocessing import cpu_count
-import urllib2
 
 from distutils import spawn
 
@@ -28,6 +27,7 @@ except ImportError:
     version_num = "error importing version number"
 
 profile = False
+
 
 #####################################################################################
 # Validate the sample, barcode and primer files
@@ -499,7 +499,7 @@ class classifyCMD:
         if (args.train is None and args.gene != '16srrna' and args.gene != 'fungallsu' and args.gene != "fungalits_warcup" and args.gene != "fungalits_unite"):
             sys.stderr.write("parameter -g (--gene) must be one of 16srrna or fungallsu or fungalits_warcup or fungalits_unite\n")
             sys.exit()
-        
+
         from dbcAmplicons import classifyApp
         app = classifyApp()
 
