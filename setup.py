@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-
 try:
     from setuptools import setup, Extension
 except ImportError:
@@ -13,6 +12,7 @@ trim = Extension('trim', sources=['lib/trim.c'])
 try:
     version_num = open("VERSION", "r+").readline().strip()
 except:
+    import sys
     sys.stderr.write("Error retrieving version_number")
 
 
@@ -26,7 +26,7 @@ config = \
         'version': version_num,
         'install_requires': ['biom-format>=2.1.3'],
         'packages': ['dbcAmplicons'],
-        'scripts': ['bin/dbcAmplicons', 'scripts/python/convert2ReadTo4Read.py', 'scripts/python/splitReadsBySample.py', 'scripts/R/reduce_amplicons.R'],
+        'scripts': ['bin/dbcAmplicons', 'scripts/python/convert2ReadTo4Read.py', 'scripts/python/preprocPair_with_inlineBC.py', 'scripts/python/splitReadsBySample.py', 'scripts/R/reduce_amplicons.R'],
         'name': 'dbcAmplicons',
         "ext_package": 'dbcAmplicons',
         'ext_modules': [editdist, trim]

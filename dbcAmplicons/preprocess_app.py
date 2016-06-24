@@ -30,7 +30,7 @@ class preprocessApp:
         evalSample = samplesFile is not None
         try:
             v = validateApp()
-            # read in primer sequences
+            # read in barcode sequences
             bcTable = barcodeTable(barcodesFile)
             if self.verbose:
                 sys.stdout.write("barcode table length: %s\n" % bcTable.getLength())

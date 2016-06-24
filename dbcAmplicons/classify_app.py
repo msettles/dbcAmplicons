@@ -35,7 +35,7 @@ def rdpCall(query, output, gene, train, rdpPath, verbose):
             sys.stderr.write("ERROR:[rdpCall] %s - %s.\n" % (e.filename, e.strerror))
             raise
         if verbose:
-            sys.stderr.write("Finished processing %s in %s minutes\n" % (query, round((time.time() - starttime)/60, 2)))
+            sys.stderr.write("Finished processing %s in %s minutes\n" % (query, round((time.time() - starttime) / 60, 2)))
         return res
     else:
         sys.stderr.write("ERROR:[rdpCall] RDP did not finish properly, returned: %s\n" % res)
@@ -144,7 +144,7 @@ class classifyApp:
                         outfile.write(infile.read())
                     os.remove(f)
             if self.verbose:
-                sys.stdout.write("%s reads processed in %s minutes\n" % (batch, round((time.time()-lasttime)/(60), 2)))
+                sys.stdout.write("%s reads processed in %s minutes\n" % (batch, round((time.time() - lasttime) / (60), 2)))
             self.clean(results)
             return 0
         except (KeyboardInterrupt, SystemExit):

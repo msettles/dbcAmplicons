@@ -20,11 +20,11 @@ try:
     import urllib2
     github_version_num = urllib2.urlopen(version_master).readline().strip()
     if parse_version(github_version_num) > _dist.parsed_version:
-        sys.stderr.write("A new version (%s) of dbcAmplicons is available at %s\n" % (github_version_num, repo_master))
+        sys.stderr.write("A newer version (%s) of dbcAmplicons is available at %s\n" % (github_version_num, repo_master))
     elif parse_version(github_version_num) < _dist.parsed_version:
         github_version_num = urllib2.urlopen(version_develop).readline().strip()
         if parse_version(github_version_num) > _dist.parsed_version:
-            sys.stderr.write("A new version (%s) of dbcAmplicons is available at %s\n" % (github_version_num, repo_develop))
+            sys.stderr.write("A newer version (%s) of dbcAmplicons is available at %s\n" % (github_version_num, repo_develop))
 except:
     sys.stderr.write("Error retrieving github version_number\n")
 
