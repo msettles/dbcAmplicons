@@ -1,4 +1,4 @@
-0.8.2.1-20160711
+0.8.3-20170115
 
 version 0.3.0
 initial release add support for preprocess and splitreads
@@ -48,3 +48,5 @@ version 0.8.2
 Added new subscript preprocPair_with_inlineBC.py to convert 2 read inline barcode exp to the four read type needed for dbcAmplicons
 version 0.8.2.1
 Added small shell script in scripts/ to generate version numbers for entire pipeline
+version 0.8.3
+changed versionReport.sh to dbcVersionReport.sh also added new parameters to preprocessing add to rc (or not) Index 1, and Index 2, also changed all references in barcodes P5/P7 to I1 and I2, some simplicity

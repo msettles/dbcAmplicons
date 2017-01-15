@@ -21,7 +21,7 @@ class preprocessApp:
     def __init__(self):
         self.verbose = False
 
-    def start(self, fastq_file1, fastq_file2, fastq_file3, fastq_file4, output_prefix, barcodesFile, primerFile, samplesFile, barcodeMaxDiff=1, dedup_float=4, primerMaxDiff=4, primerEndMatch=4, batchsize=10000, uncompressed=False, output_unidentified=False, minQ=None, minL=0, verbose=True, debug=False, kprimer=False, test=False):
+    def start(self, fastq_file1, fastq_file2, fastq_file3, fastq_file4, output_prefix, barcodesFile, primerFile, samplesFile, barcodeMaxDiff=1, I1rc=True, I2rc=False, dedup_float=4, primerMaxDiff=4, primerEndMatch=4, batchsize=10000, uncompressed=False, output_unidentified=False, minQ=None, minL=0, verbose=True, debug=False, kprimer=False, test=False):
         """
         Start preprocessing double barcoded Illumina sequencing run, perform
         """
@@ -31,7 +31,7 @@ class preprocessApp:
         try:
             v = validateApp()
             # read in barcode sequences
-            bcTable = barcodeTable(barcodesFile)
+            bcTable = barcodeTable(barcodesFile, I1rc, I2rc)
             if self.verbose:
                 sys.stdout.write("barcode table length: %s\n" % bcTable.getLength())
             # read in primer sequences if present

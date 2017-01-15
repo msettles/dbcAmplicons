@@ -91,6 +91,10 @@ def preprocessParser(subparsers):
                                    action='store', type=str, dest='barcodes_file', metavar='FILENAME', required=True)
     preprocess_parser.add_argument('-d', '--barcodediff', help='max hamming dist from barcode [default: %(default)s]',
                                    type=int, dest='barcodediff', default=1)
+    preprocess_parser.add_argument('--I1', help='processing of Index 1 read, leave as is, or reverse complement [default: %(default)s]',
+                                   action='store', type=str, dest='I1_orientation', metavar='asis/rc', choices=['asis', 'rc'], default='rc')
+    preprocess_parser.add_argument('--I2', help='processing of Index 2 read, leave as is (asis), or reverse complement (rc) [default: %(default)s]',
+                                   action='store', type=str, dest='I2_orientation', metavar='asis/rc', choices=['asis', 'rc'], default='asis')
     preprocess_parser.add_argument('-P', '--primer_file', help='file with primers',
                                    action='store', type=str, dest='primer_file', metavar='FILENAME', default=None)
     preprocess_parser.add_argument('-D', '--primerdiff', help='max hamming dist from primer [default: %(default)s]',
@@ -165,6 +169,15 @@ class preprocessCMD:
         elif args.output_base is not None and sFile is not None:
             output_prefix = args.output_base
 
+        # ----------------------- barcodes orientation ------------------------
+        if args.I1_orientation == 'asis':
+            I1rc = False
+        else:
+            I1rc = True
+        if args.I2_orientation == 'asis':
+            I2rc = False
+        else:
+            I2rc = True
         from dbcAmplicons import misc
         misc.make_sure_path_exists(os.path.dirname(output_prefix))
 
@@ -173,10 +186,10 @@ class preprocessCMD:
 
         if profile:
             import cProfile
-            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, args.dedup_float, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)', globals(), locals())
+            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, I1rc, I2rc, args.dedup_float, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)', globals(), locals())
             return 255
         else:
-            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, args.dedup_float, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)
+            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, I1rc, I2rc, args.dedup_float, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)
 
 
 #####################################################################################
