@@ -85,8 +85,10 @@ suppressPackageStartupMessages(library("ShortRead"))
 "prepareCore" <- function(opt_procs){
     # if opt_procs set to 0 then expand to samples by targets
     if( opt_procs == 0 ) opt_procs <- detectCores()
-    if (opt_procs > detectCores())
-        stop(paste("number of processors specified exceeds the number of available processors '",detectCores,"'",sep=" "))
+    if (opt_procs > detectCores()){
+        warning(paste("number of processors specified exceeds the number of available processors '",detectCores(),"'",sep=" "))
+        opt_procs <- detectCores()
+    }
     write(paste("Using",opt_procs,"processors",sep=" "),stdout())
     return(opt_procs)
 }
@@ -512,19 +514,19 @@ sapply(program_list,function(program){
     write(paste("Writing Reads"),stdout())
     writeXStringSet(tt,file.path(output,paste(program,"reduced.fasta",sep=".")))
 
-dir.create(file.path(output,paste(program,"split_samples",sep=".")))
-split_tt <- split(tt,oid)
-mclapply(names(split_tt), function(x){
-  writeXStringSet(split_tt[[x]],file.path(output,paste(program,"split_samples",sep="."),paste("Sample",x,"fasta",sep=".")))
-}, mc.cores = procs)
-dir.create(file.path(output,paste(program,"split_amplicon",sep=".")))
-split_tt <- split(tt,paste(oprimer,second,sep="."))
-mclapply(names(split_tt), function(x){
-  writeXStringSet(split_tt[[x]],file.path(output,paste(program,"split_amplicon",sep="."),paste("Amplicon",x,"fasta",sep=".")))
-}, mc.cores = procs)
+    dir.create(file.path(output,paste(program,"split_samples",sep=".")))
+    split_tt <- split(tt,oid)
+    mclapply(names(split_tt), function(x){
+        writeXStringSet(split_tt[[x]],file.path(output,paste(program,"split_samples",sep="."),paste("Sample",x,"fasta",sep=".")))
+    }, mc.cores = procs)
+    dir.create(file.path(output,paste(program,"split_amplicon",sep=".")))
+    split_tt <- split(tt,paste(oprimer,second,sep="."))
+    mclapply(names(split_tt), function(x){
+        writeXStringSet(split_tt[[x]],file.path(output,paste(program,"split_amplicon",sep="."),paste("Amplicon",x,"fasta",sep=".")))
+    }, mc.cores = procs)
 
 
-write(paste("Producing final images"),stdout())
+    write(paste("Producing final images"),stdout())
     #### PLOTTING RESULTS    
     png(file.path(output,paste(program,"freq_read_counts.png",sep=".")),height=8,width=10.5,units="in",res=300)
     hist(as.numeric(sapply(strsplit(onms,split="|",fixed=TRUE),"[[",5L)),breaks=200,main=paste("histogram of amplicon read counts\n",program," trimR1:",trimOne," trimR2:",trimTwo,"\n",sep=""),xlab="frequency")

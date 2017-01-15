@@ -25,10 +25,10 @@ def barcodeDist(b_l, b_2, max_diff):
     gets edit distance between two equal-length barcode strings
     """
     bc = None
-    bc_mismatch = max_diff+1
+    bc_mismatch = max_diff + 1
 
     if editdist_loaded:
-        bc_i, bc_mismatch = editdist.hamming_distance_list(b_l, b_2, max_diff+1)
+        bc_i, bc_mismatch = editdist.hamming_distance_list(b_l, b_2, max_diff + 1)
 
     else:
         for i, key in enumerate(b_l):
@@ -56,7 +56,7 @@ def primerDist(primer_l, read, dedup_float, max_diff, end_match):
     gets edit distance between primer and read sequence
     """
     pr = None
-    prMismatch = max_diff+1
+    prMismatch = max_diff + 1
     prStartPosition = 0
     prEndPosition = 0
 
@@ -70,7 +70,7 @@ def primerDist(primer_l, read, dedup_float, max_diff, end_match):
                 dist = sum(map(lambda x: x[0] != x[1], zip(read, key)))
             else:
                 dist = sum(map(lambda x: x[0] != x[1], zip(read[:-end_match], key[:-end_match])))
-                for i in range(len(key)-end_match, len(key)):
+                for i in range(len(key) - end_match, len(key)):
                     if read[i] != key[i]:
                         dist += 100
             if dist < prMismatch:
@@ -124,10 +124,10 @@ class FourSequenceReadSet:
         assign a barcode pair ID from the reads barcodes.
         """
         # Barcode One Matching
-        bc1, bc1Mismatch = barcodeDist(bcTable.getP7(), self.bc_1, max_diff)
+        bc1, bc1Mismatch = barcodeDist(bcTable.getI1(), self.bc_1, max_diff)
 
         # Barcode Two Matching
-        bc2, bc2Mismatch = barcodeDist(bcTable.getP5(), self.bc_2, max_diff)
+        bc2, bc2Mismatch = barcodeDist(bcTable.getI2(), self.bc_2, max_diff)
 
         # Barcode Pair Matching
         self.barcode = [bcTable.getMatch(bc1, bc2), bc1Mismatch, bc2Mismatch]
@@ -356,9 +356,9 @@ class TwoSequenceReadSet:
         vflip = False
         # Barcode One Matching
         if bc1_length > 0:
-            bc1, bc1Mismatch = barcodeDist(bcTable.getP7(), self.read_1[:bc1_length], max_diff)
+            bc1, bc1Mismatch = barcodeDist(bcTable.getI1(), self.read_1[:bc1_length], max_diff)
             if flip:
-                bc1f, bc1fMismatch = barcodeDist(bcTable.getP7(), self.read_2[:bc1_length], max_diff)
+                bc1f, bc1fMismatch = barcodeDist(bcTable.getI2(), self.read_2[:bc1_length], max_diff)
                 if bc1fMismatch < bc1Mismatch:  # flip produces a better match reverse the reads
                     vflip = True
                     bc1 = bc1f
@@ -367,15 +367,18 @@ class TwoSequenceReadSet:
                     tmp = self.read_1
                     self.read_1 = self.read_2
                     self.read_2 = tmp
+                    tmp = self.qual_1
+                    self.qual_1 = self.qual_2
+                    self.qual_2 = tmp
             if bc2_length > 0:
-                bc2, bc2Mismatch = barcodeDist(bcTable.getP5(), self.read_2[:bc2_length], max_diff)
+                bc2, bc2Mismatch = barcodeDist(bcTable.getI2(), self.read_2[:bc2_length], max_diff)
             else:
-                bc2, bc2Mismatch = (bcTable.getMatchP7(bc1), 0)
+                bc2, bc2Mismatch = (bcTable.getMatchI1(bc1), 0)
         # Barcode Two Matching (when no barcode 1 present)
         elif bc2_length > 0:
-            bc2, bc2Mismatch = barcodeDist(bcTable.getP5(), self.read_2[:bc2_length], max_diff)
+            bc2, bc2Mismatch = barcodeDist(bcTable.getI2(), self.read_2[:bc2_length], max_diff)
             if flip:
-                bc2f, bc2fMismatch = barcodeDist(bcTable.getP5(), self.read_1[:bc2_length], max_diff)
+                bc2f, bc2fMismatch = barcodeDist(bcTable.getI2(), self.read_1[:bc2_length], max_diff)
                 if bc2fMismatch < bc2Mismatch:  # flip produces a better match rever the reads
                     vflip = True
                     bc2 = bc2f
@@ -383,7 +386,10 @@ class TwoSequenceReadSet:
                     tmp = self.read_1
                     self.read_1 = self.read_2
                     self.read_2 = tmp
-            bc1, bc1Mismatch = (bcTable.getMatchP5(bc2), 0)
+                    tmp = self.qual_1
+                    self.qual_1 = self.qual_2
+                    self.qual_2 = tmp
+            bc1, bc1Mismatch = (bcTable.getMatchI2(bc2), 0)
         else:
             sys.stderr.write('ERROR:[TwoSequenceReadSet] barcodes length both 0 in four read inline bc set\n')
             raise

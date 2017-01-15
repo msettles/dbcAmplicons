@@ -1,4 +1,4 @@
-Barcode_name	P5_barcode	P7_barcode
+Barcode_name	I2_barcode	I1_barcode
 Alpha1	TAGATCGC	TAAGGCGA
 Alpha2	CTCTCTAT	TAAGGCGA
 Alpha3	TATCCTCT	TAAGGCGA

@@ -1,7 +1,7 @@
 # barcodes.py
 #
 # barcode lookup file should look like
-# #Barcode_name P7_barcode  P5_barcode
+# #Barcode_name I1_barcode  I2_barcode
 # Alpha1  TAAGGCGA TAGATCGC
 # Alpha2  TAAGGCGA CTCTCTAT
 # Alpha3  TAAGGCGA TATCCTCT
@@ -21,15 +21,15 @@ class barcodeTable:
     Class to read in and hold barcode table information associated with an Illumina double
     barcoded amplicon project
     """
-    def __init__(self, barcodefile):
+    def __init__(self, barcodefile, i1_rc=True, i2_rc=False):
         """
         Initialize a new barcodeTable object with the file barcode table, parses and stores the barcode information
         """
         self.barcodes = {}
-        self.bcPairP7 = {}
-        self.bcPairP5 = {}
-        self.P5 = []
-        self.P7 = []
+        self.bcPairI1 = {}
+        self.bcPairI2 = {}
+        self.I2 = []
+        self.I1 = []
         self.IDS = []
         try:
             bcfile = open(barcodefile, 'r')
@@ -44,26 +44,29 @@ class barcodeTable:
                 continue
             row = row.rstrip()
             try:
-                ID, P7BC, P5BC = row.split('\t')[0:3]
-                # P7 barcode shows up as the reverse complement in the sequencing run
-                P7BC = misc.reverseComplement(P7BC)
+                ID, I1BC, I2BC = row.split('\t')[0:3]
+                # I1 barcode shows up as the reverse complement in the sequencing run
+                if i1_rc:
+                    I1BC = misc.reverseComplement(I1BC)
+                if i2_rc:
+                    I2BC = misc.reverseComplement(I2BC)
             except ValueError as e:
                 sys.stderr.write('ERROR:[Barcodes] Error reading line %s of barcode file: %s\n' % (str(line), str(e)))
                 raise
             except KeyError:
-                sys.stderr.write('ERROR:[Barcodes] Error reverse complementing P7 barcode %s, unknown character\n' % P7BC)
+                sys.stderr.write('ERROR:[Barcodes] Error reverse complementing I1 barcode %s, unknown character\n' % I1BC)
                 raise
             except:
                 sys.stderr.write('ERROR:[Barcodes] Unexpected error on line %s of the barcodes file: %s\n' % (line, sys.exc_info()[0]))
                 raise
-            if P5BC not in self.P5:
-                self.P5.extend([P5BC])
-            if P7BC not in self.P7:
-                self.P7.extend([P7BC])
+            if I2BC not in self.I2:
+                self.I2.extend([I2BC])
+            if I1BC not in self.I1:
+                self.I1.extend([I1BC])
             self.IDS.extend([ID])
-            self.barcodes["%s%s" % (P7BC, P5BC)] = [ID, 0, 0]
-            self.bcPairP7[P7BC] = P5BC
-            self.bcPairP5[P5BC] = P7BC
+            self.barcodes["%s%s" % (I1BC, I2BC)] = [ID, 0, 0]
+            self.bcPairI1[I1BC] = I2BC
+            self.bcPairI2[I2BC] = I1BC
 
         bcfile.close()
 
@@ -73,17 +76,17 @@ class barcodeTable:
         """
         return len(self.barcodes)
 
-    def getP5(self):
+    def getI2(self):
         """
-        get the P5 barcode sequences
+        get the I2 barcode sequences
         """
-        return self.P5
+        return self.I2
 
-    def getP7(self):
+    def getI1(self):
         """
-        get the P7 barcode sequences
+        get the I1 barcode sequences
         """
-        return self.P7
+        return self.I1
 
     def getBarcodes(self):
         """
@@ -99,19 +102,19 @@ class barcodeTable:
             return(self.barcodes["%s%s" % (bc1, bc2)][0])
         except KeyError:
             return (None)
-    def getMatchP5(self, bc2):
+    def getMatchI2(self, bc2):
         """
         Determine if two barcodes have a matching barcode pair id, else return None
         """
         try:
-            return(self.bcPairP5[bc2])
+            return(self.bcPairI2[bc2])
         except KeyError:
             return (None)
-    def getMatchP7(self, bc1):
+    def getMatchI1(self, bc1):
         """
         Determine if two barcodes have a matching barcode pair id, else return None
         """
         try:
-            return(self.bcPairP7[bc1])
+            return(self.bcPairI1[bc1])
         except KeyError:
             return (None)
