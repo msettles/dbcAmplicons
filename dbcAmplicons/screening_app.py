@@ -2,7 +2,6 @@
 import os
 import sys
 import traceback
-import time
 import signal
 
 from subprocess import Popen
@@ -15,12 +14,13 @@ from dbcAmplicons import IlluminaOneReadOutput
 def sp_bowtie2_index(ref, overwrite=False):
     if os.path.isfile(ref):
         if os.path.isfile(ref + '.rev.2.bt2') and not overwrite:
-            print 'Found existing bowtie2 index for %s' % ref
+            sys.stdout.write('Found existing bowtie2 index for %s\n' % ref)
             return 0
         else:
             FNULL = open(os.devnull, 'w')
             call = 'bowtie2-build'
             call = call + ' ' + ref + ' ' + ref
+            sys.stdout.write(call + '\n')
             p = Popen(['bowtie2-build', ref, ref],
                       stdout=FNULL,
                       stderr=FNULL,
@@ -28,15 +28,15 @@ def sp_bowtie2_index(ref, overwrite=False):
                       preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
             p.communicate()
             if p.returncode:
-                print 'Something in bowtie2-build went wrong'
+                sys.stderr.write('Something in bowtie2-build went wrong\n')
                 raise
             # system call, check for return
-            print 'Successfully indexed %s' % ref
+            sys.stdout.write('Successfully indexed %s\n' % ref)
             return 0
     else:
-        print "%s Reference file not found" % ref
+        sys.stderr.write("%s Reference file not found\n" % ref)
         return 1
-    print 'Something in bowtie2-build went wrong'
+    sys.stderr.write('Something in bowtie2-build went wrong\n')
     raise
 
 
@@ -97,7 +97,7 @@ def sp_bowtie2_screen(pe1, pe2, se, ref, overwrite=False, sensitivity=0, procs=1
             call = call + " -U <(" + se_gz + "| sed 's, ,_:_,g')"
         if se_ngz_true is True:
             call = call + " -U <(" + se_gz + "| sed 's, ,_:_,g')"
-    print call
+    sys.stdout.write(call + '\n')
     FNULL = open(os.devnull, 'w')
     p = Popen(call,
               stdout=PIPE,
@@ -176,7 +176,7 @@ class screeningApp:
                     for key in self.run_out:
                         self.run_out[key].writeReads()
                     if self.verbose:
-                        print "Processed: %s, PE in ref: %s, SE in ref: %s" % (i, mapped_pairs_count, mapped_singles_count)
+                        sys.stdout.write("Processed: %s, PE in ref: %s, SE in ref: %s\n" % (i, mapped_pairs_count, mapped_singles_count))
                 if line[0] != "@":  # header line
                     i += 1
 
@@ -267,7 +267,7 @@ class screeningApp:
             for key in self.run_out:
                 self.run_out[key].writeReads()
 
-            print "Records processed: %s, PE in ref: %s, SE in ref: %s" % (i, mapped_pairs_count, mapped_singles_count)
+            sys.stdout.write("Records processed: %s, PE in ref: %s, SE in ref: %s\n" % (i, mapped_pairs_count, mapped_singles_count))
 
             self.clean()
             return 0
