@@ -102,6 +102,7 @@ class barcodeTable:
             return(self.barcodes["%s%s" % (bc1, bc2)][0])
         except KeyError:
             return (None)
+
     def getMatchI2(self, bc2):
         """
         Determine if two barcodes have a matching barcode pair id, else return None
@@ -110,6 +111,7 @@ class barcodeTable:
             return(self.bcPairI2[bc2])
         except KeyError:
             return (None)
+
     def getMatchI1(self, bc1):
         """
         Determine if two barcodes have a matching barcode pair id, else return None

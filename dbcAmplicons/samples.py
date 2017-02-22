@@ -190,6 +190,7 @@ class sampleTable:
         """
         Given a barcode and primer, return the associated project, "*" is allowed in the primer for 'any' primer match
         """
+        # TODO Error occurs here when barcode id == sample id
         if barcode in self.sampleMetadata:
             # barcode, primer has already been assigned and barcode is sample_id
             return self.sampleMetadata[barcode][(barcode, primer)]["ProjectID"]

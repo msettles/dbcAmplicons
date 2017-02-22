@@ -49,16 +49,16 @@ class fixrankLine:
         else:
             self.size = name[1]
         # parse the taxon line
-        levels = len(parse)/3
+        levels = len(parse) / 3
         for i in xrange(levels):
-            if float(parse[i*3+4]) >= threshold:
+            if float(parse[i * 3 + 4]) >= threshold:
                 if i == 0:
-                    self.call = fixrank_levels[i] + re.sub(r'["\']+', "", parse[i*3+2])
+                    self.call = fixrank_levels[i] + re.sub(r'["\']+', "", parse[i * 3 + 2])
                 else:
-                    self.call = self.call + ';' + fixrank_levels[i] + re.sub(r'["\']+', "", parse[i*3+2])
-                self.bootstrap = float(parse[i*3+4])
-                self.level = parse[i*3+3]
-                if parse[i*3+3] == rank:
+                    self.call = self.call + ';' + fixrank_levels[i] + re.sub(r'["\']+', "", parse[i * 3 + 2])
+                self.bootstrap = float(parse[i * 3 + 4])
+                self.level = parse[i * 3 + 3]
+                if parse[i * 3 + 3] == rank:
                     break
             else:
                 break
@@ -218,8 +218,8 @@ class abundanceApp:
                                     tax_len[lrank.getCall()]["SINGLE"] = int(lrank.getSize())
                         lines += 1
                         if lines % 100000 is 0 and self.verbose:
-                            sys.stderr.write("processed %s total lines, %s lines/second\n" % (lines, round(lines/(time.time() - lasttime), 0)))
-            sys.stdout.write("%s lines processed in %s minutes\n" % (lines, round((time.time()-lasttime)/(60), 2)))
+                            sys.stderr.write("processed %s total lines, %s lines/second\n" % (lines, round(lines / (time.time() - lasttime), 0)))
+            sys.stdout.write("%s lines processed in %s minutes\n" % (lines, round((time.time() - lasttime) / (60), 2)))
 
             sys.stdout.write("Classification numbers (reads):\n")
             for level in tax_level_counts:
@@ -231,7 +231,7 @@ class abundanceApp:
 
             def calc_single_len(single, pairs, total):
                 try:
-                    return single/(total-pairs)
+                    return single / (total - pairs)
                 except ZeroDivisionError:
                     return 0
             # output files
@@ -241,7 +241,6 @@ class abundanceApp:
                 data = []
                 obs_ids = []
                 sampleList = sorted(sampleList, key=lambda s: s.lower())
-                
                 sampleList_md = [{'primers': ";".join(primers[v])} for v in sampleList]
                 if evalSample:
                     if sTable.hasMetadata() is True:
@@ -250,12 +249,13 @@ class abundanceApp:
 
                 # taxanomic keys and metadata
                 taxa_keys = sorted(abundanceTable.keys(), key=lambda s: s.lower())
-                mbootscore = {v: round(bootscore[v]/sum(abundanceTable[v].values()), 3) for v in taxa_keys}
+                mbootscore = {v: round(bootscore[v] / sum(abundanceTable[v].values()), 3) for v in taxa_keys}
 
                 mtax_len_s = {v: calc_single_len(tax_len[v]["SINGLE"], tax_len[v]["PAIR"], sum(abundanceTable[v].values())) for v in taxa_keys}
-                mtax_len_p = {v: round(tax_len[v]["PAIR"]/(sum(abundanceTable[v].values())), 3) for v in taxa_keys}
+                mtax_len_p = {v: round(tax_len[v]["PAIR"] / (sum(abundanceTable[v].values())), 3) for v in taxa_keys}
 
-                def func(x): return x.split(';')
+                def func(x): 
+                    return x.split(';')
                 taxa_keys_md = [{'taxonomy': func(v), 'mean_rdp_bootstrap_value': mbootscore[v], 'mean_sequence_length_single': mtax_len_s[v], 'percentage_paired': mtax_len_p[v]} for v in taxa_keys]
 
                 # build the data object
@@ -289,44 +289,43 @@ class abundanceApp:
                             f.write(biomT.to_json("dbcAmplicons"))
 
             # abundance and proportions tables
+            if evalSample:
+                ab_name = output_prefix + '.abundance.txt'
+                prop_name = output_prefix + '.proportions.txt'
             else:
-                if evalSample:
-                    ab_name = output_prefix + '.abundance.txt'
-                    prop_name = output_prefix + '.proportions.txt'
-                else:
-                    ab_name = output_prefix + '.abundance.txt'
-                    prop_name = output_prefix + '.proportions.txt'
-                try:
-                    abFile = open(ab_name, 'w')
-                    propFile = open(prop_name, 'w')
-                except:
-                    sys.stderr.write("ERROR:[abundance_app] Can't open files (%s,%s) for writing\n" % (ab_name, prop_name))
-                sys.stderr.write("Writing abundance file to: %s\n" % (ab_name))
-                sys.stderr.write("Writing proportions file to: %s\n" % (prop_name))
-                # write out header line
-                sampleList = sorted(sampleList, key=lambda s: s.lower())
-                txt = 'Taxon_Name\tLevel\t' + '\t'.join(sampleList) + '\n'
-                abFile.write(txt)
-                propFile.write(txt)
-                taxa_keys = sorted(abundanceTable.keys(), key=lambda s: s.lower())
+                ab_name = output_prefix + '.abundance.txt'
+                prop_name = output_prefix + '.proportions.txt'
+            try:
+                abFile = open(ab_name, 'w')
+                propFile = open(prop_name, 'w')
+            except:
+                sys.stderr.write("ERROR:[abundance_app] Can't open files (%s,%s) for writing\n" % (ab_name, prop_name))
+            sys.stderr.write("Writing abundance file to: %s\n" % (ab_name))
+            sys.stderr.write("Writing proportions file to: %s\n" % (prop_name))
+            # write out header line
+            sampleList = sorted(sampleList, key=lambda s: s.lower())
+            txt = 'Taxon_Name\tLevel\t' + '\t'.join(sampleList) + '\n'
+            abFile.write(txt)
+            propFile.write(txt)
+            taxa_keys = sorted(abundanceTable.keys(), key=lambda s: s.lower())
 
-                levels = {'d': 'domain', 'p': 'phylum', 'c': 'class', 'o': 'order', 'f': 'family', 'g': 'genus', 's': 'species', 'i': 'isolate'}
-                for taxa in taxa_keys:
-                    tmp = taxa.split(";")[-1].split("__")
+            levels = {'d': 'domain', 'p': 'phylum', 'c': 'class', 'o': 'order', 'f': 'family', 'g': 'genus', 's': 'species', 'i': 'isolate'}
+            for taxa in taxa_keys:
+                tmp = taxa.split(";")[-1].split("__")
 
-                    txt1 = txt2 = tmp[1] + '\t' + levels[tmp[0]]
-                    for sample in sampleList:
-                        txt1 = '\t'.join([txt1, str(abundanceTable[taxa][sample])])
-                        if sampleCounts[sample] > 0:
-                            txt2 = '\t'.join([txt2, str(float(abundanceTable[taxa][sample])/float(sampleCounts[sample]))])
-                        else:
-                            txt2 = '\t'.join([txt2, str(0.0)])
-                    abFile.write(txt1 + '\n')
-                    propFile.write(txt2 + '\n')
-                txt = "Sample Counts\tNA"
+                txt1 = txt2 = tmp[1] + '\t' + levels[tmp[0]]
                 for sample in sampleList:
-                        txt = '\t'.join([txt, str(sampleCounts[sample])])
-                propFile.write(txt + '\n')
+                    txt1 = '\t'.join([txt1, str(abundanceTable[taxa][sample])])
+                    if sampleCounts[sample] > 0:
+                        txt2 = '\t'.join([txt2, str(float(abundanceTable[taxa][sample]) / float(sampleCounts[sample]))])
+                    else:
+                        txt2 = '\t'.join([txt2, str(0.0)])
+                abFile.write(txt1 + '\n')
+                propFile.write(txt2 + '\n')
+            txt = "Sample Counts\tNA"
+            for sample in sampleList:
+                    txt = '\t'.join([txt, str(sampleCounts[sample])])
+            propFile.write(txt + '\n')
 
             # output total counts and info (across all samples) for each taxa
             cntFile = open(output_prefix + '.taxa_info.txt', 'w')
@@ -335,12 +334,12 @@ class abundanceApp:
 
             for abt in taxa_keys:
                 cntFile.write(str(abt) + '\t' +
-                              str(round(bootscore[abt]/sum(abundanceTable[abt].values()), 3)) + '\t' +
+                              str(round(bootscore[abt] / sum(abundanceTable[abt].values()), 3)) + '\t' +
                               str(calc_single_len(tax_len[abt]["SINGLE"], tax_len[abt]["PAIR"], sum(abundanceTable[abt].values()))) + '\t' +
-                              str(round(tax_len[abt]["PAIR"]/(sum(abundanceTable[abt].values())), 3)) + '\t' +
+                              str(round(tax_len[abt]["PAIR"] / (sum(abundanceTable[abt].values())), 3)) + '\t' +
                               str(sum(abundanceTable[abt].values())) + '\n')
             if self.verbose:
-                sys.stderr.write("finished in %s minutes\n" % (round((time.time()-lasttime)/(60), 2)))
+                sys.stderr.write("finished in %s minutes\n" % (round((time.time() - lasttime) / (60), 2)))
             self.clean()
             return 0
         except (KeyboardInterrupt, SystemExit):
