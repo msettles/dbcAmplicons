@@ -20,8 +20,8 @@ dbcAmplicons join -t 4 -x 0.25 -1 preprocess/trimL/match_twoprimer_R1.fastq.gz -
 echo "Testing dbcAmplicons classify"
 dbcAmplicons classify -b 7500 -q 10 -l 200 -O join/classify -U join/match_twoprimer.extendedFrags.fastq.gz --debug --rdpPath $RDP_PATH -p 4 -1 join/match_twoprimer.notCombined_1.fastq.gz -2 join/match_twoprimer.notCombined_2.fastq.gz  >> test_output.txt
 
-echo "Testing dbcAmplicons abundance"
-dbcAmplicons abundance -O join/abundance -F join/classify.fixrank --debug >> test_output.txt 
+#echo "Testing dbcAmplicons abundance"
+#dbcAmplicons abundance -O join/abundance -F join/classify.fixrank --debug >> test_output.txt 
 
 echo "Testing dbcAmplicons abundance (biom format)"
 dbcAmplicons abundance -O join/abundance -F join/classify.fixrank -S sampleLookupTable.txt -b --debug >> test_output.txt
