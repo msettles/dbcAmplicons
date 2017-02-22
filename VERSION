@@ -1,52 +1,54 @@
-0.8.3-20170115
+0.8.4-20170222
 
-version 0.3.0
-initial release add support for preprocess and splitreads
-version 0.4.0
-add support for multiple input files
-version 0.5.0
-reconfigure repository and interface
-version 0.5.1
-added support for rdp classification
-version 0.5.2
-rdp classification and abundance table generation available
-version 0.5.3
-added support for project with no primers
-version 0.5.4
-added convert2ReadTo4Read.py script in scripts folder, minor edits to main dbcAmplicons application
-version 0.5.5
-added support for gzip in a separate process and ability to infer read file names
-version 0.5.6
-added support for Fluidgm down stream processing of samples, in scripts/R
-version 0.5.7
-increased speed in gzip read, and bug fixes
-version 0.5.8
-fixed bug in barcodes mismatches, added two new flags to preprocess keep primer and test
-version 0.5.9
-added script to split by sample, appending output files through iterations
-version 0.6.0
-added support for output of biom format in abundance tables
-version 0.6.1
-added validate app, some pep modification and various tweeks
-version 0.6.2
-bugfixes and cleanup, merge customRDP, scripts, mapping with develop, close issue #1, varius bug fixes
-version 0.6.3
-addressed issue #11, validate pairs in primer file
-version 0.6.4
-modified abundance output, flash output and reporting, fix issue #12
-version 0.6.5
-Show error message and download for RDP when not found
-version 0.6.6
-Added support for variable length barcodes in convert2ReadTo4Read.py
-version 0.7.0
-Reworked all the barcode and primer to be faster, implementation of deduplication code
-version 0.8.0
-Merged in deduplication code, fixed error in c primer alignment of last 4 bases added --test to classify
-version 0.8.1
-Numerous bug/issue fixes, fix bug in screen, added code to check version and prompt for update when github is newer
-version 0.8.2
-Added new subscript preprocPair_with_inlineBC.py to convert 2 read inline barcode exp to the four read type needed for dbcAmplicons
-version 0.8.2.1
-Added small shell script in scripts/ to generate version numbers for entire pipeline
+version 0.8.4
+changed default behavior of abudances to output abundance/proportion tables every time and the --biom flag ALSO produces a biom file, so no need to run abundances twice anymore to produce tables and biom. 
 version 0.8.3
 changed versionReport.sh to dbcVersionReport.sh also added new parameters to preprocessing add to rc (or not) Index 1, and Index 2, also changed all references in barcodes P5/P7 to I1 and I2, some simplicity
+version 0.8.2.1
+Added small shell script in scripts/ to generate version numbers for entire pipeline
+version 0.8.2
+Added new subscript preprocPair_with_inlineBC.py to convert 2 read inline barcode exp to the four read type needed for dbcAmplicons
+version 0.8.1
+Numerous bug/issue fixes, fix bug in screen, added code to check version and prompt for update when github is newer
+version 0.8.0
+Merged in deduplication code, fixed error in c primer alignment of last 4 bases added --test to classify
+version 0.7.0
+Reworked all the barcode and primer to be faster, implementation of deduplication code
+version 0.6.6
+Added support for variable length barcodes in convert2ReadTo4Read.py
+version 0.6.5
+Show error message and download for RDP when not found
+version 0.6.4
+modified abundance output, flash output and reporting, fix issue #12
+version 0.6.3
+addressed issue #11, validate pairs in primer file
+version 0.6.2
+bugfixes and cleanup, merge customRDP, scripts, mapping with develop, close issue #1, varius bug fixes
+version 0.6.1
+added validate app, some pep modification and various tweeks
+version 0.6.0
+added support for output of biom format in abundance tables
+version 0.5.9
+added script to split by sample, appending output files through iterations
+version 0.5.8
+fixed bug in barcodes mismatches, added two new flags to preprocess keep primer and test
+version 0.5.7
+increased speed in gzip read, and bug fixes
+version 0.5.6
+added support for Fluidgm down stream processing of samples, in scripts/R
+version 0.5.5
+added support for gzip in a separate process and ability to infer read file names
+version 0.5.4
+added convert2ReadTo4Read.py script in scripts folder, minor edits to main dbcAmplicons application
+version 0.5.3
+added support for project with no primers
+version 0.5.2
+rdp classification and abundance table generation available
+version 0.5.1
+added support for rdp classification
+version 0.5.0
+reconfigure repository and interface
+version 0.4.0
+add support for multiple input files
+version 0.3.0
+initial release add support for preprocess and splitreads
