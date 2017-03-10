@@ -125,7 +125,7 @@ def parseArgs():
     generate main parser
     """
     parser = argparse.ArgumentParser(
-        description='convert2ReadTo4Read, a python script for back converting 2 Illumina sequence reads that have been processed for their barcodes back to a four read set to be reprocessed using dbcAmplicons',
+        description='preprcPair_with_inlineBC, a python script for back converting 2 Illumina sequence reads that have been processed for their barcodes back to a four read set to be reprocessed using dbcAmplicons',
         epilog='For questions or comments, please contact Matt Settles <msettles@uidaho.edu>', add_help=True)
     parser.add_argument('--version', action='version', version="%(prog)s Version " + version_num)
     parser.add_argument('-p', '--barcode1', help='Barcode 1 length [default: %(default)s], will become Read 2',
