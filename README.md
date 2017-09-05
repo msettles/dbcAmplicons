@@ -33,15 +33,19 @@ If installation was successful, this will bring up the usage arguments.
 For Linux users, some python dependencies may be required before the installation is succesful. To install,
 open a terminal and type  
 
-  sudo apt-get install python-dev
-  sudo apt-get install numpy
+```bash
+sudo apt-get install python-dev
+sudo apt-get install numpy
+```
 
 And type the sudo password at the prompt. Then, download the app via a terminal by:  
 
-  git clone https://github.com/msettles/dbcAmplicons.git
-  cd dbcAmplicons
-  sudo python setup.py install
-  dbcAmplicons`  
+```bash
+git clone https://github.com/msettles/dbcAmplicons.git
+cd dbcAmplicons
+sudo python setup.py install
+dbcAmplicons
+```
 
 If installation was successful, this will bring up the usage arguments.
 
