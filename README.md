@@ -11,6 +11,7 @@ complete, so the user must determine of those external tools are necessary if th
 External programs used in the pipeline:
 FLASH2,
 RDP classifier
+bowtie2
 ###Windows Systems
 dbcAmplicons has not been tested on Windows systems, although Windows Powershell (active in XP systems and later) may be sufficient to run the analysis. It is highly recommended, however, that the user
 install a Linux-based virtual machine to run the pipeline.

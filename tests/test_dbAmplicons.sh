@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-RDP_PATH="/opt/RDPTools/classifier.jar"
+#RDP_PATH="/opt/RDPTools/classifier.jar"
 
 cat '' > test_output.txt
 ## test validation

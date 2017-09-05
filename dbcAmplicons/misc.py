@@ -98,7 +98,7 @@ def infer_read_file_name(baseread, seakread):
                     count += 1
                     pos = i
             if count == 1:
-                read.append(path + '/' + basename[0:pos] + seakread + basename[pos+1:])
+                read.append(path + '/' + basename[0:pos] + seakread + basename[pos + 1:])
                 continue
     if len(read) == 1:
         return read[0]

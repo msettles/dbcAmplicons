@@ -448,7 +448,7 @@ def classifyParser(subparsers):
     classify_parser.add_argument('-p', '--processors', help='number of processors to use, [default: %(default)s]',
                                  type=int, dest='procs', default=1)
     classify_parser.add_argument('--rdpPath', metavar='PATH', dest='rdpPath', help='path to the RDP classifier',
-                                 action='store', type=str, default='classify.jar', required=True)
+                                 action='store', type=str, default=None, required=False)
     classify_parser.add_argument('-g', '--gene', metavar='<arg>', dest='gene', help='16srrna, fungallsu, fungalits_warcup, or fungalits_unite [default: %(default)s]',
                                  action='store', type=str, default='16srrna', required=False)
     classify_parser.add_argument('-t', '--train', help='RDP property file containing the mapping of the training files for a custom RDP training set, if not using the default.',
@@ -490,9 +490,13 @@ class classifyCMD:
         procs = args.procs
         rdpPath = args.rdpPath
 
-        if os.path.isfile(rdpPath) is not True:
+        if rdpPath is None:
+            rdpPath = os.environ.get('RDP_PATH')
+
+        if rdpPath is None or os.path.isfile(rdpPath) is not True:
             rdp_download = "https://github.com/rdpstaff/RDPTools"
             sys.stderr.write("RDP classifier.jar not found, please download and install from: %s\n" % rdp_download)
+            sys.stderr.write("Then set an environment variable RDP_PATH to the classifier.jar path\n")
             sys.exit()
 
         rdp_call = ['java', '-Xmx2048M', '-Xms256M', '-XX:+UseParallelGC', '-XX:ParallelGCThreads=2', '-jar', rdpPath]

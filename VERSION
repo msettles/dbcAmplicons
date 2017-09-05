@@ -1,5 +1,7 @@
-0.8.4
+0.8.5
 
+version 0.8.5
+added the ability to use an environmental variable for the path to the RDP classifier, using the env variable RDP_PATH
 version 0.8.4
 changed default behavior of abudances to output abundance/proportion tables every time and the --biom flag ALSO produces a biom file, so no need to run abundances twice anymore to produce tables and biom. 
 version 0.8.3

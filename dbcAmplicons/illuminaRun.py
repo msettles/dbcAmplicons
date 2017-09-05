@@ -64,7 +64,7 @@ class FourReadIlluminaRun:
             if any(len(f) != len(self.fread1) for f in [self.fbc1, self.fbc2, self.fread2]):
                 sys.stderr.write('ERROR:[FourReadIlluminaRun] Inconsistant number of files for each read\n')
                 raise
-        except:
+        except Exception:
             raise
         # record the number of files per read
         self.numberoffiles = len(self.fread1)
@@ -97,7 +97,7 @@ class FourReadIlluminaRun:
                     self.R2 = misc.sp_gzip_read(read2)
                 else:
                     self.R2 = open(read2, 'r')
-            except:
+            except Exception:
                 sys.stderr.write('ERROR:[FourReadIlluminaRun] cannot open input files: READ1[%s]\n' % read1)
                 raise
             self.isOpen = True
@@ -133,7 +133,7 @@ class FourReadIlluminaRun:
                 if self.open() == 1:
                     sys.stderr.write('ERROR:[FourReadIlluminaRun] ERROR Opening files for reading\n')
                     raise
-            except:
+            except Exception:
                 raise
         reads = []
         i = 0
@@ -174,11 +174,11 @@ class FourReadIlluminaRun:
                         if self.open() == 1:
                             sys.stderr.write('ERROR:[FourReadIlluminaRun] ERROR Opening files for reading\n')
                             raise
-                    except:
+                    except Exception:
                         raise
                     continue
                 break
-            except:
+            except Exception:
                 sys.stderr.write('ERROR:[FourReadIlluminaRun] Error reading next read\n')
                 raise
             i += 1
@@ -217,7 +217,7 @@ class TwoReadIlluminaRun:
             if len(self.fread1) != len(self.fread2):
                 sys.stderr.write('ERROR:[TwoReadIlluminaRun] Inconsistent number of files for each read\n')
                 raise
-        except:
+        except Exception:
             raise
         # record the number of files per read
         self.numberoffiles = len(self.fread1)
@@ -240,7 +240,7 @@ class TwoReadIlluminaRun:
                     self.R2 = misc.sp_gzip_read(read2)
                 else:
                     self.R2 = open(read2, 'r')
-            except:
+            except Exception:
                 sys.stderr.write('ERROR:[TwoReadIlluminaRun] cannot open input files\n')
                 raise
             self.isOpen = True
@@ -274,7 +274,7 @@ class TwoReadIlluminaRun:
                 if self.open() == 1:
                     sys.stderr.write('ERROR:[TwoReadIlluminaRun] ERROR Opening files for reading\n')
                     raise
-            except:
+            except Exception:
                 raise
         reads = []
         i = 0
@@ -302,11 +302,11 @@ class TwoReadIlluminaRun:
                         if self.open() == 1:
                             sys.stderr.write('ERROR:[TwoReadIlluminaRun] ERROR Opening files for reading\n')
                             raise
-                    except:
+                    except Exception:
                         raise
                     continue
                 break
-            except:
+            except Exception:
                 sys.stderr.write('ERROR:[TwoReadIlluminaRun] Error reading next read\n')
                 raise
             i += 1
@@ -329,7 +329,7 @@ class OneReadIlluminaRun:
                 if len(self.fread1) == 0 or not all(os.path.isfile(f) for f in self.fread1):
                     sys.stderr.write('ERROR:[OneReadIlluminaRun] read1 file(s) not found\n')
                     raise
-        except:
+        except Exception:
             raise
         # record the number of files per read
         self.numberoffiles = len(self.fread1)
@@ -347,7 +347,7 @@ class OneReadIlluminaRun:
                     self.R1 = misc.sp_gzip_read(read1)
                 else:
                     self.R1 = open(read1, 'r')
-            except:
+            except Exception:
                 sys.stderr.write('ERROR:[OneReadIlluminaRun] cannot open input files\n')
                 raise
             self.isOpen = True
@@ -375,7 +375,7 @@ class OneReadIlluminaRun:
                 if self.open() == 1:
                     sys.stderr.write('ERROR:[OneReadIlluminaRun] ERROR Opening files for reading\n')
                     raise
-            except:
+            except Exception:
                 raise
         reads = []
         i = 0
@@ -395,11 +395,11 @@ class OneReadIlluminaRun:
                         if self.open() == 1:
                             sys.stderr.write('ERROR:[OneReadIlluminaRun] ERROR Opening files for reading')
                             raise
-                    except:
+                    except Exception:
                         raise
                     continue
                 break
-            except:
+            except Exception:
                 sys.stderr.write('ERROR:[OneReadIlluminaRun] Error reading next read')
                 raise
             i += 1
@@ -431,7 +431,7 @@ class IlluminaFourReadOutput:
                     os.remove(self.output_prefix + '_R2.fastq')
                     os.remove(self.output_prefix + '_R3.fastq')
                     os.remove(self.output_prefix + '_R4.fastq')
-                except:
+                except Exception:
                     sys.stderr.write('WARNING:[IlluminaFourReadOutput] Cannot delete file with prefix: %s\n' % self.output_prefix)
                     raise
         else:
@@ -442,7 +442,7 @@ class IlluminaFourReadOutput:
                         os.remove(self.output_prefix + '_R2.fastq.gz')
                         os.remove(self.output_prefix + '_R3.fastq.gz')
                         os.remove(self.output_prefix + '_R4.fastq.gz')
-                except:
+                except Exception:
                     sys.stderr.write('WARNING:[IlluminaFourReadOutput] Cannot delete file with prefix: %s\n' % self.output_prefix)
                     raise
 
@@ -465,7 +465,7 @@ class IlluminaFourReadOutput:
                 self.R2f = gzip.open(self.output_prefix + '_R2.fastq.gz', 'ab')
                 self.R3f = gzip.open(self.output_prefix + '_R3.fastq.gz', 'ab')
                 self.R4f = gzip.open(self.output_prefix + '_R4.fastq.gz', 'ab')
-        except:
+        except Exception:
             sys.stderr.write('ERROR:[IlluminaFourReadOutput] Cannot write reads to file with prefix: %s\n' % self.output_prefix)
             raise
         self.isOpen = True
@@ -480,7 +480,7 @@ class IlluminaFourReadOutput:
             self.R2f.close()
             self.R3f.close()
             self.R4f.close()
-        except:
+        except Exception:
             raise
         self.isOpen = False
 
@@ -512,14 +512,14 @@ class IlluminaFourReadOutput:
                     if self.open() == 1:
                         sys.stderr.write('ERROR:[IlluminaFourReadOutput] ERROR Opening files for writing\n')
                         raise
-                except:
+                except Exception:
                     raise
             try:
                 self.R1f.write('\n'.join(self.R1) + '\n')
                 self.R4f.write('\n'.join(self.R2) + '\n')
                 self.R2f.write('\n'.join(self.B1) + '\n')
                 self.R3f.write('\n'.join(self.B2) + '\n')
-            except:
+            except Exception:
                 sys.stderr.write('ERROR:[IlluminaFourReadOutput] Cannot write reads to file with prefix: %s\n' % self.output_prefix)
                 raise
             self.R1 = []
@@ -550,7 +550,7 @@ class IlluminaTwoReadOutput:
                 try:
                     os.remove(self.output_prefix + '_R1.fastq')
                     os.remove(self.output_prefix + '_R2.fastq')
-                except:
+                except Exception:
                     sys.stderr.write('WARNING:[IlluminaTwoReadOutput] Cannot delete file with prefix: %s\n' % self.output_prefix)
                     raise
         else:
@@ -559,7 +559,7 @@ class IlluminaTwoReadOutput:
                 try:
                     os.remove(self.output_prefix + '_R1.fastq.gz')
                     os.remove(self.output_prefix + '_R2.fastq.gz')
-                except:
+                except Exception:
                     sys.stderr.write('WARNING:[IlluminaTwoReadOutput] Cannot delete file with prefix: %s\n' % self.output_prefix)
                     raise
 
@@ -578,7 +578,7 @@ class IlluminaTwoReadOutput:
             else:
                 self.R1f = gzip.open(self.output_prefix + '_R1.fastq.gz', 'ab')
                 self.R2f = gzip.open(self.output_prefix + '_R2.fastq.gz', 'ab')
-        except:
+        except Exception:
             sys.stderr.write('ERROR:[IlluminaTwoReadOutput] Cannot write reads to file with prefix: %s\n' % self.output_prefix)
             raise
         self.isOpen = True
@@ -591,7 +591,7 @@ class IlluminaTwoReadOutput:
         try:
             self.R1f.close()
             self.R2f.close()
-        except:
+        except Exception:
             raise
         self.isOpen = False
 
@@ -621,12 +621,12 @@ class IlluminaTwoReadOutput:
                     if self.open() == 1:
                         sys.stderr.write('ERROR:[IlluminaTwoReadOutput] ERROR Opening files for writing\n')
                         raise
-                except:
+                except Exception:
                     raise
             try:
                 self.R1f.write('\n'.join(self.R1) + '\n')
                 self.R2f.write('\n'.join(self.R2) + '\n')
-            except:
+            except Exception:
                 sys.stderr.write('ERROR:[IlluminaTwoReadOutput] Cannot write reads to file with prefix: %s\n' % self.output_prefix)
                 raise
             self.R1 = []
@@ -653,7 +653,7 @@ class IlluminaOneReadOutput:
                 sys.stderr.write('WARNING:[IlluminaOneReadOutput] File with prefix: %s exists, DELETING\n' % self.output_prefix)
                 try:
                     os.remove(self.output_prefix + '_SE.fastq')
-                except:
+                except Exception:
                     sys.stderr.write('WARNING:[IlluminaOneReadOutput] Cannot delete file with prefix: %s\n' % self.output_prefix)
                     raise
         else:
@@ -661,7 +661,7 @@ class IlluminaOneReadOutput:
                 sys.stderr.write('WARNING:[IlluminaOneReadOutput] File with prefix: %s exists, DELETING\n' % self.output_prefix)
                 try:
                     os.remove(self.output_prefix + '_SE.fastq.gz')
-                except:
+                except Exception:
                     sys.stderr.write('WARNING:[IlluminaOneReadOutput] Cannot delete file with prefix: %s\n' % self.output_prefix)
                     raise
 
@@ -678,7 +678,7 @@ class IlluminaOneReadOutput:
                 self.R1f = open(self.output_prefix + '_SE.fastq', 'a')
             else:
                 self.R1f = gzip.open(self.output_prefix + '_SE.fastq.gz', 'ab')
-        except:
+        except Exception:
             sys.stderr.write('ERROR:[IlluminaOneReadOutput] Cannot write reads to file with prefix: %s\n' % self.output_prefix)
             raise
         self.isOpen = True
@@ -690,7 +690,7 @@ class IlluminaOneReadOutput:
         """
         try:
             self.R1f.close()
-        except:
+        except Exception:
             raise
         self.isOpen = False
 
@@ -719,11 +719,11 @@ class IlluminaOneReadOutput:
                     if self.open() == 1:
                         sys.stderr.write('ERROR:[IlluminaOneReadOutput] ERROR Opening file for writing\n')
                         raise
-                except:
+                except Exception:
                     raise
             try:
                 self.R1f.write('\n'.join(self.R1) + '\n')
-            except:
+            except Exception:
                 sys.stderr.write('ERROR:[IlluminaOneReadOutput] Cannot write read to file with prefix: %s\n' % self.output_prefix)
                 raise
             self.R1 = []
@@ -753,7 +753,7 @@ class IlluminaFastaOutput:
         try:
             misc.make_sure_path_exists(os.path.dirname(self.output_prefix))
             self.R1f = open(self.output_prefix, 'a')
-        except:
+        except Exception:
             sys.stderr.write('ERROR:[IlluminaFastaOutput] Cannot write reads to file with prefix: %s\n' % self.output_prefix)
             raise
         self.isOpen = True
@@ -765,7 +765,7 @@ class IlluminaFastaOutput:
         """
         try:
             self.R1f.close()
-        except:
+        except Exception:
             raise
         self.isOpen = False
 
@@ -794,11 +794,11 @@ class IlluminaFastaOutput:
                     if self.open() == 1:
                         sys.stderr.write('ERROR:[IlluminaFastaOutput] ERROR Opening file for writing\n')
                         raise
-                except:
+                except Exception:
                     raise
             try:
                 self.R1f.write('\n'.join(self.R1) + '\n')
-            except:
+            except Exception:
                 sys.stderr.write('ERROR:[IlluminaFastaOutput] Cannot write read to file with prefix: %s\n' % self.output_prefix)
                 raise
             self.R1 = []
