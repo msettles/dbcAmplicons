@@ -20,10 +20,12 @@ install a Linux-based virtual machine to run the pipeline.
 ### Mac OSX
 Mac users should first download and install Xcode and then download the app via a terminal by:  
 
-  git clone https://github.com/msettles/dbcAmplicons.git
-  cd dbcAmplicons
-  python setup.py install
-  dbcAmplicons
+```bash
+git clone https://github.com/msettles/dbcAmplicons.git
+cd dbcAmplicons
+python setup.py install
+dbcAmplicons
+```
 
 If installation was successful, this will bring up the usage arguments.
 
