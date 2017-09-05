@@ -1,7 +1,5 @@
 #!/usr/bin/env sh
 
-#RDP_PATH="/opt/RDPTools/classifier.jar"
-
 cat '' > test_output.txt
 ## test validation
 echo "Testing dbcAmplicons validate"
@@ -18,7 +16,7 @@ echo "Testing dbcAmplicons join"
 dbcAmplicons join -t 4 -x 0.25 -1 preprocess/trimL/match_twoprimer_R1.fastq.gz -O join/match_twoprimer  >> test_output.txt
 
 echo "Testing dbcAmplicons classify"
-dbcAmplicons classify -b 7500 -q 10 -l 200 -O join/classify -U join/match_twoprimer.extendedFrags.fastq.gz --debug --rdpPath $RDP_PATH -p 4 -1 join/match_twoprimer.notCombined_1.fastq.gz -2 join/match_twoprimer.notCombined_2.fastq.gz  >> test_output.txt
+dbcAmplicons classify -b 7500 -q 10 -l 200 -O join/classify -U join/match_twoprimer.extendedFrags.fastq.gz --debug -p 4 -1 join/match_twoprimer.notCombined_1.fastq.gz -2 join/match_twoprimer.notCombined_2.fastq.gz  >> test_output.txt
 
 #echo "Testing dbcAmplicons abundance"
 #dbcAmplicons abundance -O join/abundance -F join/classify.fixrank --debug >> test_output.txt 

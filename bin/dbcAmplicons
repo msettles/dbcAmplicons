@@ -491,12 +491,13 @@ class classifyCMD:
         rdpPath = args.rdpPath
 
         if rdpPath is None:
-            rdpPath = os.environ.get('RDP_PATH')
+            rdpPath = os.path.join(os.environ.get('RDP_PATH'),"classifier.jar")
 
         if rdpPath is None or os.path.isfile(rdpPath) is not True:
             rdp_download = "https://github.com/rdpstaff/RDPTools"
             sys.stderr.write("RDP classifier.jar not found, please download and install from: %s\n" % rdp_download)
-            sys.stderr.write("Then set an environment variable RDP_PATH to the classifier.jar path\n")
+            sys.stderr.write("Then set an environment variable RDP_PATH to the RDPTools folder\n"
+            sys.stderr.write("  classifier.jar should be in the folder RDP_PATH\n")
             sys.exit()
 
         rdp_call = ['java', '-Xmx2048M', '-Xms256M', '-XX:+UseParallelGC', '-XX:ParallelGCThreads=2', '-jar', rdpPath]
