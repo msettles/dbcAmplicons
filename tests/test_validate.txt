@@ -5,7 +5,7 @@ sample table length: 208, and 5 projects.
 barcode table length: 864
 primer table length P5 Primer Sequences:8, P7 Primer Sequences:2
 sample table length: 208, and 5 projects.
-140000 reads processed in 0.64 minutes, 52835 (37.7%) identified
+140000 reads processed in 0.69 minutes, 52835 (37.7%) identified
 
 112292 reads (80.2% of total run) successfully identified barcode
 89574 reads (64.0% of total run) successfully identified barcode and primer
@@ -40,6 +40,7 @@ Output:
    Outie_pairs:0 (0.00% of combined)
    Uncombined_pairs:5469
    Percent_combined:74.93%
+21811 reads processed in 2.89 minutes
 sample table length: 208, and 5 projects.
 21811 lines processed in 0.01 minutes
 Classification numbers (reads):
@@ -62,9 +63,9 @@ Classification numbers (reads):
    genus:	20189
    species:	0
    isolate:	0
-40000 reads processed in 0.51 minutes
+40000 reads processed in 0.52 minutes
 barcode table length: 864
-40000 reads processed in 0.5 minutes, 39186 (98.0%) identified
+40000 reads processed in 0.51 minutes, 39186 (98.0%) identified
 
 39186 reads (98.0% of total run) successfully identified barcode
 814 reads (2.0% of total run) unidentified
