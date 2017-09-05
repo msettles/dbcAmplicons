@@ -496,7 +496,7 @@ class classifyCMD:
         if rdpPath is None or os.path.isfile(rdpPath) is not True:
             rdp_download = "https://github.com/rdpstaff/RDPTools"
             sys.stderr.write("RDP classifier.jar not found, please download and install from: %s\n" % rdp_download)
-            sys.stderr.write("Then set an environment variable RDP_PATH to the RDPTools folder\n"
+            sys.stderr.write("Then set an environment variable RDP_PATH to the RDPTools folder\n")
             sys.stderr.write("  classifier.jar should be in the folder RDP_PATH\n")
             sys.exit()
 
