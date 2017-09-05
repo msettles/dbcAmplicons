@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
 
-cat '' > test_output.txt
+echo '' > test_output.txt
 ## test validation
-echo "Testing dbcAmplicons validate"
+echo "Testing dbcAmplicons validate, this should fail"
 dbcAmplicons validate -B barcodeLookupTable.txt -P primerLookupTable-bd.txt -S sampleLookupTable-bd.txt >> test_output.txt
 
 ## testing preprocess
