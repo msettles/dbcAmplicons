@@ -19,6 +19,7 @@ install a Linux-based virtual machine to run the pipeline.
 
 ### Mac OSX
 Mac users should first download and install Xcode and then download the app via a terminal by:  
+
   git clone https://github.com/msettles/dbcAmplicons.git
   cd dbcAmplicons
   python setup.py install
@@ -29,9 +30,12 @@ If installation was successful, this will bring up the usage arguments.
 ### Linux
 For Linux users, some python dependencies may be required before the installation is succesful. To install,
 open a terminal and type  
+
   sudo apt-get install python-dev
+  sudo apt-get install numpy
 
 And type the sudo password at the prompt. Then, download the app via a terminal by:  
+
   git clone https://github.com/msettles/dbcAmplicons.git
   cd dbcAmplicons
   sudo python setup.py install
