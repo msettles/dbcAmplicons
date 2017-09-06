@@ -105,8 +105,8 @@ class classifyApp:
                         run_out.addRead(read.getFasta())
                     # Write out reads
                     rcount = run_out.count()
-                    if rcount != batchsize:
-                        sys.stderr.write("WARNING:[classify] output count does not equal batch count")
+                    if rcount > batchsize:
+                        sys.stderr.write("WARNING:[classify] output count exceeds batch count")
                     run_out.writeReads()
                     rdp_out = output_prefix + "." + str(batch) + ".fixrank"
                     results[rdp_out] = pool.apply_async(rdpCall, (run_out.output_prefix, rdp_out, gene, train, rdpPath, self.verbose))
