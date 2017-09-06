@@ -742,6 +742,8 @@ class IlluminaFastaOutput:
         self.output_prefix = output_prefix + '.fasta'
         self.mcount = 0
         self.R1 = []
+        if os.path.exists(self.output_prefix):
+            os.remove(self.output_prefix)
 
     def open(self):
         """
