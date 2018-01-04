@@ -1,5 +1,7 @@
-0.8.5-20170906
+0.8.6-20180104
 
+version 0.8.6
+change RDP classify to use allrank instead of fixrank, only when using a custom db (WARNING: Db must only use major ranks, eg class,family,genus,species)
 version 0.8.5
 added the ability to use an environmental variable for the path to the RDP classifier, using the env variable RDP_PATH
 version 0.8.4
