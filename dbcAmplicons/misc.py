@@ -11,11 +11,9 @@ import shlex
 
 import re
 
-
 '''
 Gzip utilities, run gzip in a subprocess
 '''
-
 
 def sp_gzip_read(file):
     p = Popen(shlex.split('gzip --decompress --to-stdout') + [file],
