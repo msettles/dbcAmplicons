@@ -491,7 +491,15 @@ class classifyCMD:
         rdpPath = args.rdpPath
 
         if rdpPath is None:
-            rdpPath = os.path.join(os.environ.get('RDP_PATH'),"classifier.jar")
+            try:
+                rdpPath = os.path.join(os.environ.get('RDP_PATH'), "classifier.jar")
+            except:
+                rdp_download = "https://github.com/rdpstaff/RDPTools"
+                sys.stderr.write("RDP classifier.jar not found, please download and install from: %s\n" % rdp_download)
+                sys.stderr.write("Then set an environment variable RDP_PATH to the RDPTools folder\n")
+                sys.stderr.write("  classifier.jar should be in the folder RDP_PATH\n")
+                sys.exit()
+
 
         if rdpPath is None or os.path.isfile(rdpPath) is not True:
             rdp_download = "https://github.com/rdpstaff/RDPTools"
@@ -540,13 +548,13 @@ def abundanceParser(subparsers):
     abundance_parser = subparsers.add_parser('abundance', help='Generate an abundance table from a fixrank formated file')
     abundance_parser.add_argument('-r', '--rank', help='taxonomic rank to build table from, allowable values are (domain, phylum, class, order, family, genus, and species{if performed}, [default: %(default)s]',
                                   action='store', type=str, dest='rank', metavar='<arg>', default='genus', required=False, choices=['domain', 'phylum', 'class', 'order', 'family', 'genus', 'species'])
-    abundance_parser.add_argument('-t', '--threshold', help='Threshold bootstrap value to use for assignment, first taxon level greater than threshold',
+    abundance_parser.add_argument('-t', '--threshold', help='Threshold bootstrap value to use for assignment, first taxon level greater than threshold [default: %(default)s]',
                                   type=float, dest='threshold', metavar="VALUE", default=0.5, required=False)
-    abundance_parser.add_argument('-m', '--minsize', help='Min size of amplicon to consider',
+    abundance_parser.add_argument('-m', '--minsize', help='Min size of amplicon to consider [default: %(default)s]',
                                   type=int, dest='minsize', metavar="VALUE", default=None, required=False)
-    abundance_parser.add_argument('-M', '--maxsize', help='Max size of amplicon to consider',
+    abundance_parser.add_argument('-M', '--maxsize', help='Max size of amplicon to consider [default: %(default)s]',
                                   type=int, dest='maxsize', metavar="VALUE", default=None, required=False)
-    abundance_parser.add_argument('-S', '--sample_metadata', help='file with sample metadata',
+    abundance_parser.add_argument('-S', '--sample_metadata', help='file with sample metadata [default: %(default)s]',
                                   action='store', type=str, dest='samples_file', metavar='FILE', default=None, required=False)
     abundance_parser.add_argument('-O', '--output_path', help='path for output files [default: %(default)s]',
                                   action='store', type=str, dest='output_base', metavar='FILE_PREFIX', default='table')

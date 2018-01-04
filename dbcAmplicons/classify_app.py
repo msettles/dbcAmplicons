@@ -18,7 +18,7 @@ def rdpCall(query, output, gene, train, rdpPath, verbose):
     rdpPath should point to the classifier.jar as a part of RDPTools
     '''
     if train is not None:
-        rdp_call = ['java', '-Xmx2048M', '-Xms256M', '-XX:+UseParallelGC', '-XX:ParallelGCThreads=2', '-jar', rdpPath, 'classify', '-q', query, '-o', output, '-f', 'fixrank', '-t', train]
+        rdp_call = ['java', '-Xmx2048M', '-Xms256M', '-XX:+UseParallelGC', '-XX:ParallelGCThreads=2', '-jar', rdpPath, 'classify', '-q', query, '-o', output, '-f', 'allrank', '-t', train]
     else:
         if gene != "16srrna" and gene != "fungallsu" and gene != "fungalits_warcup" and gene != "fungalits_unite":
             sys.stderr.write('ERROR:[rdpCall] incorrect gene string provided to rdp\n')
