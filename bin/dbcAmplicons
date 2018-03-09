@@ -119,13 +119,13 @@ def preprocessParser(subparsers):
                                    action='store_true', dest='uncompressed', default=False)
     preprocess_parser.add_argument('-v', '--silent', help='silences verbose output [default: %(default)s]',
                                    action='store_true', dest='verbose', default=False)
-    preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read (read 1) of an amplicon fastq[.gz] four file set',
+    preprocess_parser.add_argument('-1', '--R1', metavar="read1", dest='fastq_file1', help='read (read 1) of an amplicon fastq[.gz] four file set',
                                    action='store', type=str, required=True, nargs='+')
-    preprocess_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read (barcode 1) of an amplicon fastq[.gz] four file set',
+    preprocess_parser.add_argument('-2', '--I1', metavar="read2", dest='fastq_file2', help='read (barcode 1) of an amplicon fastq[.gz] four file set',
                                    action='store', type=str, required=False, nargs='+')
-    preprocess_parser.add_argument('-3', metavar="read3", dest='fastq_file3', help='read (barcode 2) of an amplicon fastq[.gz] four file set',
+    preprocess_parser.add_argument('-3', '--I2', metavar="read3", dest='fastq_file3', help='read (barcode 2) of an amplicon fastq[.gz] four file set',
                                    action='store', type=str, required=False, nargs='+')
-    preprocess_parser.add_argument('-4', metavar="read4", dest='fastq_file4', help='read (read 2) of an amplicon fastq[.gz] four file set',
+    preprocess_parser.add_argument('-4', '--R2', metavar="read4", dest='fastq_file4', help='read (read 2) of an amplicon fastq[.gz] four file set',
                                    action='store', type=str, required=False, nargs='+')
     preprocess_parser.add_argument('--test', help='exit after the first batch in order to test the inputs',
                                    action='store_true', dest="test", default=False)

@@ -254,7 +254,7 @@ class abundanceApp:
                 mtax_len_s = {v: calc_single_len(tax_len[v]["SINGLE"], tax_len[v]["PAIR"], sum(abundanceTable[v].values())) for v in taxa_keys}
                 mtax_len_p = {v: round(tax_len[v]["PAIR"] / (sum(abundanceTable[v].values())), 3) for v in taxa_keys}
 
-                def func(x): 
+                def func(x):
                     return x.split(';')
                 taxa_keys_md = [{'taxonomy': func(v), 'mean_rdp_bootstrap_value': mbootscore[v], 'mean_sequence_length_single': mtax_len_s[v], 'percentage_paired': mtax_len_p[v]} for v in taxa_keys]
 
@@ -298,7 +298,7 @@ class abundanceApp:
             try:
                 abFile = open(ab_name, 'w')
                 propFile = open(prop_name, 'w')
-            except:
+            except Exception:
                 sys.stderr.write("ERROR:[abundance_app] Can't open files (%s,%s) for writing\n" % (ab_name, prop_name))
             sys.stderr.write("Writing abundance file to: %s\n" % (ab_name))
             sys.stderr.write("Writing proportions file to: %s\n" % (prop_name))
@@ -346,7 +346,7 @@ class abundanceApp:
             self.clean()
             sys.stderr.write("%s unexpectedly terminated\n" % (__name__))
             return 1
-        except:
+        except Exception:
             self.clean()
             sys.stderr.write("A fatal error was encountered.\n")
             if debug:
@@ -359,5 +359,5 @@ class abundanceApp:
         try:
             # nothing to be done
             pass
-        except:
+        except Exception:
             pass
