@@ -26,7 +26,7 @@ class validateApp:
                 except ValueError:
                     pass
             if ptmp:
-                sys.stderr.write("ERROR:[validate] %s pair ID(s) are missing from P5\n" % ','.join(ptmp))
+                sys.stderr.write("ERROR:[validate] '%s' pair ID(s) are missing from P5\n" % ','.join(ptmp))
                 failed = True
 
             ptmp = primerObject.primers
@@ -36,7 +36,7 @@ class validateApp:
                 except ValueError:
                     pass
             if ptmp:
-                sys.stderr.write("ERROR:[validate] %s pair ID(s) are missing from P7\n" % ','.join(ptmp))
+                sys.stderr.write("ERROR:[validate] '%s' pair ID(s) are missing from P7\n" % ','.join(ptmp))
                 failed = True
 
             if failed:
@@ -66,7 +66,8 @@ class validateApp:
             for sampl_barcode in samplesObject.sampleTable:
                 if sampl_barcode not in barcodesObject.IDS:
                     failed = True
-                    sys.stderr.write("ERROR:[validate] barcode %s not found in barcode table\n" % sampl_barcode)
+                    sys.stderr.write("ERROR:[validate] barcode '%s' not found in barcode table\n" %
+                                     sampl_barcode)
                 for sampl_primer in samplesObject.sampleTable[sampl_barcode]:
                     if sampl_primer in ['-']:
                         continue
@@ -78,7 +79,7 @@ class validateApp:
                         continue
                     elif sampl_primer not in primerObject.primers:
                         failed = True
-                        sys.stderr.write("ERROR:[validate] primer pair %s not found associated with barcode %s, sample %s in project %s\n" %
+                        sys.stderr.write("ERROR:[validate] primer pair '%s' not found associated with barcode '%s', sample '%s' in project '%s'\n" %
                                          (sampl_primer, sampl_barcode,
                                           samplesObject.sampleTable[sampl_barcode][sampl_primer][0],
                                           samplesObject.sampleTable[sampl_barcode][sampl_primer][1]))
