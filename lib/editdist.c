@@ -89,7 +89,7 @@ bounded_edit_distance(const char *primer, int primerlen, const char *seq, int se
 
 PyDoc_STRVAR(bounded_editdist_distance_doc,
 "bounded_edit_distance(a, b, f, k, m) -> int, int\n\
-    Calculates the bounded Levenshtein's edit distance between strings \"a\" and \"b\" with pre-string fload f, bound \"k\" and \"m\" matching bases at end\n");
+    Calculates the bounded Levenshtein's edit distance between strings \"a\" and \"b\" with pre-string float f, bound \"k\" and \"m\" matching bases at end\n");
 
 static PyObject *
 bounded_editdist_distance(PyObject *self, PyObject *args)
