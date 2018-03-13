@@ -138,20 +138,38 @@ class FourSequenceReadSet:
         else:
             return 0
 
-    def assignPrimer(self, prTable, dedup_float, max_diff, endmatch):
+    def assignPrimer(self, prTable, dedup_float, max_diff, endmatch, flip=False):
         """
         Given a primerTable object, the maximum number of allowed difference (mismatch, insertion, deletions) and the
         required number of end match bases (final endmatch bases must match) assign a primer pair ID from the read
         sequences.
         """
         # Primer One Matching
+        vflip = False
         pr1, pr1Mismatch, pr1StartPosition, pr1EndPosition = primerDist(prTable.getP5sequences(), self.read_1, dedup_float, max_diff, endmatch)
+        if flip:
+            pr1f, pr1fMismatch, pr1fStartPosition, pr1fEndPosition = primerDist(prTable.getP5sequences(), self.read_2, dedup_float, max_diff, endmatch)
+            if pr1fMismatch < pr1Mismatch:  # flip produces a better match reverse the reads
+                vflip = True
+                pr1 = pr1f
+                pr1Mismatch = pr1fMismatch
+                pr1StartPosition = pr1fStartPosition
+                pr1EndPosition = pr1fEndPosition
+                # Swap reads
+                tmp = self.read_1
+                self.read_1 = self.read_2
+                self.read_2 = tmp
+                tmp = self.qual_1
+                self.qual_1 = self.qual_2
+                self.qual_2 = tmp
 
         # Primer One Matching
         pr2, pr2Mismatch, pr2StartPosition, pr2EndPosition = primerDist(prTable.getP7sequences(), self.read_2, dedup_float, max_diff, endmatch)
 
         # Barcode Pair Matching
         combined_pr = prTable.getMatch(pr1, pr2)
+#        if vflip and combined_pr[0] is not None:
+#            combined_pr[0] = combined_pr[0] + "_F"
         self.primer = [combined_pr[0], combined_pr[1], pr1Mismatch, pr1StartPosition, pr1EndPosition, combined_pr[2], pr2Mismatch, pr2StartPosition, pr2EndPosition]
         self.goodRead = self.goodRead and combined_pr[0] is not None
         if self.goodRead:

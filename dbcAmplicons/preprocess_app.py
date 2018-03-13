@@ -21,10 +21,11 @@ class preprocessApp:
     def __init__(self):
         self.verbose = False
 
-    def start(self, fastq_file1, fastq_file2, fastq_file3, fastq_file4,
-              output_prefix, barcodesFile, primerFile, samplesFile,
+    def start(self,
+              fastq_file1, fastq_file2, fastq_file3, fastq_file4, output_prefix,
+              barcodesFile, primerFile=None, samplesFile=None,
               barcodeMaxDiff=1, I1rc=True, I2rc=False, dedup_float=4,
-              primerMaxDiff=4, primerEndMatch=4, batchsize=10000,
+              primerMaxDiff=4, primerEndMatch=4, flip=False, batchsize=10000,
               uncompressed=False, output_unidentified=False, minQ=None,
               minL=0, verbose=True, debug=False, kprimer=False, test=False):
         """
@@ -102,7 +103,7 @@ class preprocessApp:
                 for read in reads:
                     bcsuccesscount += read.assignBarcode(bcTable, barcodeMaxDiff)  # barcode
                     if evalPrimer:  # primer
-                        prsuccesscount += read.assignPrimer(prTable, dedup_float, primerMaxDiff, primerEndMatch)
+                        prsuccesscount += read.assignPrimer(prTable, dedup_float, primerMaxDiff, primerEndMatch, flip)
                     if evalSample:  # sample
                         sampsuccesscount += read.assignRead(sTable)  # barcode + primer
                     if minQ is not None and read.goodRead:

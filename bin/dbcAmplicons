@@ -101,6 +101,8 @@ def preprocessParser(subparsers):
                                    type=int, dest='primerdiff', default=4)
     preprocess_parser.add_argument('-e', '--primerend', help='required number of matching bases at end of primer [default: %(default)s]',
                                    type=int, dest='primerend', default=4)
+    preprocess_parser.add_argument('--flip', help='Primers can be seen in both orientiations, tests flip and reorients all reads to the same orientation.',
+                                   action='store_true', dest="flip", default=False)
     preprocess_parser.add_argument('-f', '--dedup_float', help='number of bases preceeding primer used to deduplicate reads [default: %(default)s]',
                                    type=int, dest='dedup_float', default=0)
     preprocess_parser.add_argument('-S', '--sample_metadata', help='file with sample metadata',
@@ -121,9 +123,9 @@ def preprocessParser(subparsers):
                                    action='store_true', dest='verbose', default=False)
     preprocess_parser.add_argument('-1', '--R1', metavar="read1", dest='fastq_file1', help='read (read 1) of an amplicon fastq[.gz] four file set',
                                    action='store', type=str, required=True, nargs='+')
-    preprocess_parser.add_argument('-2', '--I1', metavar="read2", dest='fastq_file2', help='read (barcode 1) of an amplicon fastq[.gz] four file set',
+    preprocess_parser.add_argument('-2', '--BC1', metavar="read2", dest='fastq_file2', help='read (barcode 1) of an amplicon fastq[.gz] four file set',
                                    action='store', type=str, required=False, nargs='+')
-    preprocess_parser.add_argument('-3', '--I2', metavar="read3", dest='fastq_file3', help='read (barcode 2) of an amplicon fastq[.gz] four file set',
+    preprocess_parser.add_argument('-3', '--BC2', metavar="read3", dest='fastq_file3', help='read (barcode 2) of an amplicon fastq[.gz] four file set',
                                    action='store', type=str, required=False, nargs='+')
     preprocess_parser.add_argument('-4', '--R2', metavar="read4", dest='fastq_file4', help='read (read 2) of an amplicon fastq[.gz] four file set',
                                    action='store', type=str, required=False, nargs='+')
@@ -186,10 +188,10 @@ class preprocessCMD:
 
         if profile:
             import cProfile
-            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, I1rc, I2rc, args.dedup_float, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)', globals(), locals())
+            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, I1rc, I2rc, args.dedup_float, args.primerdiff, args.primerend, args.flip, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)', globals(), locals())
             return 255
         else:
-            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, I1rc, I2rc, args.dedup_float, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)
+            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, I1rc, I2rc, args.dedup_float, args.primerdiff, args.primerend, args.flip, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)
 
 
 #####################################################################################
