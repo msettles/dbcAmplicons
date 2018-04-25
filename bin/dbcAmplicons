@@ -21,6 +21,8 @@ from multiprocessing import cpu_count
 
 from distutils import spawn
 
+sys.path.insert(0, '/Users/pmh/Desktop/SIK_bioinformatics/dbcAmplicons/build/lib.macosx-10.6-intel-2.7')
+
 try:
     from dbcAmplicons import version_num
 except ImportError:
@@ -134,7 +136,7 @@ def preprocessParser(subparsers):
                                    action='store_true', dest="debug", default=False)
     
     #SIK added from preprocPair_with_inlineBC
-    preprocess_parser.add_argument('-i', '--inline', help='indicates barcodes are inline, not separate indices. Only R1 and barcode file are required.',
+    preprocess_parser.add_argument('-i', '--inline', help='indicates barcodes are inline, not separate indices. Only R1 and barcode file are required. If this option is used, --I1 asis must be specified.',
                                    action='store', dest='inline', default=False)
     preprocess_parser.add_argument('-fl', '--flip', help='barcode can be on R1 or R2 (reverse) [default: %(default)s]',
                                    action='store', dest='flip', default=False)
