@@ -12,6 +12,8 @@ from dbcAmplicons import IlluminaTwoReadOutput
 from dbcAmplicons import validateApp
 from dbcAmplicons import misc
 
+from dbcAmplicons import TwoReadIlluminaRun
+from dbcAmplicons import IlluminaFourReadOutput
 
 class preprocessApp:
     """
@@ -21,17 +23,82 @@ class preprocessApp:
     def __init__(self):
         self.verbose = False
 
-    def start(self, fastq_file1, fastq_file2, fastq_file3, fastq_file4, output_prefix, barcodesFile, primerFile, samplesFile, barcodeMaxDiff=1, I1rc=True, I2rc=False, dedup_float=4, primerMaxDiff=4, primerEndMatch=4, batchsize=10000, uncompressed=False, output_unidentified=False, minQ=None, minL=0, verbose=True, debug=False, kprimer=False, test=False):
+    def preprocPair_with_inlineBC(self, fastq_file1, fastq_file2, barcode1, barcode2, bcFile, max_diff, flip, output_prefix, batchsize=100000, uncompressed=False, verbose=True, debug=False):
+        """
+        Start conversion of double barcoded Illumina sequencing run from two to four reads
+        """
+        print('---')
+        print('Running preprocPair_with_inlineBC')
+        print('')
+        self.verbose = verbose
+        try:
+            # read in barcode sequences
+            bcTable = barcodeTable(bcFile, i1_rc=False)
+            if self.verbose:
+                sys.stdout.write("barcode table length: %s\n" % bcTable.getLength())
+
+            # setup output files
+            self.run_out = IlluminaFourReadOutput(output_prefix, uncompressed)
+
+            # establish and open the Illumin run
+            self.run = TwoReadIlluminaRun(fastq_file1, fastq_file2)
+            self.run.open()
+            failed_reads = 0
+            flipped_reads = 0
+            lasttime = time.time()
+            while 1:
+                # get next batch of reads
+                reads = self.run.next(batchsize)
+                if len(reads) == 0:
+                    break
+                # process individual reads
+                for read in reads:
+                    tmp = read.getFourReadsInline(bcTable, bc1_length=barcode1, bc2_length=barcode2, max_diff=max_diff, flip=flip)
+                    if len(tmp) == 0:  # failed read
+                        failed_reads += 1
+                        continue
+                    if tmp[4]:
+                        flipped_reads += 1
+                    self.run_out.addRead(tmp[0:4])
+                # Write out reads
+                self.run_out.writeReads()
+                if self.verbose:
+                    sys.stderr.write("processed %s total reads, %s failed reads, %s flipped reads, %s Reads/second\n" % (self.run.count(), failed_reads, flipped_reads, round(self.run.count() / (time.time() - lasttime), 0)))
+            if self.verbose:
+                sys.stdout.write("%s reads processed, %s failed reads, %s flipped reads in %s minutes\n" % (self.run.count(), failed_reads, flipped_reads, round((time.time() - lasttime) / (60), 2)))
+            # write out project table
+            fastq_file1 = output_prefix + '_R1.fastq.gz' 
+            fastq_file2 = output_prefix + '_R2.fastq.gz'
+            fastq_file3 = output_prefix + '_R3.fastq.gz'
+            fastq_file4 = output_prefix + '_R4.fastq.gz'
+            return [fastq_file1, fastq_file2, fastq_file3, fastq_file4]
+            self.clean()
+        except (KeyboardInterrupt, SystemExit):
+            self.clean()
+            sys.stderr.write("%s unexpectedly terminated\n" % (__name__))
+            return 1
+        except:
+            self.clean()
+            sys.stderr.write("A fatal error was encountered.\n")
+            if debug:
+                sys.stderr.write("".join(traceback.format_exception(*sys.exc_info())))
+            return 1
+        print(run_out)
+
+    def start(self, fastq_file1, fastq_file2, fastq_file3, fastq_file4, output_prefix, bcFile, primerFile, samplesFile, barcodeMaxDiff=1, I1rc=True, I2rc=False, dedup_float=4, primerMaxDiff=4, primerEndMatch=4, batchsize=10000, uncompressed=False, output_unidentified=False, minQ=None, minL=0, verbose=True, debug=False, kprimer=False, test=False):
         """
         Start preprocessing double barcoded Illumina sequencing run, perform
         """
+        print('---')
+        print('Running preprocessApp')
+        print('')
         self.verbose = verbose
         evalPrimer = primerFile is not None
         evalSample = samplesFile is not None
         try:
             v = validateApp()
             # read in barcode sequences
-            bcTable = barcodeTable(barcodesFile, I1rc, I2rc)
+            bcTable = barcodeTable(bcFile, I1rc, I2rc)
             if self.verbose:
                 sys.stdout.write("barcode table length: %s\n" % bcTable.getLength())
             # read in primer sequences if present
@@ -94,6 +161,8 @@ class preprocessApp:
                 if len(reads) == 0:
                     break
                 # process individual reads
+                #for read in reads:
+                    #print(read.assignBarcode(bcTable, barcodeMaxDiff))
                 for read in reads:
                     bcsuccesscount += read.assignBarcode(bcTable, barcodeMaxDiff)  # barcode
                     if evalPrimer:  # primer

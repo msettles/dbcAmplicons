@@ -180,7 +180,7 @@ class FourSequenceReadSet:
             self.trim_left = trim_points["left_trim"]
             self.trim_right = trim_points["right_trim"]
             if ((self.trim_left - self.primer[4]) < minL or (self.trim_right - self.primer[8]) < minL):
-                self.goodRead = False
+                self.goodRead = False ## does there need to be an else statement to set self.goodRead = True when passing minQ and minL?
         if self.goodRead:
             return 1
         else:
@@ -295,6 +295,8 @@ class TwoSequenceReadSet:
             self.trim_right = trim_points["right_trim"]
             if (self.trim_left < minL or self.trim_right < minL):
                 self.goodRead = False
+            else:
+                self.goodRead = True
 
     def getFastqSRA(self):
         """
@@ -491,3 +493,28 @@ class OneSequenceReadSet:
             read1_name = "%s|%s:%i" % (name, self.sample, len(self.read_1))
         r1 = '\n'.join([read1_name, self.read_1])
         return [r1]
+
+    def trimRead(self, minQ, minL):
+        """
+        Trim the read by a minQ score
+        """
+        if (trim_loaded):
+            trim_points = trim.trim(self.qual_1, self.qual_2, minQ)
+            self.trim_left = trim_points["left_trim"]
+            self.trim_right = trim_points["right_trim"]
+            if (self.trim_left < minL or self.trim_right < minL):
+                self.goodRead = False
+            else:
+                self.goodRead = True
+
+    # def trimRead(self, minQ, minL):
+    #     """
+    #     Trim the read by a minQ score
+    #     """
+    #     if (trim_loaded):
+    #         trim_points = trim.trim(self.qual_1, self.qual_1, minQ)
+    #         self.trim_left = trim_points["left_trim"]
+    #         if (self.trim_left < minL):
+    #             self.goodRead = False
+    #         else:
+    #             self.goodRead = True
