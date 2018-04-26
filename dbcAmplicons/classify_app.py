@@ -102,7 +102,10 @@ class classifyApp:
                     run_out = IlluminaFastaOutput(output_prefix + "." + str(batch))
                     # process individual reads
                     for read in reads:
-                        run_out.addRead(read.getFasta())
+                        if minQ != None:
+                            read.trimRead(minQ, minL)
+                        if read.goodRead == True:
+                            run_out.addRead(read.getFasta())
                     # Write out reads
                     rcount = run_out.count()
                     if rcount > batchsize:
@@ -122,10 +125,10 @@ class classifyApp:
                     run_out = IlluminaFastaOutput(output_prefix + "." + str(batch))
                     # process individual reads
                     for read in reads:
-                        # if minQ != None: # TODO: add trim read to TwoSequenceReadSet
-                            # read.trimRead(minQ, minL)
-                        # if read.goodRead == True:
-                        run_out.addRead(read.getJoinedFasta())
+                        if minQ != None:
+                            read.trimRead(minQ, minL)
+                        if read.goodRead == True:
+                            run_out.addRead(read.getJoinedFasta())
                     # Write out reads
                     run_out.writeReads()
                     rdp_out = output_prefix + "." + str(batch) + ".fixrank"
