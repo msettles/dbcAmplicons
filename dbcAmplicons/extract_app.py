@@ -1,11 +1,5 @@
 import sys, os
 
-#sys.argv[1] = taxon string, e.g. Fusarium_solani_3			[1] Fusarium_incarnatum
-#sys.argv[2] = fixrank file 								[2] celery_short.fixrank
-#sys.argv[3] = fastq file with all sequences to search		[3] celery_short.fastq
-#sys.argv[4] = minimum bootstrap score						[4] 0.7
-#sys.argv[5] = output prefix 								[5] outprefix
-
 class extractApp():
 
 	def __init__(self):
