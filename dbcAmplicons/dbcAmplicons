@@ -1,0 +1,712 @@
+#!/usr/bin/env python
+
+# dbcAmplicons
+#
+######################################################################
+#
+# dbcAmplicons is an application which processes raw four read
+# (2 sequence reads and 2 barcode reads) Illumina amplicon experiments.
+#
+######################################################################
+
+import sys
+import os
+import argparse
+from subprocess import Popen
+from subprocess import PIPE
+from subprocess import STDOUT
+from subprocess import check_call
+from subprocess import CalledProcessError
+from multiprocessing import cpu_count
+
+from distutils import spawn
+
+sys.path.insert(0, '/Users/pmh/Desktop/SIK_bioinformatics/dbcAmplicons/build/lib.macosx-10.6-intel-2.7')
+
+try:
+    from dbcAmplicons import version_num
+except ImportError:
+    version_num = "error importing version number"
+
+profile = False
+
+#####################################################################################
+# Validate the sample, barcode and primer files
+def validateParser(subparsers):
+    """
+    validateParser parser parameters
+    """
+    #
+    # Parse options
+    #
+    validate_parser = subparsers.add_parser('validate', help='validate the sample, barcode and primer sheets')
+    validate_parser.add_argument('-B', '--barcodes_file', help='file with barcodes',
+                                 action='store', type=str, dest='barcodes_file', metavar='FILENAME', required=True)
+    validate_parser.add_argument('-P', '--primer_file', help='file with primers',
+                                 action='store', type=str, dest='primer_file', metavar='FILENAME', required=False)
+    validate_parser.add_argument('-S', '--sample_metadata', help='file with sample metadata',
+                                 action='store', type=str, dest='samples_file', metavar='FILENAME', required=True)
+    validate_parser.add_argument('-v', '--silent', help='silences verbose output [default: %(default)s]',
+                                 action='store_true', dest='verbose', default=False)
+    validate_parser.add_argument('--debug', help='show traceback on error',
+                                 action='store_true', dest="debug", default=False)
+    return validate_parser
+
+
+class validateCMD:
+    """
+    validate validateApp parser parameters and launch the app
+    """
+    def __init__(self):
+        pass
+
+    def execute(self, args):
+        verbose = not args.verbose
+        # ----------------------- options input files -----------------------
+        bcFile = args.barcodes_file
+        sFile = args.samples_file
+        prFile = args.primer_file
+
+        from dbcAmplicons import validateApp
+        app = validateApp()
+
+        if profile:
+            import cProfile
+            cProfile.runctx('app.start(bcFile, prFile, sFile, verbose, args.debug)', globals(), locals())
+            return 255
+        else:
+            return app.start(bcFile, prFile, sFile, verbose, args.debug)
+
+
+#####################################################################################
+# Preprocess four read raw amplicon data set
+def preprocessParser(subparsers):
+    """
+    preprocessParser parser parameters
+    """
+    #
+    # Parse options
+    #
+    preprocess_parser = subparsers.add_parser('preprocess', help='Preprocess four read raw amplicon data, identifying barcode and primer sequence')
+    preprocess_parser.add_argument('-B', '--barcodes_file', help='file with barcodes',
+                                   action='store', type=str, dest='barcodes_file', metavar='FILENAME', required=True)
+    preprocess_parser.add_argument('-d', '--barcodediff', help='max hamming dist from barcode [default: %(default)s]',
+                                   type=int, dest='barcodediff', default=1)
+    preprocess_parser.add_argument('--I1', help='processing of Index 1 read, leave as is, or reverse complement [default: %(default)s]',
+                                   action='store', type=str, dest='I1_orientation', metavar='asis/rc', choices=['asis', 'rc'], default='rc')
+    preprocess_parser.add_argument('--I2', help='processing of Index 2 read, leave as is (asis), or reverse complement (rc) [default: %(default)s]',
+                                   action='store', type=str, dest='I2_orientation', metavar='asis/rc', choices=['asis', 'rc'], default='asis')
+    preprocess_parser.add_argument('-P', '--primer_file', help='file with primers',
+                                   action='store', type=str, dest='primer_file', metavar='FILENAME', default=None)
+    preprocess_parser.add_argument('-D', '--primerdiff', help='max hamming dist from primer [default: %(default)s]',
+                                   type=int, dest='primerdiff', default=4)
+    preprocess_parser.add_argument('-e', '--primerend', help='required number of matching bases at end of primer [default: %(default)s]',
+                                   type=int, dest='primerend', default=4)
+    preprocess_parser.add_argument('-f', '--dedup_float', help='number of bases preceeding primer used to deduplicate reads [default: %(default)s]',
+                                   type=int, dest='dedup_float', default=0)
+    preprocess_parser.add_argument('-S', '--sample_metadata', help='file with sample metadata',
+                                   action='store', type=str, dest='samples_file', metavar='FILENAME', default=None)
+    preprocess_parser.add_argument('-q', '--minQ', help="trim 3' end of sequences to minQ [default: %(default)s]",
+                                   type=int, dest='minQ', default=None),
+    preprocess_parser.add_argument('-l', '--minL', help='if minQ is not None, only keep reads that are at least minL length [default: %(default)s]',
+                                   type=int, dest='minL', default=0),
+    preprocess_parser.add_argument('-b', '--batchsize', help='batch size to process reads in [default: %(default)s]',
+                                   type=int, dest='batchsize', default=100000)
+    preprocess_parser.add_argument('-O', '--output_prefix', help='output file basename [default: fastq_prefix]',
+                                   action='store', type=str, dest='output_base', metavar='PREFIX', default=None)
+    preprocess_parser.add_argument('-U', '--output_unidentified', help='output unidentified reads [default: %(default)s]',
+                                   action='store_true', dest='unidentified', default=False)
+    preprocess_parser.add_argument('-u', '--uncompressed', help='leave output files uncompressed [default: %(default)s]',
+                                   action='store_true', dest='uncompressed', default=False)
+    preprocess_parser.add_argument('-v', '--silent', help='silences verbose output [default: %(default)s]',
+                                   action='store_true', dest='verbose', default=False)
+    preprocess_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq four file set',
+                                   action='store', type=str, required=True, nargs='+')
+    preprocess_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq four file set',
+                                   action='store', type=str, required=False, nargs='+')
+    preprocess_parser.add_argument('-3', metavar="read3", dest='fastq_file3', help='read3 of an amplicon fastq four file set',
+                                   action='store', type=str, required=False, nargs='+')
+    preprocess_parser.add_argument('-4', metavar="read4", dest='fastq_file4', help='read4 of an amplicon fastq four file set',
+                                   action='store', type=str, required=False, nargs='+')
+    preprocess_parser.add_argument('--test', help='exit after the first batch in order to test the inputs',
+                                   action='store_true', dest="test", default=False)
+    preprocess_parser.add_argument('--keepPrimers', help="Don't cut off the primer sequence, leave it as a part of the read [default: %(default)d]",
+                                   action='store_true', dest="kprimer", default=False)
+    preprocess_parser.add_argument('--debug', help='show traceback on error',
+                                   action='store_true', dest="debug", default=False)
+    
+    #SIK added from preprocPair_with_inlineBC
+    preprocess_parser.add_argument('-i', '--inline', help='indicates barcodes are inline, not separate indices. Only R1 and barcode file are required. If this option is used, --I1 asis must be specified.',
+                                   action='store', dest='inline', default=False)
+    preprocess_parser.add_argument('-fl', '--flip', help='barcode can be on R1 or R2 (reverse) [default: %(default)s]',
+                                   action='store', dest='flip', default=False)
+    preprocess_parser.add_argument('-b1', '--barcode1', help='Barcode 1 length [default: %(default)s], will become Read 2',
+                                   type=int, dest='barcode1', default=8)
+    preprocess_parser.add_argument('-b2', '--barcode2', help='Barcode 2 length [default: %(default)s], will become Read 3',
+                                   type=int, dest='barcode2', default=0)
+    #
+
+    return preprocess_parser
+
+
+class preprocessCMD:
+    """
+    validate preprocessApp parser parameters and launch the app
+    """
+    def __init__(self):
+        pass
+
+    def execute(self, args):
+        verbose = not args.verbose
+        # ----------------------- options input files -----------------------
+        bcFile = args.barcodes_file
+        if args.samples_file is None:
+            sFile = None
+            if verbose:
+                sys.stderr.write("No sample file identified\n")
+        else:
+            sFile = args.samples_file
+        if args.primer_file is None:
+            prFile = None
+            if verbose:
+                sys.stderr.write("No primer file identified\n")
+        else:
+            prFile = args.primer_file
+        # ----------------------- options output prefix -----------------------
+        if args.output_base is None and sFile is None:
+            output_prefix = "preprocessed_out"
+        elif args.output_base is None and sFile is not None:
+            output_prefix = "."
+        elif args.output_base is not None and sFile is None:
+            output_prefix = args.output_base
+        elif args.output_base is not None and sFile is not None:
+            output_prefix = args.output_base
+
+        # ----------------------- barcodes orientation ------------------------
+        if args.I1_orientation == 'asis':
+            I1rc = False
+        else:
+            I1rc = True
+        if args.I2_orientation == 'asis':
+            I2rc = False
+        else:
+            I2rc = True
+        from dbcAmplicons import misc
+        misc.make_sure_path_exists(os.path.dirname(output_prefix))
+
+        from dbcAmplicons import preprocessApp
+        app = preprocessApp()
+
+
+        #If --inline is true, run preprocPair_with_inlineBC() first.
+        if args.inline:
+          if profile:
+            import cProfile
+            cProfile.runctx('app.preprocPair_with_inlineBC(args.fastq_file1, args.fastq_file2, args.output_prefix, args.barcode1, args.barcode2, args.barcodesFile, args.max_diff, args.flip, args.batchsize, args.uncompressed, args.verbose, args.debug)', globals(), locals())
+            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, I1rc, I2rc, args.dedup_float, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)', globals(), locals())
+            return 255
+          else:
+            inlinefastq_file1, inlinefastq_file2, inlinefastq_file3, inlinefastq_file4 = app.preprocPair_with_inlineBC(args.fastq_file1, args.fastq_file2, args.barcode1, args.barcode2, bcFile, args.barcodediff, args.flip, output_prefix, args.batchsize, args.uncompressed, verbose, args.debug)
+            list1 = [inlinefastq_file1]
+            list2 = [inlinefastq_file2]
+            list3 = [inlinefastq_file3]
+            list4 = [inlinefastq_file4]
+            return app.start (list1, list2, list3, list4, output_prefix, bcFile, prFile, sFile, args.barcodediff, I1rc, I2rc, args.dedup_float, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)
+        #Execute normally, beginning with start()
+        else:
+          if profile:
+            import cProfile
+            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, I1rc, I2rc, args.dedup_float, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)', globals(), locals())
+            return 255
+          else:
+            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, I1rc, I2rc, args.dedup_float, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)
+
+        
+#####################################################################################
+# Split Preprocessed data by project
+def splitreadsParser(subparsers):
+    """
+    splitreadsParser parser parameters
+    """
+    #
+    # Parse options
+    #
+    splitreads_parser = subparsers.add_parser('splitreads', help='Split reads from a preprocessed four read illumina run by project id')
+    splitreads_parser.add_argument('-b', '--batchsize', help='batch size to process reads in [default: %(default)s]',
+                                   type=int, dest='batchsize', default=100000)
+    splitreads_parser.add_argument('-O', '--output_path', help='path for output files [default: %(default)s]',
+                                   action='store', type=str, dest='output_base', metavar='PREFIX', default=".")
+    splitreads_parser.add_argument('-U', '--output_unidentified', help='output unidentified reads [default: %(default)s]',
+                                   action='store_true', dest='unidentified', default=False)
+    splitreads_parser.add_argument('-u', '--uncompressed', help='leave output files uncompressed [default: %(default)s]',
+                                   action='store_true', dest='uncompressed', default=False)
+    splitreads_parser.add_argument('-v', '--silent', help='verbose output [default: %(default)s]',
+                                   action='store_true', dest='verbose', default=False)
+    splitreads_parser.add_argument('-S', '--sample_metadata', help='file with sample metadata',
+                                   action='store', type=str, dest='samples_file', metavar='FILENAME', default=None, required=True)
+    splitreads_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq two file set',
+                                   action='store', type=str, required=True, nargs='+')
+    splitreads_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq two file set',
+                                   action='store', type=str, required=False, nargs='+')
+    splitreads_parser.add_argument('--debug', help='show traceback on error',
+                                   action='store_true', dest="debug", default=False)
+    return splitreads_parser
+
+
+class splitreadsCMD:
+    """
+    validate splitreadsApp parser parameters and launch the app
+    """
+    def __init__(self):
+        pass
+
+    def execute(self, args):
+        # ----------------------- options input files -----------------------
+        sFile = args.samples_file
+        # ----------------------- options output prefix -----------------------
+        output_prefix = args.output_base
+        uncompressed = args.uncompressed
+        output_unidentified = args.unidentified
+        # ----------------------- other options ------------
+        debug = args.debug
+        verbose = not args.verbose
+        batchsize = args.batchsize
+
+        from dbcAmplicons import misc
+        misc.make_sure_path_exists(os.path.dirname(output_prefix))
+
+        from dbcAmplicons import splitreadsApp
+        app = splitreadsApp()
+
+        if profile:
+            import cProfile
+            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, output_prefix, sFile, batchsize, uncompressed, output_unidentified, verbose, debug)', globals(), locals())
+            return 255
+        else:
+            return app.start(args.fastq_file1, args.fastq_file2, output_prefix, sFile, batchsize, uncompressed, output_unidentified, verbose, debug)
+
+
+#####################################################################################
+# join reads using flash, path through application
+def joinFun(args, verbose):
+    from dbcAmplicons import parse_flash
+#    print args
+    p = Popen(args, stdout=PIPE, stderr=STDOUT, close_fds=False)
+    pf = parse_flash(p.stdout, verbose)
+    return pf
+
+
+def joinParser(subparsers):
+    """
+    joinParser parser parameters
+    """
+    #
+    # Parse options
+    #
+    join_parser = subparsers.add_parser('join', help='join reads using flash2')
+    join_parser.add_argument('-O', '--output_path', help='path for output files [default: %(default)s]',
+                             action='store', type=str, dest='output_base', metavar='PREFIX', default="joined")
+    join_parser.add_argument('-u', '--uncompressed', help='leave output files uncompressed [default: %(default)s]',
+                             action='store_true', dest='uncompressed', default=False)
+    join_parser.add_argument('-x', '--max-mismatch-density', help=' Maximum allowed ratio between the number of \
+                                      mismatched base pairs and the overlap length. \
+                                      Two reads will not be combined with a given overlap \
+                                      if that overlap results in a mismatched base density \
+                                      higher than this value.  Note: Any occurrence of an \
+                                      "N" in either read is ignored and not counted \
+                                      towards the mismatches or overlap length. [default:%(default)s]', type=float, dest='max_mixmatch_density', metavar='NUM',
+                             default=0.25)
+    join_parser.add_argument('-t', '--threads', metavar='NTHREADS', help='Set the number of worker threads. [default: %(default)s]',
+                             type=int, dest='threads', default=1)
+    join_parser.add_argument('-v', '--verbose', help='verbose output [default: %(default)s]',
+                             action='store_true', dest='verbose', default=True)
+    join_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq (or fastq.gz) two file set',
+                             action='store', type=str, required=True)
+    join_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq (or fastq.gz)  two file set',
+                             action='store', type=str, required=False)
+    return join_parser
+
+
+class joinCMD:
+    """
+    validate joinApp parser parameters and launch the app
+    """
+    def __init__(self):
+        pass
+
+    def execute(self, args):
+        # ----------------------- options output prefix -----------------------
+        output_prefix = args.output_base
+
+        from dbcAmplicons import misc
+        misc.make_sure_path_exists(os.path.dirname(output_prefix))
+
+        if args.uncompressed:
+            compress = ""
+        else:
+            compress = '-z'
+        if not os.path.isfile(args.fastq_file1):
+            sys.stderr.write("File: %s not found\n" % args.fastq_file1)
+            sys.exit()
+        fastq_file1 = os.path.realpath(args.fastq_file1)
+
+        if args.fastq_file2 is None:
+            fastq_file2 = misc.infer_read_file_name(fastq_file1, "2")
+        elif not os.path.isfile(args.fastq_file2):
+            sys.stderr.write("File: %s not found\n" % args.fastq_file2)
+            sys.exit()
+        else:
+            fastq_file2 = args.fastq_file2
+
+        flash_path = spawn.find_executable("flash2")
+        if flash_path is None:
+            flash2_download = "https://github.com/dstreett/FLASH2"
+            sys.stderr.write("flash2 not found, please download and install from: %s\n" % flash2_download)
+            sys.exit()
+
+        # System call, try adding Popen and CString to capture output
+        call_string = [flash_path, "-Q", "10", "--max-overlap", str(600), "--allow-outies", "-t", str(args.threads), "-x", str(args.max_mixmatch_density), "-o", output_prefix, compress, fastq_file1, fastq_file2]
+        if profile:
+            import cProfile
+            cProfile.runctx('joinFun(call_string, args.verbose)', globals(), locals())
+            return 255
+        else:
+            return joinFun(call_string, args.verbose)
+
+
+#####################################################################################
+# screen reads using bowtie2 and a reference file
+def screeningParser(subparsers):
+    """
+    screeningParser parser parameters
+    """
+    #
+    # Parse options
+    #
+    screening_parser = subparsers.add_parser('screen', help='screen reads using bowtie2 and a reference sequence file')
+    screening_parser.add_argument('-p', '--processors', help='number of processors to use in bowtie2, [default: %(default)s]',
+                                  type=int, dest='procs', default=1)
+    screening_parser.add_argument('-u', '--uncompressed', help='leave output files uncompressed [default: %(default)s]',
+                                  action='store_true', dest='uncompressed', default=False)
+    screening_parser.add_argument('-R', '--reference', help='reference fasta file to screen reads against',
+                                  action='store', type=str, dest='reference', metavar='reference.fasta', default=None, required=True)
+    screening_parser.add_argument('-o', '--overwrite', help='If a bowtie2 index already exits overwrite it [default: %(default)s]',
+                                  action='store_true', dest='overwrite', default=False)
+    screening_parser.add_argument('-s', '--sensitivity', help='bowtie2 sensitivity to use 0=--very-fast-local, 1=--fast-local, 2=--sensitive-local, 3=--very-sensitive-local [default: %(default)s]',
+                                  type=int, dest='sensitivity', default=2)
+    screening_parser.add_argument('-S', '--strict', help='strict mapping, with pairs require both reads to successfully map against a reference sequence to consider the pair mapped [default: %(default)s]',
+                                  action='store_true', dest='strict', default=False)
+    screening_parser.add_argument('-O', '--output_path', help='path (and prefix) for output files [default: %(default)s]',
+                                  action='store', type=str, dest='output_base', metavar='outputPrefix', default='screening')
+    screening_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq two file set',
+                                  action='store', type=str, default=None, required=False, nargs='+')
+    screening_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq two file set',
+                                  action='store', type=str, default=None, required=False, nargs='+')
+    screening_parser.add_argument('-U', metavar="single", dest='fastq_file3', help='single-end amplicon, typically from joined paired reads',
+                                  action='store', type=str, default=None, required=False, nargs='+')
+    screening_parser.add_argument('-v', '--silent', help='silences verbose output [default: %(default)s]',
+                                  action='store_true', dest='verbose', default=False)
+    screening_parser.add_argument('--debug', help='show traceback on error',
+                                  action='store_true', dest='debug', default=False)
+    return screening_parser
+
+
+class screenCMD:
+    """
+    validate classifyApp parser parameters and launch the app
+    """
+    def __init__(self):
+        pass
+
+    def execute(self, args):
+        # ----------------------- options reference file -----------------------
+        reference = args.reference
+        # ----------------------- options output prefix -----------------------
+        output_prefix = args.output_base
+        from dbcAmplicons import misc
+        misc.make_sure_path_exists(os.path.dirname(output_prefix))
+
+        # ----------------------- other options ------------
+        debug = args.debug
+        verbose = not args.verbose
+        procs = args.procs
+        strict = args.strict
+        overwrite = args.overwrite
+        uncompressed = args.uncompressed
+        sensitivity = args.sensitivity
+        if sensitivity < 0 or sensitivity > 3:
+            sys.stderr.write("Sensitivity parameter must be in the range of 0 and 3\n")
+            sys.exit()
+
+        bowtie2_path = spawn.find_executable("bowtie2")
+        if bowtie2_path is None:
+            bowtie2_download = "http://bowtie-bio.sourceforge.net/bowtie2/index.shtml"
+            sys.stderr.write("bowtie2 not found on the path, please download and install from: %s\n" % bowtie2_download)
+            sys.exit()
+
+        if (procs > cpu_count()):
+            sys.stderr.write("The number of processors specified [%s] is greater than the number available [%s], exiting application\n" % (str(procs), str(cpu_count())))
+            sys.exit()
+
+        from dbcAmplicons import screeningApp
+        app = screeningApp()
+
+        if profile:
+            import cProfile
+            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, reference, overwrite, sensitivity, output_prefix, strict, procs, uncompressed, verbose, debug)', globals(), locals())
+            return 255
+        else:
+            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, reference, overwrite, sensitivity, output_prefix, strict, procs, uncompressed, verbose, debug)
+
+
+#####################################################################################
+# Classify reads using rdp
+def classifyParser(subparsers):
+    """
+    classifyParser parser parameters
+    """
+    #
+    # Parse options
+    #
+    classify_parser = subparsers.add_parser('classify', help='classify reads using RDP generating a fixrank formated file')
+    classify_parser.add_argument('-b', '--batchsize', help='batch size to process reads in [default: %(default)s]',
+                                 type=int, dest='batchsize', default=100000)
+    classify_parser.add_argument('-q', '--minQ', help="trim 3' end of sequences to minQ (paired-end reads only) [default: %(default)s]",
+                                 type=int, dest='minQ', default=0),
+    classify_parser.add_argument('-l', '--minL', help='if minQ is not None, only keep reads that are at least minL length (paired-end reads only) [default: %(default)s]',
+                                 type=int, dest='minL', default=0),
+    classify_parser.add_argument('-p', '--processors', help='number of processors to use, [default: %(default)s]',
+                                 type=int, dest='procs', default=1)
+    classify_parser.add_argument('--rdpPath', metavar='PATH', dest='rdpPath', help='path to the RDP classifier',
+                                 action='store', type=str, default=None, required=False)
+    classify_parser.add_argument('-g', '--gene', metavar='<arg>', dest='gene', help='16srrna, fungallsu, fungalits_warcup, or fungalits_unite [default: %(default)s]',
+                                 action='store', type=str, default='16srrna', required=False)
+    classify_parser.add_argument('-t', '--train', help='RDP property file containing the mapping of the training files for a custom RDP training set, if not using the default.',
+                                 action='store', dest="train", default=None)
+    classify_parser.add_argument('-O', '--output_path', help='path for output files [default: %(default)s]',
+                                 action='store', type=str, dest='output_base', metavar='outputPrefix', default='classify')
+    classify_parser.add_argument('-1', metavar="read1", dest='fastq_file1', help='read1 of an amplicon fastq two file set',
+                                 action='store', type=str, default=None, required=False, nargs='+')
+    classify_parser.add_argument('-2', metavar="read2", dest='fastq_file2', help='read2 of an amplicon fastq two file set',
+                                 action='store', type=str, default=None, required=False, nargs='+')
+    classify_parser.add_argument('-U', metavar="single", dest='fastq_file3', help='single-end amplicon, typically from joined paired reads',
+                                 action='store', type=str, default=None, required=False, nargs='+')
+    classify_parser.add_argument('--test', help='exit after the first batch in order to test the inputs',
+                                 action='store_true', dest="test", default=False)
+    classify_parser.add_argument('-v', '--silent', help='silences verbose output [default: %(default)s]',
+                                 action='store_true', dest='verbose', default=False)
+    classify_parser.add_argument('--debug', help='show traceback on error',
+                                 action='store_true', dest="debug", default=False)
+    return classify_parser
+
+
+class classifyCMD:
+    """
+    validate classifyApp parser parameters and launch the app
+    """
+    def __init__(self):
+        pass
+
+    def execute(self, args):
+        # ----------------------- options output prefix -----------------------
+        output_prefix = args.output_base
+        from dbcAmplicons import misc
+        misc.make_sure_path_exists(os.path.dirname(output_prefix))
+
+        # ----------------------- other options ------------
+        debug = args.debug
+        verbose = not args.verbose
+        batchsize = args.batchsize
+        procs = args.procs
+        rdpPath = args.rdpPath
+
+        if rdpPath is None:
+            try:
+                rdpPath = os.path.join(os.environ.get('RDP_PATH'), "classifier.jar")
+            except:
+                rdp_download = "https://github.com/rdpstaff/RDPTools"
+                sys.stderr.write("RDP classifier.jar not found, please download and install from: %s\n" % rdp_download)
+                sys.stderr.write("Then set an environment variable RDP_PATH to the RDPTools folder\n")
+                sys.stderr.write("  classifier.jar should be in the folder RDP_PATH\n")
+                sys.exit()
+
+
+        if rdpPath is None or os.path.isfile(rdpPath) is not True:
+            rdp_download = "https://github.com/rdpstaff/RDPTools"
+            sys.stderr.write("RDP classifier.jar not found, please download and install from: %s\n" % rdp_download)
+            sys.stderr.write("Then set an environment variable RDP_PATH to the RDPTools folder\n")
+            sys.stderr.write("  classifier.jar should be in the folder RDP_PATH\n")
+            sys.exit()
+
+        rdp_call = ['java', '-Xmx2048M', '-Xms256M', '-XX:+UseParallelGC', '-XX:ParallelGCThreads=2', '-jar', rdpPath]
+        if verbose:
+            sys.stderr.write("Testing the RDP Classifier\n")
+        try:
+            with open(os.devnull, 'w') as devnull:
+                check_call(rdp_call, stderr=devnull, stdout=devnull)
+        except CalledProcessError:
+            rdp_download = "https://github.com/rdpstaff/RDPTools"
+            sys.stderr.write("RDP classifier.jar not found, please download and install from: %s\n" % rdp_download)
+            sys.exit()
+
+        if (procs > cpu_count()):
+            sys.stderr.write("The number of processors specified [%s] is greater than the number available [%s], exiting application\n" % (str(procs), str(cpu_count())))
+            sys.exit()
+        if (args.train is None and args.gene != '16srrna' and args.gene != 'fungallsu' and args.gene != "fungalits_warcup" and args.gene != "fungalits_unite"):
+            sys.stderr.write("parameter -g (--gene) must be one of 16srrna or fungallsu or fungalits_warcup or fungalits_unite\n")
+            sys.exit()
+
+        from dbcAmplicons import classifyApp
+        app = classifyApp()
+
+        if profile:
+            import cProfile
+            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, rdpPath, args.gene, args.train, batchsize, args.minQ, args.minL, procs, args.test, verbose, debug)', globals(), locals())
+            return 255
+        else:
+            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, output_prefix, rdpPath, args.gene, args.train, batchsize, args.minQ, args.minL, procs, args.test, verbose, debug)
+
+
+def abundanceParser(subparsers):
+    """
+    Compute an abundance table from classified reads in fixrank format
+    abundanceParser parser parameters
+    """
+    #
+    # Parse options
+    #
+    abundance_parser = subparsers.add_parser('abundance', help='Generate an abundance table from a fixrank formated file')
+    abundance_parser.add_argument('-r', '--rank', help='taxonomic rank to build table from, allowable values are (domain, phylum, class, order, family, genus, and species{if performed}, [default: %(default)s]',
+                                  action='store', type=str, dest='rank', metavar='<arg>', default='genus', required=False, choices=['domain', 'phylum', 'class', 'order', 'family', 'genus', 'species'])
+    abundance_parser.add_argument('-t', '--threshold', help='Threshold bootstrap value to use for assignment, first taxon level greater than threshold [default: %(default)s]',
+                                  type=float, dest='threshold', metavar="VALUE", default=0.5, required=False)
+    abundance_parser.add_argument('-m', '--minsize', help='Min size of amplicon to consider [default: %(default)s]',
+                                  type=int, dest='minsize', metavar="VALUE", default=None, required=False)
+    abundance_parser.add_argument('-M', '--maxsize', help='Max size of amplicon to consider [default: %(default)s]',
+                                  type=int, dest='maxsize', metavar="VALUE", default=None, required=False)
+    abundance_parser.add_argument('-S', '--sample_metadata', help='file with sample metadata [default: %(default)s]',
+                                  action='store', type=str, dest='samples_file', metavar='FILE', default=None, required=False)
+    abundance_parser.add_argument('-O', '--output_path', help='path for output files [default: %(default)s]',
+                                  action='store', type=str, dest='output_base', metavar='FILE_PREFIX', default='table')
+    abundance_parser.add_argument('-F', metavar="FILE", dest='fixrank_file', help='fixrank formated classification file generated by classify',
+                                  action='store', type=str, default=None, required=True, nargs='+')
+    abundance_parser.add_argument('-b', '--biom', help='output biom formatted file [default: %(default)s]',
+                                  action='store_true', dest='biom', default=False)
+    abundance_parser.add_argument('-H', '--hdf5', help='output biom formatted file in hdf5 [default: %(default)s]',
+                                  action='store_true', dest='hdf5', default=False)
+    abundance_parser.add_argument('-v', '--silent', help='verbose output [default: %(default)s]',
+                                  action='store_true', dest='verbose', default=False)
+    abundance_parser.add_argument('--debug', help='show traceback on error',
+                                  action='store_true', dest="debug", default=False)
+    return abundance_parser
+
+
+class abundanceCMD:
+    """
+    validate abundanceApp parser parameters and launch the app
+    """
+    def __init__(self):
+        pass
+
+    def execute(self, args):
+        # ----------------------- options input files -----------------------
+        sFile = args.samples_file
+        # ----------------------- options output prefix -----------------------
+        output_prefix = args.output_base
+        from dbcAmplicons import misc
+        misc.make_sure_path_exists(os.path.dirname(output_prefix))
+
+        # ----------------------- other options ------------
+        debug = args.debug
+        verbose = not args.verbose
+
+        from dbcAmplicons import abundanceApp
+        app = abundanceApp()
+
+        if profile:
+            import cProfile
+            cProfile.runctx('app.start(args.fixrank_file, sFile, output_prefix, args.rank, args.threshold, args.minsize, args.maxsize, args.biom, args.hdf5, verbose, debug)', globals(), locals())
+            return 255
+        else:
+            return app.start(args.fixrank_file, sFile, output_prefix, args.rank, args.threshold, args.minsize, args.maxsize, args.biom, args.hdf5, verbose, debug)
+
+#####################################################################################
+# Extract reads corresponding to specific taxa
+def extractParser(subparsers):
+  extract_parser = subparsers.add_parser('extract', help='extract reads corresponding to soecific taxa')
+  extract_parser.add_argument('-s', '--taxon_string', help='taxon string, e.g. Fusarium_solani_3', dest='taxon', type=str)
+  extract_parser.add_argument('-F', '--fixrank_file', help='fixrank file ', dest='fixrank', type=str)
+  extract_parser.add_argument('-q', '--fastq_file', help='fastq file with all sequences to search', dest='fastq', type=str)
+  extract_parser.add_argument('-t', '--threshold', help='Threshold bootstrap scrore', dest='threshold', type=str)
+  extract_parser.add_argument('-o', '--output_path', help='Output prefix', dest='output', type=str)
+  return extract_parser
+
+class extractCMD:
+  
+  def __init__(self):
+    pass
+
+  def execute(self, args):
+    from dbcAmplicons import extractApp
+    app = extractApp()
+
+    if profile:
+      import cProfile
+      cProfile.runctx('app.start(args.taxon, args.fixrank, args.fastq, args.threshold, args.output)', globals(), locals())
+      return 255
+    else:
+      print(args.taxon, args.fixrank, args.fastq, args.threshold, args.output)
+      return app.start(args.taxon, args.fixrank, args.fastq, args.threshold, args.output)
+
+
+#####################################################################################
+#  Master parser arguments
+def parseArgs():
+    """
+    generate main parser
+    """
+    parser = argparse.ArgumentParser(
+        description='dbcAmplicons, a python package for preprocessing of massively multiplexed, dual barcoded Illumina Amplicons',
+        epilog='For questions or comments, please contact Matt Settles <settles@ucdavis.edu>\n%(prog)s version: ' + version_num, add_help=True)
+    parser.add_argument('--version', action='version', version="%(prog)s version: " + version_num)
+    subparsers = parser.add_subparsers(help='commands', dest='command')
+
+    validateParser(subparsers)
+    preprocessParser(subparsers)
+    # splitreadsParser(subparsers)
+    joinParser(subparsers)
+    screeningParser(subparsers)
+    classifyParser(subparsers)
+    abundanceParser(subparsers)
+    extractParser(subparsers)
+
+    args = parser.parse_args()
+
+    return args
+
+
+def main():
+    """
+    main function
+    """
+    lib_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../')
+    if lib_path not in sys.path:
+        sys.path.insert(0, lib_path)
+
+    validate = validateCMD()
+    preprocess = preprocessCMD()
+    # splitreads = splitreadsCMD()
+    join = joinCMD()
+    screen = screenCMD()
+    classify = classifyCMD()
+    abundance = abundanceCMD()
+    extract = extractCMD()
+
+    commands = {'validate': validate, 'preprocess': preprocess, 'join': join, 'screen': screen, 'classify': classify, 'abundance': abundance, 'extract': extract}
+
+    args = parseArgs()
+
+    commands[args.command].execute(args)
+
+if __name__ == '__main__':
+    main()
