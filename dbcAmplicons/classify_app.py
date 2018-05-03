@@ -102,10 +102,12 @@ class classifyApp:
                     run_out = IlluminaFastaOutput(output_prefix + "." + str(batch))
                     # process individual reads
                     for read in reads:
-                        if minQ != None:
+                        if minQ != 0 or minL != 0:
                             read.trimRead(minQ, minL)
-                        if read.goodRead == True:
-                            run_out.addRead(read.getFasta())
+                            if read.goodRead == True:
+                                run_out.addRead(read.getFasta())
+                        else:
+                            run_out.addRead(read.getJoinedFasta())
                     # Write out reads
                     rcount = run_out.count()
                     if rcount > batchsize:
@@ -125,9 +127,11 @@ class classifyApp:
                     run_out = IlluminaFastaOutput(output_prefix + "." + str(batch))
                     # process individual reads
                     for read in reads:
-                        if minQ != None:
+                        if minQ != 0 or minL != 0:
                             read.trimRead(minQ, minL)
-                        if read.goodRead == True:
+                            if read.goodRead == True:
+                                run_out.addRead(read.getJoinedFasta())
+                        else:
                             run_out.addRead(read.getJoinedFasta())
                     # Write out reads
                     run_out.writeReads()
