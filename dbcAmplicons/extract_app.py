@@ -6,15 +6,6 @@ import sys, os
 #sys.argv[4] = minimum bootstrap score						[4] 0.7
 #sys.argv[5] = output prefix 								[5] outprefix
 
-# class extractApp:
-# 	def __init__(self):
-#         self.verbose = False
-
-#     def start():
-        # """
-        # Description
-        # """
-
 class extractApp():
 
 	def __init__(self):
