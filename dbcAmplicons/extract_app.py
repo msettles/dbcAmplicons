@@ -1,4 +1,5 @@
 import sys, os
+import time
 
 class extractApp():
 
@@ -8,13 +9,15 @@ class extractApp():
 	def start(self, taxon, fixrank, fastq, threshold, output):
 		#Format inputs:
 		tax_target = str(taxon)
-		print("taxon target is: "+tax_target)
 		fixrank_file = open(fixrank, "r")
 		vsequences = open(fastq, "r")
 		minBs = float(threshold)
 		out_prefix = output
+		
+		print("taxon target is: "+tax_target)
 
 		#generate list of fasta headers to be extracted:
+		starttime = time.time()
 		headers = []
 		sampleIDs = []
 		with fixrank_file as f:
@@ -25,6 +28,7 @@ class extractApp():
 		 				sampleIDs.append(line.split('|')[1].split(':')[0])
 		 			else:
 		 				continue
+		sys.stderr.write("Finished extracting target headers in "+ str(round((time.time()-starttime)/60, 10))+ " minutes\n")
 
 		#Extract selected reads from fasta
 		if os.path.isfile(out_prefix+"."+tax_target+".fasta"):
@@ -35,6 +39,7 @@ class extractApp():
 			vReads = file.read().replace('\n','')
 		vReadList = vReads.split('@M')
 
+		starttime = time.time()
 		n = 0
 		with vOutput as myfile:
 			for header in headers:
@@ -42,3 +47,4 @@ class extractApp():
 					if ('M'+read[:len(headers[n])-1]) == headers[n]:
 						myfile.write('>' + sampleIDs[n] + '~' + read.split()[0] + '\n' + read.split()[3].split('|')[3].split('+')[0] + '\n')
 				n +=1
+		sys.stderr.write("Finished extracting matched reads in "+ str(round((time.time()-starttime)/60, 10))+ " minutes\n")
