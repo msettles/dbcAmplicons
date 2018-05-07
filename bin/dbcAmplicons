@@ -655,7 +655,6 @@ class extractCMD:
       cProfile.runctx('app.start(args.taxon, args.fixrank, args.fastq, args.threshold, args.output)', globals(), locals())
       return 255
     else:
-      print(args.taxon, args.fixrank, args.fastq, args.threshold, args.output)
       return app.start(args.taxon, args.fixrank, args.fastq, args.threshold, args.output)
 
 
