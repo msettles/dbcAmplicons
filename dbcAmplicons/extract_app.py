@@ -1,5 +1,6 @@
-import sys, os
-import time
+#extract_app
+
+import sys, os, time
 
 class extractApp():
 
@@ -8,43 +9,41 @@ class extractApp():
 
 	def start(self, taxon, fixrank, fastq, threshold, output):
 		#Format inputs:
-		tax_target = str(taxon)
+		print("taxon target is: " + taxon)
 		fixrank_file = open(fixrank, "r")
 		vsequences = open(fastq, "r")
-		minBs = float(threshold)
-		out_prefix = output
-		
-		print("taxon target is: "+tax_target)
 
-		#generate list of fasta headers to be extracted:
+		#ID all fastq reads
 		starttime = time.time()
-		headers = []
-		sampleIDs = []
-		with fixrank_file as f:
-			for line in f.readlines():
-		 		if tax_target in line:
-		 			if line.split("\t",26)[25] >= minBs:
-		 				headers.append(line.split("|")[0])
-		 				sampleIDs.append(line.split('|')[1].split(':')[0])
-		 			else:
-		 				continue
-		sys.stderr.write("Finished extracting target headers in "+ str(round((time.time()-starttime)/60, 10))+ " minutes\n")
-
-		#Extract selected reads from fasta
-		if os.path.isfile(out_prefix+"."+tax_target+".fasta"):
-			open(out_prefix+"."+tax_target+".fasta", "w").close()
-		vOutput = open(out_prefix+"."+tax_target+".fasta", "a")
-
+		vReadList = []
 		with vsequences as file:
-			vReads = file.read().replace('\n','')
-		vReadList = vReads.split('@M')
+			for read in file.read().split('@M'):
+				if read!='':
+					vReadList.append('M'+read)
+		sys.stderr.write("Finished fastq ID in "+ str(round((time.time()-starttime)/60, 10))+ " minutes\n")
 
+		#Test for output file presence
+		if os.path.isfile(output+"."+taxon+".fasta"):
+			open(output+"."+taxon+".fasta", "w").close()
+		vOutput = open(output+"."+taxon+".fasta", "a")
+
+		#Filter classification results based on taxa and quality score
 		starttime = time.time()
-		n = 0
+		vClassList = []
+		with fixrank_file as file:
+			for line in file.read().split('\n'):
+				if line.split()[22] == taxon:
+					if float(line.split("\t",26)[25]) >= float(threshold):
+						vClassList.append(line)
+		sys.stderr.write("Finished filtering class file in "+ str(round((time.time()-starttime)/60, 10))+ " minutes\n")
+						
+		#Extract sequence data for classified reads
+		starttime = time.time()
 		with vOutput as myfile:
-			for header in headers:
-				for read in vReadList:
-					if ('M'+read[:len(headers[n])-1]) == headers[n]:
-						myfile.write('>' + sampleIDs[n] + '~' + read.split()[0] + '\n' + read.split()[3].split('|')[3].split('+')[0] + '\n')
-				n +=1
-		sys.stderr.write("Finished extracting matched reads in "+ str(round((time.time()-starttime)/60, 10))+ " minutes\n")
+			for read in vReadList:
+				for classification in vClassList:
+					if classification.split('|')[0] == read.split()[0]:
+						myfile.write('>' + classification.split('|')[1].split(':')[0] + '~' + read.split('\n')[0].replace(classification.split('|')[1].split(':')[0],'') + '\n' + read.split('\n')[1] + '\n')
+						vReadList.remove(read)
+						break
+		sys.stderr.write("Finished extracting reads in "+ str(round((time.time()-starttime)/60, 10))+ " minutes\n")
