@@ -471,7 +471,7 @@ def classifyParser(subparsers):
     classify_parser = subparsers.add_parser('classify', help='classify reads using RDP generating a fixrank formated file')
     classify_parser.add_argument('-b', '--batchsize', help='batch size to process reads in [default: %(default)s]',
                                  type=int, dest='batchsize', default=100000)
-    classify_parser.add_argument('-q', '--minQ', help="trim 3' end of sequences to minQ [default: %(default)s]",
+    classify_parser.add_argument('-q', '--minQ', help="trim 3' end of sequences to minQ (paired-end reads only) [default: %(default)s]",
                                  type=int, dest='minQ', default=0),
     classify_parser.add_argument('-l', '--minL', help='if minQ is not None, only keep reads that are at least minL length (paired-end reads only) [default: %(default)s]',
                                  type=int, dest='minL', default=0),
@@ -630,6 +630,33 @@ class abundanceCMD:
         else:
             return app.start(args.fixrank_file, sFile, output_prefix, args.rank, args.threshold, args.minsize, args.maxsize, args.biom, args.hdf5, verbose, debug)
 
+#####################################################################################
+# Extract reads corresponding to specific taxa
+def extractParser(subparsers):
+  extract_parser = subparsers.add_parser('extract', help='extract reads corresponding to soecific taxa')
+  extract_parser.add_argument('-s', '--taxon_string', help='taxon string, e.g. Fusarium_solani_3', dest='taxon', type=str)
+  extract_parser.add_argument('-F', '--fixrank_file', help='fixrank file ', dest='fixrank', type=str)
+  extract_parser.add_argument('-q', '--fastq_file', help='fastq file with all sequences to search', dest='fastq', type=str)
+  extract_parser.add_argument('-t', '--threshold', help='Threshold bootstrap scrore', dest='threshold', type=str)
+  extract_parser.add_argument('-o', '--output_path', help='Output prefix', dest='output', type=str)
+  return extract_parser
+
+class extractCMD:
+  
+  def __init__(self):
+    pass
+
+  def execute(self, args):
+    from dbcAmplicons import extractApp
+    app = extractApp()
+
+    if profile:
+      import cProfile
+      cProfile.runctx('app.start(args.taxon, args.fixrank, args.fastq, args.threshold, args.output)', globals(), locals())
+      return 255
+    else:
+      return app.start(args.taxon, args.fixrank, args.fastq, args.threshold, args.output)
+
 
 #####################################################################################
 #  Master parser arguments
@@ -650,6 +677,7 @@ def parseArgs():
     screeningParser(subparsers)
     classifyParser(subparsers)
     abundanceParser(subparsers)
+    extractParser(subparsers)
 
     args = parser.parse_args()
 
@@ -671,8 +699,9 @@ def main():
     screen = screenCMD()
     classify = classifyCMD()
     abundance = abundanceCMD()
+    extract = extractCMD()
 
-    commands = {'validate': validate, 'preprocess': preprocess, 'join': join, 'screen': screen, 'classify': classify, 'abundance': abundance}
+    commands = {'validate': validate, 'preprocess': preprocess, 'join': join, 'screen': screen, 'classify': classify, 'abundance': abundance, 'extract': extract}
 
     args = parseArgs()
 
