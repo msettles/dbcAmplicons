@@ -21,13 +21,14 @@ from multiprocessing import cpu_count
 
 from distutils import spawn
 
+sys.path.insert(0, '/Users/pmh/Desktop/SIK_bioinformatics/dbcAmplicons/build/lib.macosx-10.6-intel-2.7')
+
 try:
     from dbcAmplicons import version_num
 except ImportError:
     version_num = "error importing version number"
 
 profile = False
-
 
 #####################################################################################
 # Validate the sample, barcode and primer files
@@ -133,6 +134,18 @@ def preprocessParser(subparsers):
                                    action='store_true', dest="kprimer", default=False)
     preprocess_parser.add_argument('--debug', help='show traceback on error',
                                    action='store_true', dest="debug", default=False)
+    
+    #SIK added from preprocPair_with_inlineBC
+    preprocess_parser.add_argument('-i', '--inline', help='indicates barcodes are inline, not separate indices. Only R1 and barcode file are required. If this option is used, --I1 asis must be specified.',
+                                   action='store', dest='inline', default=False)
+    preprocess_parser.add_argument('-fl', '--flip', help='barcode can be on R1 or R2 (reverse) [default: %(default)s]',
+                                   action='store', dest='flip', default=False)
+    preprocess_parser.add_argument('-b1', '--barcode1', help='Barcode 1 length [default: %(default)s], will become Read 2',
+                                   type=int, dest='barcode1', default=8)
+    preprocess_parser.add_argument('-b2', '--barcode2', help='Barcode 2 length [default: %(default)s], will become Read 3',
+                                   type=int, dest='barcode2', default=0)
+    #
+
     return preprocess_parser
 
 
@@ -184,14 +197,31 @@ class preprocessCMD:
         from dbcAmplicons import preprocessApp
         app = preprocessApp()
 
-        if profile:
+
+        #If --inline is true, run preprocPair_with_inlineBC() first.
+        if args.inline:
+          if profile:
             import cProfile
+            cProfile.runctx('app.preprocPair_with_inlineBC(args.fastq_file1, args.fastq_file2, args.output_prefix, args.barcode1, args.barcode2, args.barcodesFile, args.max_diff, args.flip, args.batchsize, args.uncompressed, args.verbose, args.debug)', globals(), locals())
             cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, I1rc, I2rc, args.dedup_float, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)', globals(), locals())
             return 255
+          else:
+            inlinefastq_file1, inlinefastq_file2, inlinefastq_file3, inlinefastq_file4 = app.preprocPair_with_inlineBC(args.fastq_file1, args.fastq_file2, args.barcode1, args.barcode2, bcFile, args.barcodediff, args.flip, output_prefix, args.batchsize, args.uncompressed, verbose, args.debug)
+            list1 = [inlinefastq_file1]
+            list2 = [inlinefastq_file2]
+            list3 = [inlinefastq_file3]
+            list4 = [inlinefastq_file4]
+            return app.start (list1, list2, list3, list4, output_prefix, bcFile, prFile, sFile, args.barcodediff, I1rc, I2rc, args.dedup_float, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)
+        #Execute normally, beginning with start()
         else:
+          if profile:
+            import cProfile
+            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, I1rc, I2rc, args.dedup_float, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)', globals(), locals())
+            return 255
+          else:
             return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, I1rc, I2rc, args.dedup_float, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)
 
-
+        
 #####################################################################################
 # Split Preprocessed data by project
 def splitreadsParser(subparsers):
