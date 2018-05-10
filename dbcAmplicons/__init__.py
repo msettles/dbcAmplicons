@@ -29,5 +29,6 @@ from splitreads_app import splitreadsApp
 from screening_app import screeningApp
 from classify_app import classifyApp
 from abundance_app import abundanceApp
+from extract_app import extractApp
 
 from ._versioninfo import version_num, __version__
