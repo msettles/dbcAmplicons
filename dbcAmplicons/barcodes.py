@@ -60,6 +60,8 @@ class barcodeTable:
                     # I1 barcode shows up as the reverse complement in the sequencing run
                     if i1_rc:
                         I1BC = misc.reverseComplement(I1BC)
+                else:
+                    print('ERROR: [Barcodes] File has an incorect number of columns')
             except ValueError as e:
                 sys.stderr.write('ERROR:[Barcodes] Error reading line %s of barcode file: %s\n' % (str(line), str(e)))
                 raise
