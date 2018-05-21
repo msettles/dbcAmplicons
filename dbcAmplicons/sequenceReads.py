@@ -347,7 +347,7 @@ class TwoSequenceReadSet:
             sys.stderr.write('ERROR:[TwoSequenceReadSet] Unknown error occured generating four read set\n')
             raise
 
-    def getFourReadsInline(self, bcTable, bc1_length=8, bc2_length=0, max_diff=1, flip=False):
+    def getFourReadsInline(self, bcTable, bc1_length=8, bc2_length=0, max_diff=1, dedup_float=False):
         """
         Create four line string ('\n' separator included) for the read set, returning a length 4 vector (one for each read)
         """
@@ -359,8 +359,8 @@ class TwoSequenceReadSet:
         # Barcode One Matching
         if bc1_length > 0:
             bc1, bc1Mismatch = barcodeDist(bcTable.getI1(), self.read_1[:bc1_length], max_diff)
-            if flip:
-                bc1f, bc1fMismatch = barcodeDist(bcTable.getI2(), self.read_2[:bc1_length], max_diff)
+            if dedup_float:
+                bc1f, bc1fMismatch = barcodeDist(bcTable.getI1(), self.read_2[:bc1_length], max_diff)
                 if bc1fMismatch < bc1Mismatch:  # flip produces a better match reverse the reads
                     vflip = True
                     bc1 = bc1f
@@ -379,7 +379,7 @@ class TwoSequenceReadSet:
         # Barcode Two Matching (when no barcode 1 present)
         elif bc2_length > 0:
             bc2, bc2Mismatch = barcodeDist(bcTable.getI2(), self.read_2[:bc2_length], max_diff)
-            if flip:
+            if dedup_float:
                 bc2f, bc2fMismatch = barcodeDist(bcTable.getI2(), self.read_1[:bc2_length], max_diff)
                 if bc2fMismatch < bc2Mismatch:  # flip produces a better match rever the reads
                     vflip = True
@@ -505,15 +505,3 @@ class OneSequenceReadSet:
                 self.goodRead = False
             else:
                 self.goodRead = True
-
-    # def trimRead(self, minQ, minL):
-    #     """
-    #     Trim the read by a minQ score
-    #     """
-    #     if (trim_loaded):
-    #         trim_points = trim.trim(self.qual_1, self.qual_1, minQ)
-    #         self.trim_left = trim_points["left_trim"]
-    #         if (self.trim_left < minL):
-    #             self.goodRead = False
-    #         else:
-    #             self.goodRead = True
