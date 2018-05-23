@@ -651,8 +651,7 @@ def parseArgs():
     screeningParser(subparsers)
     classifyParser(subparsers)
     abundanceParser(subparsers)
-    extractParser(subparsers)
-
+    
     args = parser.parse_args()
 
     return args
