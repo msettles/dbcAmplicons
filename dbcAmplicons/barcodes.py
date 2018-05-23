@@ -42,7 +42,6 @@ class barcodeTable:
             line += 1
             if row[0] == "#" or row[0] == "\n":  # comment or blank line
                 continue
-
             row = row.rstrip()
             try:
                 #Test if file has 2 barcodes
