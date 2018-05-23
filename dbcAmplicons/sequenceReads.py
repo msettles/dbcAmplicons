@@ -295,6 +295,8 @@ class TwoSequenceReadSet:
             self.trim_right = trim_points["right_trim"]
             if (self.trim_left < minL or self.trim_right < minL):
                 self.goodRead = False
+            else:
+                self.goodRead = True
 
     def getFastqSRA(self):
         """
@@ -491,3 +493,15 @@ class OneSequenceReadSet:
             read1_name = "%s|%s:%i" % (name, self.sample, len(self.read_1))
         r1 = '\n'.join([read1_name, self.read_1])
         return [r1]
+
+    def trimRead(self, minQ, minL):
+        """
+        Trim the read by a minQ score
+        """
+        if (trim_loaded):
+            trim_points = trim.trim(self.qual_1, self.qual_1, minQ)
+            self.trim_left = trim_points["left_trim"]
+            if (self.trim_left < minL):
+                self.goodRead = False
+            else:
+                self.goodRead = True
