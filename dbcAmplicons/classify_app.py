@@ -70,6 +70,7 @@ class classifyApp:
         Start classifying double barcoded Illumina sequencing run
         """
         results = {}
+
         self.verbose = verbose
         try:
             if (train is None and gene != '16srrna' and gene != 'fungallsu' and gene != "fungalits_warcup" and gene != "fungalits_unite"):
@@ -89,9 +90,12 @@ class classifyApp:
             if self.runPairs is None and self.runSingle is None:
                 sys.stderr.write("ERROR:[classify] input reads not specified, or incorrect pairs\n")
                 raise Exception
+
             lasttime = time.time()
             batch = 0
             pool = Pool(procs, maxtasksperchild=1)
+
+            #For OneReadIllumina:
             if (self.runSingle is not None):
                 while 1:
                     # get next batch of reads
@@ -102,7 +106,12 @@ class classifyApp:
                     run_out = IlluminaFastaOutput(output_prefix + "." + str(batch))
                     # process individual reads
                     for read in reads:
-                        run_out.addRead(read.getFasta())
+                        if minQ != 0 or minL != 0:
+                            read.trimRead(minQ, minL)
+                            if read.goodRead == True:
+                                run_out.addRead(read.getFasta())
+                        else:
+                            run_out.addRead(read.getJoinedFasta())
                     # Write out reads
                     rcount = run_out.count()
                     if rcount > batchsize:
@@ -112,6 +121,8 @@ class classifyApp:
                     results[rdp_out] = pool.apply_async(rdpCall, (run_out.output_prefix, rdp_out, gene, train, rdpPath, self.verbose))
                     if test:
                         break
+
+            #For TwoReadIllumina:
             if (self.runPairs is not None):
                 while 1:
                     # get next batch of reads
@@ -122,10 +133,12 @@ class classifyApp:
                     run_out = IlluminaFastaOutput(output_prefix + "." + str(batch))
                     # process individual reads
                     for read in reads:
-                        # if minQ != None: # TODO: add trim read to TwoSequenceReadSet
-                            # read.trimRead(minQ, minL)
-                        # if read.goodRead == True:
-                        run_out.addRead(read.getJoinedFasta())
+                        if minQ != 0 or minL != 0:
+                            read.trimRead(minQ, minL)
+                            if read.goodRead == True:
+                                run_out.addRead(read.getJoinedFasta())
+                        else:
+                            run_out.addRead(read.getJoinedFasta())
                     # Write out reads
                     run_out.writeReads()
                     rdp_out = output_prefix + "." + str(batch) + ".fixrank"
@@ -141,11 +154,13 @@ class classifyApp:
                     allfinished = True
             if self.verbose:
                 sys.stderr.write("Combining temporary files\n")
+
             with open(output_prefix + ".fixrank", "wb") as outfile:
                 for f in results.keys():
                     with open(f, "rb") as infile:
                         outfile.write(infile.read())
                     os.remove(f)
+                    
             if self.verbose:
                 sys.stdout.write("%s reads processed in %s minutes\n" % (batch, round((time.time() - lasttime) / (60), 2)))
             self.clean(results)

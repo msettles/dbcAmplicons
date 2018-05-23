@@ -180,7 +180,7 @@ class FourSequenceReadSet:
             self.trim_left = trim_points["left_trim"]
             self.trim_right = trim_points["right_trim"]
             if ((self.trim_left - self.primer[4]) < minL or (self.trim_right - self.primer[8]) < minL):
-                self.goodRead = False
+                self.goodRead = False ## does there need to be an else statement to set self.goodRead = True when passing minQ and minL?
         if self.goodRead:
             return 1
         else:
@@ -295,6 +295,8 @@ class TwoSequenceReadSet:
             self.trim_right = trim_points["right_trim"]
             if (self.trim_left < minL or self.trim_right < minL):
                 self.goodRead = False
+            else:
+                self.goodRead = True
 
     def getFastqSRA(self):
         """
@@ -345,7 +347,7 @@ class TwoSequenceReadSet:
             sys.stderr.write('ERROR:[TwoSequenceReadSet] Unknown error occured generating four read set\n')
             raise
 
-    def getFourReadsInline(self, bcTable, bc1_length=8, bc2_length=0, max_diff=1, flip=False):
+    def getFourReadsInline(self, bcTable, bc1_length=8, bc2_length=0, max_diff=1, dedup_float=False):
         """
         Create four line string ('\n' separator included) for the read set, returning a length 4 vector (one for each read)
         """
@@ -357,8 +359,8 @@ class TwoSequenceReadSet:
         # Barcode One Matching
         if bc1_length > 0:
             bc1, bc1Mismatch = barcodeDist(bcTable.getI1(), self.read_1[:bc1_length], max_diff)
-            if flip:
-                bc1f, bc1fMismatch = barcodeDist(bcTable.getI2(), self.read_2[:bc1_length], max_diff)
+            if dedup_float:
+                bc1f, bc1fMismatch = barcodeDist(bcTable.getI1(), self.read_2[:bc1_length], max_diff)
                 if bc1fMismatch < bc1Mismatch:  # flip produces a better match reverse the reads
                     vflip = True
                     bc1 = bc1f
@@ -377,7 +379,7 @@ class TwoSequenceReadSet:
         # Barcode Two Matching (when no barcode 1 present)
         elif bc2_length > 0:
             bc2, bc2Mismatch = barcodeDist(bcTable.getI2(), self.read_2[:bc2_length], max_diff)
-            if flip:
+            if dedup_float:
                 bc2f, bc2fMismatch = barcodeDist(bcTable.getI2(), self.read_1[:bc2_length], max_diff)
                 if bc2fMismatch < bc2Mismatch:  # flip produces a better match rever the reads
                     vflip = True
@@ -491,3 +493,15 @@ class OneSequenceReadSet:
             read1_name = "%s|%s:%i" % (name, self.sample, len(self.read_1))
         r1 = '\n'.join([read1_name, self.read_1])
         return [r1]
+
+    def trimRead(self, minQ, minL):
+        """
+        Trim the read by a minQ score
+        """
+        if (trim_loaded):
+            trim_points = trim.trim(self.qual_1, self.qual_1, minQ)
+            self.trim_left = trim_points["left_trim"]
+            if (self.trim_left < minL):
+                self.goodRead = False
+            else:
+                self.goodRead = True
