@@ -180,7 +180,7 @@ class FourSequenceReadSet:
             self.trim_left = trim_points["left_trim"]
             self.trim_right = trim_points["right_trim"]
             if ((self.trim_left - self.primer[4]) < minL or (self.trim_right - self.primer[8]) < minL):
-                self.goodRead = False ## does there need to be an else statement to set self.goodRead = True when passing minQ and minL?
+                self.goodRead = False
         if self.goodRead:
             return 1
         else:
