@@ -21,8 +21,6 @@ from multiprocessing import cpu_count
 
 from distutils import spawn
 
-sys.path.insert(0, '/Users/pmh/Desktop/SIK_bioinformatics/dbcAmplicons/build/lib.macosx-10.6-intel-2.7')
-
 try:
     from dbcAmplicons import version_num
 except ImportError:
