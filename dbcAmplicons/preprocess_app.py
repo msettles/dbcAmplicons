@@ -161,8 +161,6 @@ class preprocessApp:
                 if len(reads) == 0:
                     break
                 # process individual reads
-                #for read in reads:
-                    #print(read.assignBarcode(bcTable, barcodeMaxDiff))
                 for read in reads:
                     bcsuccesscount += read.assignBarcode(bcTable, barcodeMaxDiff)  # barcode
                     if evalPrimer:  # primer
