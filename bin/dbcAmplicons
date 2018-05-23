@@ -141,8 +141,6 @@ def preprocessParser(subparsers):
                                    type=int, dest='barcode1', default=8)
     inlineBC.add_argument('-b2', '--inline_barcode2', help='Inline barcode 2 length [default: %(default)s], will become Read 3',
                                    type=int, dest='barcode2', default=0)
-    #preprocess_parser.add_argument('-fl', '--dedup_float', help='barcode can be on R1 or R2 (reverse) [default: %(default)s]',
-    #                               action='store', dest='dedup_float', default=False)
     return preprocess_parser
 
 
