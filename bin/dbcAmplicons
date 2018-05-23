@@ -633,36 +633,6 @@ class abundanceCMD:
             return app.start(args.fixrank_file, sFile, output_prefix, args.rank, args.threshold, args.minsize, args.maxsize, args.biom, args.hdf5, verbose, debug)
 
 #####################################################################################
-# Extract reads corresponding to specific taxa
-def extractParser(subparsers):
-  extract_parser = subparsers.add_parser('extract', help='extract reads corresponding to soecific taxa')
-  extract_parser.add_argument('-s', '--taxon_string', help='taxon string, e.g. Fusarium_solani_3', dest='taxon', type=str)
-  extract_parser.add_argument('-F', '--fixrank_file', help='fixrank file ', dest='fixrank', type=str)
-  extract_parser.add_argument('-q', '--fastq_file', help='fastq file with all sequences to search', dest='fastq', type=str)
-  extract_parser.add_argument('-t', '--threshold', help='Threshold bootstrap scrore', dest='threshold', type=str)
-  extract_parser.add_argument('-o', '--output_path', help='Output prefix', dest='output', type=str)
-  extract_parser.add_argument('-b', '--batchsize', help='batch size to process reads in [default: %(default)s]',
-                                   type=int, dest='batchsize', default=100000)
-  return extract_parser
-
-class extractCMD:
-  
-  def __init__(self):
-    pass
-
-  def execute(self, args):
-    from dbcAmplicons import extractApp
-    app = extractApp()
-
-    if profile:
-      import cProfile
-      cProfile.runctx('app.start(args.taxon, args.fixrank, args.fastq, args.threshold, args.output)', globals(), locals())
-      return 255
-    else:
-      return app.start(args.taxon, args.fixrank, args.fastq, args.threshold, args.output, args.batchsize)
-
-
-#####################################################################################
 #  Master parser arguments
 def parseArgs():
     """
