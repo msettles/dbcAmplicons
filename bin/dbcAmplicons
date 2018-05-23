@@ -672,9 +672,8 @@ def main():
     screen = screenCMD()
     classify = classifyCMD()
     abundance = abundanceCMD()
-    extract = extractCMD()
 
-    commands = {'validate': validate, 'preprocess': preprocess, 'join': join, 'screen': screen, 'classify': classify, 'abundance': abundance, 'extract': extract}
+    commands = {'validate': validate, 'preprocess': preprocess, 'join': join, 'screen': screen, 'classify': classify, 'abundance': abundance}
 
     args = parseArgs()
 
