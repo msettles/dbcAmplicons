@@ -138,20 +138,38 @@ class FourSequenceReadSet:
         else:
             return 0
 
-    def assignPrimer(self, prTable, dedup_float, max_diff, endmatch):
+    def assignPrimer(self, prTable, dedup_float, max_diff, endmatch, flip=False):
         """
         Given a primerTable object, the maximum number of allowed difference (mismatch, insertion, deletions) and the
         required number of end match bases (final endmatch bases must match) assign a primer pair ID from the read
         sequences.
         """
         # Primer One Matching
+        vflip = False
         pr1, pr1Mismatch, pr1StartPosition, pr1EndPosition = primerDist(prTable.getP5sequences(), self.read_1, dedup_float, max_diff, endmatch)
+        if flip:
+            pr1f, pr1fMismatch, pr1fStartPosition, pr1fEndPosition = primerDist(prTable.getP5sequences(), self.read_2, dedup_float, max_diff, endmatch)
+            if pr1fMismatch < pr1Mismatch:  # flip produces a better match reverse the reads
+                vflip = True
+                pr1 = pr1f
+                pr1Mismatch = pr1fMismatch
+                pr1StartPosition = pr1fStartPosition
+                pr1EndPosition = pr1fEndPosition
+                # Swap reads
+                tmp = self.read_1
+                self.read_1 = self.read_2
+                self.read_2 = tmp
+                tmp = self.qual_1
+                self.qual_1 = self.qual_2
+                self.qual_2 = tmp
 
         # Primer One Matching
         pr2, pr2Mismatch, pr2StartPosition, pr2EndPosition = primerDist(prTable.getP7sequences(), self.read_2, dedup_float, max_diff, endmatch)
 
         # Barcode Pair Matching
         combined_pr = prTable.getMatch(pr1, pr2)
+#        if vflip and combined_pr[0] is not None:
+#            combined_pr[0] = combined_pr[0] + "_F"
         self.primer = [combined_pr[0], combined_pr[1], pr1Mismatch, pr1StartPosition, pr1EndPosition, combined_pr[2], pr2Mismatch, pr2StartPosition, pr2EndPosition]
         self.goodRead = self.goodRead and combined_pr[0] is not None
         if self.goodRead:
@@ -220,8 +238,8 @@ class FourSequenceReadSet:
             r1 = '\n'.join([read1_name, self.read_1[self.primer[4]:self.trim_left], '+', self.qual_1[self.primer[4]:self.trim_left]])
             r2 = '\n'.join([read2_name, self.read_2[self.primer[8]:self.trim_right], '+', self.qual_2[self.primer[8]:self.trim_right]])
         else:
-            read1_name = "%s 1:N:0:%s %s|%s|%s|%s" % (self.name, self.sample, self.bc_1, self.barcode[1], self.bc_2, self.barcode[2])
-            read2_name = "%s 2:N:0:%s %s|%s|%s|%s" % (self.name, self.sample, self.bc_1, self.barcode[1], self.bc_2, self.barcode[2])
+            read1_name = "%s 1:N:0:%s:%s %s|%s|%s|%s %s|%s|%s|%s" % (self.name, self.sample, self.primer[0], self.bc_1, self.barcode[1], self.bc_2, self.barcode[2], self.primer[1], self.primer[2], self.primer[4], self.read_1[0:self.primer[3]])
+            read2_name = "%s 2:N:0:%s:%s %s|%s|%s|%s %s|%s|%s|%s" % (self.name, self.sample, self.primer[0], self.bc_1, self.barcode[1], self.bc_2, self.barcode[2], self.primer[5], self.primer[6], self.primer[8], self.read_2[0:self.primer[7]])
             r1 = '\n'.join([read1_name, self.read_1[0:self.trim_left], '+', self.qual_1[0:self.trim_left]])
             r2 = '\n'.join([read2_name, self.read_2[0:self.trim_right], '+', self.qual_2[0:self.trim_right]])
         return [r1, r2]
@@ -272,7 +290,7 @@ class TwoSequenceReadSet:
         except IndexError:
             sys.stderr.write('ERROR:[TwoSequenceReadSet] Read names are not formatted in the expected manner\n')
             raise
-        except:
+        except Exception:
             sys.stderr.write('ERROR:[TwoSequenceReadSet] Unknown error occured initiating read\n')
             raise
 
@@ -341,7 +359,7 @@ class TwoSequenceReadSet:
         except IndexError:
             sys.stderr.write('ERROR:[TwoSequenceReadSet] unable to exract barocode sequence from the read names\n')
             raise
-        except:
+        except Exception:
             sys.stderr.write('ERROR:[TwoSequenceReadSet] Unknown error occured generating four read set\n')
             raise
 
@@ -455,7 +473,7 @@ class OneSequenceReadSet:
         except IndexError:
             sys.stderr.write('ERROR:[OneSequenceReadSet] Read names are not formatted in the expected manner\n')
             raise
-        except:
+        except Exception:
             sys.stderr.write('ERROR:[OneSequenceReadSet] Unknown error occured initiating read\n')
             raise
         self.read_1 = read_1

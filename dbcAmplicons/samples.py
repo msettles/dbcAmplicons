@@ -135,7 +135,7 @@ class sampleTable:
             sys.stderr.write('ERROR:[Samples] Error in sample sheet: Barcode [%s] and Primer [%s] pair previously specified\n' % (e.getBarcode(), e.getPrimer()))
             sfile.close()
             raise
-        except:
+        except Exception:
             sys.stderr.write('ERROR:[Samples] Unexpected error on line %s of the samples file: %s\n' % (line, sys.exc_info()[0]))
             sfile.close()
             raise
@@ -182,7 +182,7 @@ class sampleTable:
                 return(sid[primer][0])
         except KeyError:
             return(None)
-        except:
+        except Exception:
             sys.stderr.write('ERROR:[Samples] Unexpected error in getSampleID:\n', sys.exc_info()[0])
             raise
 
@@ -204,6 +204,6 @@ class sampleTable:
                 return(sid[primer][1])
         except KeyError:
             return(None)
-        except:
+        except Exception:
             sys.stderr.write('ERROR:[Samples] Unexpected error getProjectID:\n', sys.exc_info()[0])
             raise

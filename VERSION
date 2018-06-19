@@ -1,11 +1,13 @@
-0.8.6
+0.8.7
 
+version 0.8.7
+Worked on a few issues as well as added capability to flip
 version 0.8.6
 change RDP classify to use allrank instead of fixrank, only when using a custom db (WARNING: Db must only use major ranks, eg class,family,genus,species)
 version 0.8.5
 added the ability to use an environmental variable for the path to the RDP classifier, using the env variable RDP_PATH
 version 0.8.4
-changed default behavior of abudances to output abundance/proportion tables every time and the --biom flag ALSO produces a biom file, so no need to run abundances twice anymore to produce tables and biom. 
+changed default behavior of abudances to output abundance/proportion tables every time and the --biom flag ALSO produces a biom file, so no need to run abundances twice anymore to produce tables and biom.
 version 0.8.3
 changed versionReport.sh to dbcVersionReport.sh also added new parameters to preprocessing add to rc (or not) Index 1, and Index 2, also changed all references in barcodes P5/P7 to I1 and I2, some simplicity
 version 0.8.2.1
