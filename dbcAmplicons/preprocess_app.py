@@ -23,7 +23,7 @@ class preprocessApp:
     def __init__(self):
         self.verbose = False
 
-    def preprocPair_with_inlineBC(self, fastq_file1, fastq_file2, barcode1, barcode2, bcFile, max_diff, dedup_float, output_prefix, batchsize=100000, uncompressed=False, verbose=True, debug=False):
+    def preprocPair_with_inlineBC(self, fastq_file1, fastq_file2, barcode1, barcode2, bcFile, max_diff, flip_float, output_prefix, batchsize=100000, uncompressed=False, verbose=True, debug=False):
         """
         Start conversion of double barcoded Illumina sequencing run from two to four reads
         """
@@ -53,7 +53,7 @@ class preprocessApp:
                     break
                 # process individual reads
                 for read in reads:
-                    tmp = read.getFourReadsInline(bcTable, bc1_length=barcode1, bc2_length=barcode2, max_diff=max_diff, dedup_float=dedup_float)
+                    tmp = read.getFourReadsInline(bcTable, bc1_length=barcode1, bc2_length=barcode2, max_diff=max_diff, flip_float=flip_float)
                     if len(tmp) == 0:  # failed read
                         failed_reads += 1
                         continue

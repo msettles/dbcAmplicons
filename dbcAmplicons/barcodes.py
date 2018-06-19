@@ -56,10 +56,10 @@ class barcodeTable:
                 #Test if file has 1 barcode
                 elif len(row.split('\t')) == 2:
                     ID, I1BC, = row.split('\t')[0:2]
-                    I2BC = I1BC
                     # I1 barcode shows up as the reverse complement in the sequencing run
                     if i1_rc:
                         I1BC = misc.reverseComplement(I1BC)
+                    I2BC = I1BC
                 else:
                     print('ERROR: [Barcodes] File has an incorect number of columns')
             except ValueError as e:

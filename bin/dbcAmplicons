@@ -92,7 +92,7 @@ def preprocessParser(subparsers):
                                    action='store', type=str, dest='barcodes_file', metavar='FILENAME', required=True)
     preprocess_parser.add_argument('-d', '--barcodediff', help='max hamming dist from barcode [default: %(default)s]',
                                    type=int, dest='barcodediff', default=1)
-    preprocess_parser.add_argument('--I1', help='processing of Index 1 read, leave as is, or reverse complement [default: %(default)s]',
+    preprocess_parser.add_argument('--I1', help='processing of Index 1 read, leave as is, or reverse complement. [For four-read datasets, default: %(default)s. If --inline is specified, default: asis]',
                                    action='store', type=str, dest='I1_orientation', metavar='asis/rc', choices=['asis', 'rc'], default='rc')
     preprocess_parser.add_argument('--I2', help='processing of Index 2 read, leave as is (asis), or reverse complement (rc) [default: %(default)s]',
                                    action='store', type=str, dest='I2_orientation', metavar='asis/rc', choices=['asis', 'rc'], default='asis')
@@ -135,12 +135,14 @@ def preprocessParser(subparsers):
     preprocess_parser.add_argument('--debug', help='show traceback on error',
                                    action='store_true', dest="debug", default=False)
     #SIK added from preprocPair_with_inlineBC
-    inlineBC.add_argument('-i', '--inline', help='indicates barcodes are inline, not separate indices. Only R1 and barcode file are required.',
+    inlineBC.add_argument('-i', '--inline', help='Indicates barcode sequences are at the beginning of template reads, not separate indices. Only R1 and barcode file are required.',
                                    action='store', dest='inline', default=False)
     inlineBC.add_argument('-b1', '--inline_barcode1', help='Inline barcode 1 length [default: %(default)s], will become Read 2',
                                    type=int, dest='barcode1', default=8)
     inlineBC.add_argument('-b2', '--inline_barcode2', help='Inline barcode 2 length [default: %(default)s], will become Read 3',
                                    type=int, dest='barcode2', default=0)
+    inlineBC.add_argument('-F', '--flip', help='Look for barcode at the beginning of forward and reverse read. [default: %(default)s]',
+                                   action='store', dest='flip', default=True)
     return preprocess_parser
 
 
@@ -202,18 +204,13 @@ class preprocessCMD:
 
         #If --inline is true, run preprocPair_with_inlineBC() first.
         if args.inline:
-          if profile:
-            import cProfile
-            cProfile.runctx('app.preprocPair_with_inlineBC(args.fastq_file1, args.fastq_file2, args.output_prefix, args.barcode1, args.barcode2, args.barcodesFile, args.max_diff, args.dedup_float, args.batchsize, args.uncompressed, args.verbose, args.debug)', globals(), locals())
-            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, I1rc, I2rc, args.dedup_float, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)', globals(), locals())
-            return 255
-          else:
-            inlinefastq_file1, inlinefastq_file2, inlinefastq_file3, inlinefastq_file4 = app.preprocPair_with_inlineBC(args.fastq_file1, args.fastq_file2, args.barcode1, args.barcode2, bcFile, args.barcodediff, args.dedup_float, output_prefix, args.batchsize, args.uncompressed, verbose, args.debug)
-            list1 = [inlinefastq_file1]
-            list2 = [inlinefastq_file2]
-            list3 = [inlinefastq_file3]
-            list4 = [inlinefastq_file4]
-            return app.start (list1, list2, list3, list4, output_prefix, bcFile, prFile, sFile, args.barcodediff, I1rc, I2rc, args.dedup_float, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)
+            inlinefastq_file1, inlinefastq_file2, inlinefastq_file3, inlinefastq_file4 = app.preprocPair_with_inlineBC(args.fastq_file1, args.fastq_file2, args.barcode1, args.barcode2, bcFile, args.barcodediff, args.flip, output_prefix, args.batchsize, args.uncompressed, verbose, args.debug)
+            args.fastq_file1 = [inlinefastq_file1]
+            args.fastq_file2 = [inlinefastq_file2]
+            args.fastq_file3 = [inlinefastq_file3]
+            args.fastq_file4 = [inlinefastq_file4]
+            args.
+            return app.start (args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, I1rc, I2rc, args.dedup_float, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)
         #Execute normally, beginning with start()
         else:
           if profile:
