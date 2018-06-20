@@ -143,8 +143,6 @@ def preprocessParser(subparsers):
                                    type=int, dest='barcode1', default=8)
     inlineBC.add_argument('-b2', '--inline_barcode2', help='Inline barcode 2 length [default: %(default)s], will become Read 3',
                                    type=int, dest='barcode2', default=0)
-    inlineBC.add_argument('-F', '--flip', help='Look for barcode at the beginning of forward and reverse read. [default: %(default)s]',
-                                   action='store', dest='flip', default=True)
     return preprocess_parser
 
 
@@ -183,11 +181,8 @@ class preprocessCMD:
 
         # ----------------------- inlineBC options ------------------------
         if args.inline:
-          if any('--I1' in string for string in sys.argv):
-            if any('rc' in string for string in sys.argv):
-              print('rc explicitely specified with inline. Reads will be reverse complimented.')
-          else:
             args.I1_orientation = 'asis'
+            args.I2_orientation = 'asis'
 
         # ----------------------- barcodes orientation ------------------------
         if args.I1_orientation == 'asis':
@@ -211,23 +206,16 @@ class preprocessCMD:
             args.fastq_file2 = [inlinefastq_file2]
             args.fastq_file3 = [inlinefastq_file3]
             args.fastq_file4 = [inlinefastq_file4]
-            args.
+            args.flip = False
             return app.start (args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, I1rc, I2rc, args.dedup_float, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)
         #Execute normally, beginning with start()
         else:
           if profile:
             import cProfile
-<<<<<<< HEAD
-            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, I1rc, I2rc, args.dedup_float, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)', globals(), locals())
-            return 255
-          else:
-            return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, I1rc, I2rc, args.dedup_float, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)
-=======
             cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, I1rc, I2rc, args.dedup_float, args.primerdiff, args.primerend, args.flip, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)', globals(), locals())
             return 255
         else:
             return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, I1rc, I2rc, args.dedup_float, args.primerdiff, args.primerend, args.flip, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)
->>>>>>> origin/master
 
         
 #####################################################################################

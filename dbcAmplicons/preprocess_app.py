@@ -23,7 +23,6 @@ class preprocessApp:
     def __init__(self):
         self.verbose = False
 
-<<<<<<< HEAD
     def preprocPair_with_inlineBC(self, fastq_file1, fastq_file2, barcode1, barcode2, bcFile, max_diff, flip_float, output_prefix, batchsize=100000, uncompressed=False, verbose=True, debug=False):
         """
         Start conversion of double barcoded Illumina sequencing run from two to four reads
@@ -86,8 +85,6 @@ class preprocessApp:
             return 1
         print(run_out)
 
-    def start(self, fastq_file1, fastq_file2, fastq_file3, fastq_file4, output_prefix, bcFile, primerFile, samplesFile, barcodeMaxDiff=1, I1rc=True, I2rc=False, dedup_float=4, primerMaxDiff=4, primerEndMatch=4, batchsize=10000, uncompressed=False, output_unidentified=False, minQ=None, minL=0, verbose=True, debug=False, kprimer=False, test=False):
-=======
     def start(self,
               fastq_file1, fastq_file2, fastq_file3, fastq_file4, output_prefix,
               barcodesFile, primerFile=None, samplesFile=None,
@@ -95,7 +92,6 @@ class preprocessApp:
               primerMaxDiff=4, primerEndMatch=4, flip=False, batchsize=10000,
               uncompressed=False, output_unidentified=False, minQ=None,
               minL=0, verbose=True, debug=False, kprimer=False, test=False):
->>>>>>> origin/master
         """
         Start preprocessing double barcoded Illumina sequencing run, perform
         """
