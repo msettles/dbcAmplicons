@@ -42,14 +42,26 @@ class barcodeTable:
             line += 1
             if row[0] == "#" or row[0] == "\n":  # comment or blank line
                 continue
+
             row = row.rstrip()
             try:
-                ID, I1BC, I2BC = row.split('\t')[0:3]
-                # I1 barcode shows up as the reverse complement in the sequencing run
-                if i1_rc:
-                    I1BC = misc.reverseComplement(I1BC)
-                if i2_rc:
-                    I2BC = misc.reverseComplement(I2BC)
+                #Test if file has 2 barcodes
+                if len(row.split('\t')) == 3:
+                    ID, I1BC, I2BC = row.split('\t')[0:3]
+                    # I1 barcode shows up as the reverse complement in the sequencing run
+                    if i1_rc:
+                        I1BC = misc.reverseComplement(I1BC)
+                    if i2_rc:
+                        I2BC = misc.reverseComplement(I2BC)
+                #Test if file has 1 barcode
+                elif len(row.split('\t')) == 2:
+                    ID, I1BC, = row.split('\t')[0:2]
+                    # I1 barcode shows up as the reverse complement in the sequencing run
+                    if i1_rc:
+                        I1BC = misc.reverseComplement(I1BC)
+                    I2BC = I1BC
+                else:
+                    print('ERROR: [Barcodes] File has an incorect number of columns')
             except ValueError as e:
                 sys.stderr.write('ERROR:[Barcodes] Error reading line %s of barcode file: %s\n' % (str(line), str(e)))
                 raise
@@ -59,14 +71,26 @@ class barcodeTable:
             except:
                 sys.stderr.write('ERROR:[Barcodes] Unexpected error on line %s of the barcodes file: %s\n' % (line, sys.exc_info()[0]))
                 raise
-            if I2BC not in self.I2:
+            #Test if file has 2 barcodes
+            if len(row.split('\t')) == 3:
+                if I2BC not in self.I2:
+                    self.I2.extend([I2BC])
+                if I1BC not in self.I1:
+                    self.I1.extend([I1BC])
+                self.IDS.extend([ID])
+                self.barcodes["%s%s" % (I1BC, I2BC)] = [ID, 0, 0]
+                self.bcPairI1[I1BC] = I2BC
+                self.bcPairI2[I2BC] = I1BC
+            #Test if file has 1 barcode
+            elif len(row.split('\t')) == 2:
                 self.I2.extend([I2BC])
-            if I1BC not in self.I1:
-                self.I1.extend([I1BC])
-            self.IDS.extend([ID])
-            self.barcodes["%s%s" % (I1BC, I2BC)] = [ID, 0, 0]
-            self.bcPairI1[I1BC] = I2BC
-            self.bcPairI2[I2BC] = I1BC
+                if I1BC not in self.I1:
+                    self.I1.extend([I1BC])
+                self.IDS.extend([ID])
+                self.barcodes["%s%s" % (I1BC, I2BC)] = [ID, 0, 0]
+                self.bcPairI1[I1BC] = I2BC
+                self.bcPairI2[I2BC] = I1BC
+
 
         bcfile.close()
 
