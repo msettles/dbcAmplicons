@@ -53,7 +53,7 @@ class preprocessApp:
                     break
                 # process individual reads
                 for read in reads:
-                    tmp = read.getFourReadsInline(bcTable, bc1_length=barcode1, bc2_length=barcode2, max_diff=max_diff, flip_float=flip_float)
+                    tmp = read.getFourReadsInline(bcTable, bc1_length=barcode1, bc2_length=barcode2, max_diff=max_diff, flip=flip_float)
                     if len(tmp) == 0:  # failed read
                         failed_reads += 1
                         continue
@@ -87,7 +87,7 @@ class preprocessApp:
 
     def start(self,
               fastq_file1, fastq_file2, fastq_file3, fastq_file4, output_prefix,
-              barcodesFile, primerFile=None, samplesFile=None,
+              bcFile, primerFile=None, samplesFile=None,
               barcodeMaxDiff=1, I1rc=True, I2rc=False, dedup_float=4,
               primerMaxDiff=4, primerEndMatch=4, flip=False, batchsize=10000,
               uncompressed=False, output_unidentified=False, minQ=None,

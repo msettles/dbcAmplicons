@@ -365,7 +365,7 @@ class TwoSequenceReadSet:
             sys.stderr.write('ERROR:[TwoSequenceReadSet] Unknown error occured generating four read set\n')
             raise
 
-    def getFourReadsInline(self, bcTable, bc1_length=8, bc2_length=0, max_diff=1, flip_float=flip_float):
+    def getFourReadsInline(self, bcTable, bc1_length=8, bc2_length=0, max_diff=1, flip=True):
         """
         Create four line string ('\n' separator included) for the read set, returning a length 4 vector (one for each read)
         """
@@ -373,14 +373,14 @@ class TwoSequenceReadSet:
         Given a barcodeTable object and the maximum number of allowed difference (mismatch, insertion, deletions)
         assign a barcode pair ID from the reads barcodes.
         """
-        flip_float = False
+        vflip = False
         # Barcode One Matching
         if bc1_length > 0:
             bc1, bc1Mismatch = barcodeDist(bcTable.getI1(), self.read_1[:bc1_length], max_diff)
-            if flip_float:
+            if flip:
                 bc1f, bc1fMismatch = barcodeDist(bcTable.getI2(), self.read_2[:bc1_length], max_diff)
-                if bc1fMismatch < bc1Mismatch:  # flip_float produces a better match reverse the reads
-                    flip_float = True
+                if bc1fMismatch < bc1Mismatch:  # flip produces a better match reverse the reads
+                    vflip = True
                     bc1 = bc1f
                     bc1Mismatch = bc1fMismatch
                     # Barcode Two Matching (with barcoce 1 present)
@@ -397,10 +397,10 @@ class TwoSequenceReadSet:
         # Barcode Two Matching (when no barcode 1 present)
         elif bc2_length > 0:
             bc2, bc2Mismatch = barcodeDist(bcTable.getI2(), self.read_2[:bc2_length], max_diff)
-            if flip_float:
+            if flip:
                 bc2f, bc2fMismatch = barcodeDist(bcTable.getI2(), self.read_1[:bc2_length], max_diff)
-                if bc2fMismatch < bc2Mismatch:  # flip_float produces a better match rever the reads
-                    flip_float = True
+                if bc2fMismatch < bc2Mismatch:  # flip produces a better match rever the reads
+                    vflip = True
                     bc2 = bc2f
                     bc2Mismatch = bc2fMismatch
                     tmp = self.read_1
@@ -422,7 +422,7 @@ class TwoSequenceReadSet:
         r2 = '\n'.join([self.name + ' 2:Y:0:', bc1, '+', 'C' * len(bc1)])  # Give barcodes and arbitary quality of Cs
         r3 = '\n'.join([self.name + ' 3:Y:0:', bc2, '+', 'C' * len(bc2)])
         r4 = '\n'.join([self.name + ' 4:Y:0:', self.read_2[bc2_length:], '+', self.qual_2[bc2_length:]])
-        return [r1, r2, r3, r4, flip_float]
+        return [r1, r2, r3, r4, vflip]
 
     def getFasta(self):
         """
