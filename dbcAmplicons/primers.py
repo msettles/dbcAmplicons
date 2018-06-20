@@ -52,7 +52,7 @@ class primerTable:
             except ValueError as e:
                 sys.stderr.write("ERROR:[Primers] Error reading line %s of primer file: %s\n" % (str(line), str(e)))
                 raise
-            except:
+            except Exception:
                 sys.stderr.write("ERROR:[Primers] Unexpected error on line %s of the primers file: %s\n" % (line, sys.exc_info()[0]))
                 raise
             self.primers.extend([PAIR])
@@ -102,13 +102,13 @@ class primerTable:
         Determine if two primers are matching primers and return the
         primer pair name and two id names
         """
-        if seq1 != None and seq1 in self.P5pair.keys():
+        if seq1 is not None and seq1 in self.P5pair.keys():
             pair1 = self.P5pair[seq1]
             id1 = self.P5id[seq1]
         else:
             pair1 = None
             id1 = [None]
-        if seq2 != None and seq2 in self.P7pair.keys():
+        if seq2 is not None and seq2 in self.P7pair.keys():
             pair2 = self.P7pair[seq2]
             id2 = self.P7id[seq2]
         else:

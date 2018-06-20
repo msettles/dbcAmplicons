@@ -89,7 +89,7 @@ bounded_edit_distance(const char *primer, int primerlen, const char *seq, int se
 
 PyDoc_STRVAR(bounded_editdist_distance_doc,
 "bounded_edit_distance(a, b, f, k, m) -> int, int\n\
-    Calculates the bounded Levenshtein's edit distance between strings \"a\" and \"b\" with pre-string fload f, bound \"k\" and \"m\" matching bases at end\n");
+    Calculates the bounded Levenshtein's edit distance between strings \"a\" and \"b\" with pre-string float f, bound \"k\" and \"m\" matching bases at end\n");
 
 static PyObject *
 bounded_editdist_distance(PyObject *self, PyObject *args)
@@ -106,7 +106,7 @@ bounded_editdist_distance(PyObject *self, PyObject *args)
         return NULL;
     }
     if (r.dist== -2) {
-        PyErr_SetString(PyExc_SystemError, "Bad Arguments");
+        PyErr_SetString(PyExc_SystemError, "Bounded editdist bad arguments, either primer length is 0 or primer length is greater than read length");
         return NULL;
     }
     return Py_BuildValue("iii", r.dist, r.spos, r.epos);
@@ -139,7 +139,7 @@ bounded_editdist_distance_list(PyObject *self, PyObject *args)
                 PyErr_SetString(PyExc_MemoryError, "Out of memory");
                 return NULL;
             } else if (r.dist== -2) {
-                PyErr_SetString(PyExc_SystemError, "Bad Arguments");
+                PyErr_SetString(PyExc_SystemError, "Bounded editdist bad arguments, either primer length is 0 or primer length is greater than read length");
                 return NULL;
             } else if ( i == 0){
                 c = 0;
@@ -280,7 +280,7 @@ hamming_distance(PyObject *self, PyObject *args)
 
     r = hammingdist_distance(a, alen, b, blen, blen);
     if (r == -2) {
-        PyErr_SetString(PyExc_SystemError, "Bad Arguments");
+        PyErr_SetString(PyExc_SystemError, "Hammingdist bad arguments, either barcode length is 0 or barcode length is greater than read length");
         return NULL;
     }
     return PyInt_FromLong(r);
@@ -308,7 +308,7 @@ hamming_distance_list(PyObject *self, PyObject *args)
         if (PyString_Check(barcode_o)) {
             r = hammingdist_distance(PyString_AS_STRING(barcode_o), (int)PyString_GET_SIZE(barcode_o), b, blen, s);
             if (r == -2) {
-                PyErr_SetString(PyExc_SystemError, "Bad Arguments");
+                PyErr_SetString(PyExc_SystemError, "Hammingdist bad arguments, either barcode length is 0 or barcode length is greater than read length");
                 return NULL;
             } else if ( r < s ){
                 c = (int)i;
