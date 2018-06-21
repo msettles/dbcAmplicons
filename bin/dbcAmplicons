@@ -481,7 +481,7 @@ def classifyParser(subparsers):
                                  type=int, dest='batchsize', default=100000)
     classify_parser.add_argument('-q', '--minQ', help="trim 3' end of sequences to minQ (paired-end reads only) [default: %(default)s]",
                                  type=int, dest='minQ', default=0),
-    classify_parser.add_argument('-l', '--minL', help='if minQ is not None, only keep reads that are at least minL length (paired-end reads only) [default: %(default)s]',
+    classify_parser.add_argument('-l', '--minL', help='Only keep reads that are at least minL length (paired-end or joined reads) [default: %(default)s]',
                                  type=int, dest='minL', default=0),
     classify_parser.add_argument('-p', '--processors', help='number of processors to use, [default: %(default)s]',
                                  type=int, dest='procs', default=1)
