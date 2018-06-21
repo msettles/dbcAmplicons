@@ -28,7 +28,6 @@ except ImportError:
 
 profile = False
 
-
 #####################################################################################
 # Validate the sample, barcode and primer files
 def validateParser(subparsers):
@@ -87,11 +86,13 @@ def preprocessParser(subparsers):
     # Parse options
     #
     preprocess_parser = subparsers.add_parser('preprocess', help='Preprocess four read raw amplicon data, identifying barcode and primer sequence')
+    inlineBC = preprocess_parser.add_argument_group('Inline barcode options', 'Inline barcode options are specific for data in which the barcode is part of the primer(s) used in PCR to generate amplicons for sequencing. This is in contrast to four read Illumina data, for which the index read (i.e. barcode) is separate from the template DNA read. Only template DNA reads are required for inline preprocess options.')
+
     preprocess_parser.add_argument('-B', '--barcodes_file', help='file with barcodes',
                                    action='store', type=str, dest='barcodes_file', metavar='FILENAME', required=True)
     preprocess_parser.add_argument('-d', '--barcodediff', help='max hamming dist from barcode [default: %(default)s]',
                                    type=int, dest='barcodediff', default=1)
-    preprocess_parser.add_argument('--I1', help='processing of Index 1 read, leave as is, or reverse complement [default: %(default)s]',
+    preprocess_parser.add_argument('--I1', help='processing of Index 1 read, leave as is, or reverse complement. [For four-read datasets, default: %(default)s. If --inline is specified, default: asis]',
                                    action='store', type=str, dest='I1_orientation', metavar='asis/rc', choices=['asis', 'rc'], default='rc')
     preprocess_parser.add_argument('--I2', help='processing of Index 2 read, leave as is (asis), or reverse complement (rc) [default: %(default)s]',
                                    action='store', type=str, dest='I2_orientation', metavar='asis/rc', choices=['asis', 'rc'], default='asis')
@@ -135,6 +136,13 @@ def preprocessParser(subparsers):
                                    action='store_true', dest="kprimer", default=False)
     preprocess_parser.add_argument('--debug', help='show traceback on error',
                                    action='store_true', dest="debug", default=False)
+    #SIK added from preprocPair_with_inlineBC
+    inlineBC.add_argument('-i', '--inline', help='Indicates barcode sequences are at the beginning of template reads, not separate index read files. Use this option if your PCR primers contained 5 prime attached barcode sequences. Only R1 and barcode file are required.',
+                                   action='store_true', dest='inline', default=False)
+    inlineBC.add_argument('-b1', '--inline_barcode1', help='Inline barcode 1 length [default: %(default)s], will become Read 2',
+                                   type=int, dest='barcode1', default=8)
+    inlineBC.add_argument('-b2', '--inline_barcode2', help='Inline barcode 2 length [default: %(default)s], will become Read 3',
+                                   type=int, dest='barcode2', default=0)
     return preprocess_parser
 
 
@@ -172,28 +180,56 @@ class preprocessCMD:
             output_prefix = args.output_base
 
         # ----------------------- barcodes orientation ------------------------
-        if args.I1_orientation == 'asis':
-            I1rc = False
-        else:
-            I1rc = True
-        if args.I2_orientation == 'asis':
-            I2rc = False
-        else:
-            I2rc = True
+
         from dbcAmplicons import misc
         misc.make_sure_path_exists(os.path.dirname(output_prefix))
-
         from dbcAmplicons import preprocessApp
         app = preprocessApp()
 
+        #If --inline is true, run preprocPair_with_inlineBC() first.
+        #Execute normally, beginning with start()
+
         if profile:
-            import cProfile
+          import cProfile
+          if args.inline:
+            I1rc = False
+            I2rc = False
+            args.flip = True
+            inlinefastq_file1, inlinefastq_file2, inlinefastq_file3, inlinefastq_file4 = app.preprocPair_with_inlineBC(args.fastq_file1, args.fastq_file2, args.barcode1, args.barcode2, bcFile, args.barcodediff, args.flip, output_prefix, args.batchsize, args.uncompressed, verbose, args.debug)
+            args.fastq_file1 = [inlinefastq_file1]
+            args.fastq_file2 = [inlinefastq_file2]
+            args.fastq_file3 = [inlinefastq_file3]
+            args.fastq_file4 = [inlinefastq_file4]
+            args.flip = False
+            cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, I1rc, I2rc, args.dedup_float, args.primerdiff, args.primerend, args.flip, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)', globals(), locals())
+            return 255
+          else:
             cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, I1rc, I2rc, args.dedup_float, args.primerdiff, args.primerend, args.flip, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)', globals(), locals())
             return 255
         else:
+          if args.inline:
+            I1rc = False
+            I2rc = False
+            args.flip = True
+            inlinefastq_file1, inlinefastq_file2, inlinefastq_file3, inlinefastq_file4 = app.preprocPair_with_inlineBC(args.fastq_file1, args.fastq_file2, args.barcode1, args.barcode2, bcFile, args.barcodediff, args.flip, output_prefix, args.batchsize, args.uncompressed, verbose, args.debug)
+            args.fastq_file1 = [inlinefastq_file1]
+            args.fastq_file2 = [inlinefastq_file2]
+            args.fastq_file3 = [inlinefastq_file3]
+            args.fastq_file4 = [inlinefastq_file4]
+            args.flip = False
+            return app.start (args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, I1rc, I2rc, args.dedup_float, args.primerdiff, args.primerend, args.flip, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)
+          else:
+            if args.I1_orientation == 'asis':
+              I1rc = False
+            else:
+              I1rc = True
+            if args.I2_orientation == 'asis':
+              I2rc = False
+            else:
+              I2rc = True
             return app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, I1rc, I2rc, args.dedup_float, args.primerdiff, args.primerend, args.flip, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)
 
-
+        
 #####################################################################################
 # Split Preprocessed data by project
 def splitreadsParser(subparsers):
@@ -444,8 +480,8 @@ def classifyParser(subparsers):
     classify_parser.add_argument('-b', '--batchsize', help='batch size to process reads in [default: %(default)s]',
                                  type=int, dest='batchsize', default=100000)
     classify_parser.add_argument('-q', '--minQ', help="trim 3' end of sequences to minQ (paired-end reads only) [default: %(default)s]",
-                                 type=int, dest='minQ', default=None),
-    classify_parser.add_argument('-l', '--minL', help='if minQ is not None, only keep reads that are at least minL length (paired-end reads only) [default: %(default)s]',
+                                 type=int, dest='minQ', default=0),
+    classify_parser.add_argument('-l', '--minL', help='Only keep reads that are at least minL length (paired-end or joined reads) [default: %(default)s]',
                                  type=int, dest='minL', default=0),
     classify_parser.add_argument('-p', '--processors', help='number of processors to use, [default: %(default)s]',
                                  type=int, dest='procs', default=1)
@@ -602,7 +638,6 @@ class abundanceCMD:
         else:
             return app.start(args.fixrank_file, sFile, output_prefix, args.rank, args.threshold, args.minsize, args.maxsize, args.biom, args.hdf5, verbose, debug)
 
-
 #####################################################################################
 #  Master parser arguments
 def parseArgs():
@@ -622,7 +657,7 @@ def parseArgs():
     screeningParser(subparsers)
     classifyParser(subparsers)
     abundanceParser(subparsers)
-
+    
     args = parser.parse_args()
 
     return args
