@@ -60,6 +60,7 @@ class barcodeTable:
                     if i1_rc:
                         I1BC = misc.reverseComplement(I1BC)
                     I2BC = I1BC
+
                 else:
                     print('ERROR: [Barcodes] File has an incorect number of columns')
             except ValueError as e:

@@ -198,7 +198,7 @@ class FourSequenceReadSet:
             self.trim_left = trim_points["left_trim"]
             self.trim_right = trim_points["right_trim"]
             if ((self.trim_left - self.primer[4]) < minL or (self.trim_right - self.primer[8]) < minL):
-                self.goodRead = False
+                self.goodRead = False ## does there need to be an else statement to set self.goodRead = True when passing minQ and minL?
         if self.goodRead:
             return 1
         else:
@@ -377,8 +377,8 @@ class TwoSequenceReadSet:
         # Barcode One Matching
         if bc1_length > 0:
             bc1, bc1Mismatch = barcodeDist(bcTable.getI1(), self.read_1[:bc1_length], max_diff)
-            if flip:
-                bc1f, bc1fMismatch = barcodeDist(bcTable.getI2(), self.read_2[:bc1_length], max_diff)
+            if dedup_float:
+                bc1f, bc1fMismatch = barcodeDist(bcTable.getI1(), self.read_2[:bc1_length], max_diff)
                 if bc1fMismatch < bc1Mismatch:  # flip produces a better match reverse the reads
                     vflip = True
                     bc1 = bc1f
@@ -397,7 +397,7 @@ class TwoSequenceReadSet:
         # Barcode Two Matching (when no barcode 1 present)
         elif bc2_length > 0:
             bc2, bc2Mismatch = barcodeDist(bcTable.getI2(), self.read_2[:bc2_length], max_diff)
-            if flip:
+            if dedup_float:
                 bc2f, bc2fMismatch = barcodeDist(bcTable.getI2(), self.read_1[:bc2_length], max_diff)
                 if bc2fMismatch < bc2Mismatch:  # flip produces a better match rever the reads
                     vflip = True
