@@ -21,8 +21,6 @@ from multiprocessing import cpu_count
 
 from distutils import spawn
 
-sys.path.insert(0, '/Users/pmh/Desktop/SIK_bioinformatics/dbcAmplicons/build/lib.macosx-10.6-intel-2.7')
-
 try:
     from dbcAmplicons import version_num
 except ImportError:
@@ -215,15 +213,16 @@ class preprocessCMD:
             cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, I1rc, I2rc, args.dedup_float, args.primerdiff, args.primerend, args.flip, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)', globals(), locals())
             return 255
           else:
+            if args.I1_orientation == 'asis':
+              I1rc = False
+            else:
+              I1rc = True
+            if args.I2_orientation == 'asis':
+              I2rc = False
+            else:
+              I2rc = True
             cProfile.runctx('app.start(args.fastq_file1, args.fastq_file2, args.fastq_file3, args.fastq_file4, output_prefix, bcFile, prFile, sFile, args.barcodediff, I1rc, I2rc, args.dedup_float, args.primerdiff, args.primerend, args.flip, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)', globals(), locals())
             return 255
-          else:
-            inlinefastq_file1, inlinefastq_file2, inlinefastq_file3, inlinefastq_file4 = app.preprocPair_with_inlineBC(args.fastq_file1, args.fastq_file2, args.barcode1, args.barcode2, bcFile, args.barcodediff, args.dedup_float, output_prefix, args.batchsize, args.uncompressed, verbose, args.debug)
-            list1 = [inlinefastq_file1]
-            list2 = [inlinefastq_file2]
-            list3 = [inlinefastq_file3]
-            list4 = [inlinefastq_file4]
-            return app.start (list1, list2, list3, list4, output_prefix, bcFile, prFile, sFile, args.barcodediff, I1rc, I2rc, args.dedup_float, args.primerdiff, args.primerend, args.batchsize, args.uncompressed, args.unidentified, args.minQ, args.minL, verbose, args.debug, args.kprimer, args.test)
         #Execute normally, beginning with start()
         else:
           if args.inline:
