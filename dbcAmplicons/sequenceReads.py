@@ -377,7 +377,7 @@ class TwoSequenceReadSet:
         # Barcode One Matching
         if bc1_length > 0:
             bc1, bc1Mismatch = barcodeDist(bcTable.getI1(), self.read_1[:bc1_length], max_diff)
-            if dedup_float:
+            if flip:
                 bc1f, bc1fMismatch = barcodeDist(bcTable.getI1(), self.read_2[:bc1_length], max_diff)
                 if bc1fMismatch < bc1Mismatch:  # flip produces a better match reverse the reads
                     vflip = True
@@ -397,7 +397,7 @@ class TwoSequenceReadSet:
         # Barcode Two Matching (when no barcode 1 present)
         elif bc2_length > 0:
             bc2, bc2Mismatch = barcodeDist(bcTable.getI2(), self.read_2[:bc2_length], max_diff)
-            if dedup_float:
+            if flip:
                 bc2f, bc2fMismatch = barcodeDist(bcTable.getI2(), self.read_1[:bc2_length], max_diff)
                 if bc2fMismatch < bc2Mismatch:  # flip produces a better match rever the reads
                     vflip = True
