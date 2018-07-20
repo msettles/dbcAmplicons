@@ -137,7 +137,7 @@ def preprocessParser(subparsers):
     preprocess_parser.add_argument('--debug', help='show traceback on error',
                                    action='store_true', dest="debug", default=False)
     #SIK added from preprocPair_with_inlineBC
-    inlineBC.add_argument('-i', '--inline', help='Indicates barcode sequences are at the beginning of template reads, not separate index read files. Use this option if your PCR primers contained 5 prime attached barcode sequences. Only R1 and barcode file are required.',
+    inlineBC.add_argument('-i', '--inline', help='Indicates barcode sequences are at the beginning of template reads, not separate index read files. Use this option if your PCR primers contained 5 prime attached barcode sequences. Only --R1 (and --R2 if paired-end sequenced), --barcodes_file, --primer_file, and --sample_metadata are required.',
                                    action='store_true', dest='inline', default=False)
 
     inlineBC.add_argument('-b1', '--inline_barcode1', help='Inline barcode 1 length [default: %(default)s], will become Read 2',
