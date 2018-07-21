@@ -111,7 +111,7 @@ class classifyApp:
                             if read.goodRead == True:
                                 run_out.addRead(read.getFasta())
                         else:
-                            run_out.addRead(read.getJoinedFasta())
+                            run_out.addRead(read.getFasta())
                     # Write out reads
                     rcount = run_out.count()
                     if rcount > batchsize:
