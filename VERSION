@@ -1,4 +1,4 @@
-0.9.1-20180921
+0.9.1
 
 version 0.9.1
 Fixed a bug in abundances when primers were not used ('-') and adding in new metadata (including -S to abundances).
