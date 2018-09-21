@@ -1,5 +1,7 @@
-0.8.7-20180921
+0.9.0-20180921
 
+version 0.9.0
+New functions: preprocess step can analyze reads with inline barcodes (where the barcode sequence was attached to primers used in the initial PCR reaction), single barcoded reads can be processed. The classify app can filter by length (minL parameter) when no minQ parameter is set, and also works on joined reads.
 version 0.8.7
 Worked on a few issues as well as added capability to flip
 version 0.8.6

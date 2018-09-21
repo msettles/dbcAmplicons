@@ -313,6 +313,8 @@ class TwoSequenceReadSet:
             self.trim_right = trim_points["right_trim"]
             if (self.trim_left < minL or self.trim_right < minL):
                 self.goodRead = False
+            else:
+                self.goodRead = True
 
     def getFastqSRA(self):
         """
@@ -363,7 +365,7 @@ class TwoSequenceReadSet:
             sys.stderr.write('ERROR:[TwoSequenceReadSet] Unknown error occured generating four read set\n')
             raise
 
-    def getFourReadsInline(self, bcTable, bc1_length=8, bc2_length=0, max_diff=1, flip=False):
+    def getFourReadsInline(self, bcTable, bc1_length=8, bc2_length=0, max_diff=1, flip=True):
         """
         Create four line string ('\n' separator included) for the read set, returning a length 4 vector (one for each read)
         """
@@ -509,3 +511,15 @@ class OneSequenceReadSet:
             read1_name = "%s|%s:%i" % (name, self.sample, len(self.read_1))
         r1 = '\n'.join([read1_name, self.read_1])
         return [r1]
+
+    def trimRead(self, minQ, minL):
+        """
+        Trim the read by a minQ score
+        """
+        if (trim_loaded):
+            trim_points = trim.trim(self.qual_1, self.qual_1, minQ)
+            self.trim_left = trim_points["left_trim"]
+            if (self.trim_left < minL):
+                self.goodRead = False
+            else:
+                self.goodRead = True

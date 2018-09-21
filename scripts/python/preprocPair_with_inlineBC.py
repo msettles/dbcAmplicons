@@ -31,7 +31,7 @@ class convertApp:
         self.verbose = verbose
         try:
             # read in barcode sequences
-            bcTable = barcodeTable(barcodesFile)
+            bcTable = barcodeTable(barcodesFile, i1_rc=False)
             if self.verbose:
                 sys.stdout.write("barcode table length: %s\n" % bcTable.getLength())
 
