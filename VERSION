@@ -1,5 +1,7 @@
-0.9.0-20180921
+0.9.1-20180921
 
+version 0.9.1
+Fixed a bug in abundances when primers were not used ('-') and adding in new metadata (including -S to abundances).
 version 0.9.0
 New functions: preprocess step can analyze reads with inline barcodes (where the barcode sequence was attached to primers used in the initial PCR reaction), single barcoded reads can be processed. The classify app can filter by length (minL parameter) when no minQ parameter is set, and also works on joined reads.
 version 0.8.7
