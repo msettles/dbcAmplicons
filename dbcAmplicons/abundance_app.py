@@ -47,6 +47,7 @@ class fixrankLine:
             self.primer = name[1]
             self.size = name[2]
         else:
+            self.primer = "-"
             self.size = name[1]
         # parse the taxon line
         levels = len(parse) / 3
