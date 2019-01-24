@@ -315,7 +315,17 @@ class TwoSequenceReadSet:
                 self.goodRead = False
             else:
                 self.goodRead = True
-
+    def getBarcodeBaseSpace(self, bc1_length=8, bc2_length=8):
+        try:
+            bc1 = self.barcode.split('+')[0]
+            bc2 = self.barcode.split('+')[1]
+        except ValueError:
+            sys.stderr.write('ERROR:[TwoSequenceReadSet] unable to exract barocode sequence from the read names, expecting 2 barcodes spit buy +\n')
+            raise
+        if len(bc1) is not bc1_length or len(bc2) is not bc2_length:
+            sys.stderr.write('ERROR:[TwoSequenceReadSet] unable to exract barocode sequence from the read names, barcode lengths did not match expected\n')
+            raise
+        return (bc1, bc2)
     def getFastqSRA(self):
         """
         Create four line string ('\n' separator included) for the read pair, returning a length 2 vector (one for each read)
@@ -351,6 +361,17 @@ class TwoSequenceReadSet:
             elif len(self.barcode) is (bc1_length + bc2_length):
                 bc1 = self.barcode[:bc1_length]
                 bc2 = self.barcode[bc1_length:]
+            # Samples processes by basespace
+            elif len(self.barcode) is (bc1_length + bc2_length + 1):
+                try:
+                    bc1 = self.barcode.split('+')[0]
+                    bc2 = self.barcode.split('+')[1]
+                except ValueError:
+                    sys.stderr.write('ERROR:[TwoSequenceReadSet] unable to exract barocode sequence from the read names, expecting 2 barcodes spit buy +\n')
+                    raise
+                if len(bc1) is not bc1_length or len(bc2) is not bc2_length:
+                    sys.stderr.write('ERROR:[TwoSequenceReadSet] unable to exract barocode sequence from the read names, barcode lengths did not match expected\n')
+                    raise
             else:
                 raise Exception("string in the barcode is not %s characters" % str(bc1_length + bc2_length))
             r1 = '\n'.join([self.name + ' 1:Y:0:', self.read_1[0:self.trim_left], '+', self.qual_1[0:self.trim_left]])
