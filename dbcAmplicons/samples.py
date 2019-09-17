@@ -165,7 +165,7 @@ class sampleTable:
         """
         return self.samplesList
 
-    def getSampleID(self, barcode, primer):
+    def getSampleID(self, barcode, primer, override_primer=False):
         """
         Given a barcode and primer, return the associated sampleID, "*" is allowed in the primer for 'any' primer match
         """
@@ -178,15 +178,19 @@ class sampleTable:
                 return sid['*'][0]
             elif primer is None and '-' in sid.keys():
                 return sid['-'][0]
+            elif override_primer:
+                if len(sid) > 1:
+                    raise Exception('ERROR:[Samples]. override_primer was specified, and barcode %s is not unique in the sample table' % barcode)
+                return(sid[sid.keys()[0]][0])
             else:
                 return(sid[primer][0])
         except KeyError:
             return(None)
         except Exception:
-            sys.stderr.write('ERROR:[Samples] Unexpected error in getSampleID:\n', sys.exc_info()[0])
+            sys.stderr.write('ERROR:[Samples] Unexpected error in getSampleID: %s\n' % sys.exc_info()[0])
             raise
 
-    def getProjectID(self, barcode, primer):
+    def getProjectID(self, barcode, primer, override_primer=False):
         """
         Given a barcode and primer, return the associated project, "*" is allowed in the primer for 'any' primer match
         """
@@ -200,6 +204,10 @@ class sampleTable:
                 return sid['*'][1]
             elif primer is None and '-' in sid.keys():
                 return sid['-'][1]
+            elif override_primer:
+                if len(sid) > 1:
+                    raise Exception('ERROR:[Samples]. override_primer was specified, and barcode %s is not unique in the sample table' % barcode)
+                return(sid[sid.keys()[0]][1])
             else:
                 return(sid[primer][1])
         except KeyError:

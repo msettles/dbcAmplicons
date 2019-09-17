@@ -177,7 +177,7 @@ class FourSequenceReadSet:
         else:
             return 0
 
-    def assignRead(self, sTable):
+    def assignRead(self, sTable, override_primer=False):
         """
         Given a samplesTable object, assign a sample ID and project ID using the reads barcode and primer designation
         """
@@ -294,12 +294,32 @@ class TwoSequenceReadSet:
             sys.stderr.write('ERROR:[TwoSequenceReadSet] Unknown error occured initiating read\n')
             raise
 
-    def assignRead(self, sTable):
+    def assignBarcode(self, bcTable, max_diff):
+        """
+        Given a barcodeTable object and the maximum number of allowed difference (mismatch, insertion, deletions)
+        assign a barcode pair ID from the reads barcodes.
+        """
+        # Barcode One Matching
+        bc1, bc1Mismatch = barcodeDist(bcTable.getI1(), self.bc_1, max_diff)
+
+        # Barcode Two Matching
+        bc2, bc2Mismatch = barcodeDist(bcTable.getI2(), self.bc_2, max_diff)
+
+        # Barcode Pair Matching
+        self.barcode = [bcTable.getMatch(bc1, bc2), bc1Mismatch, bc2Mismatch]
+        self.sample = self.barcode[0]
+        self.goodRead = self.barcode[0] is not None
+        if self.goodRead:
+            return 1
+        else:
+            return 0
+
+    def assignRead(self, sTable, override_primer=False):
         """
         Given a samplesTable object, assign a sample ID and project ID using the reads barcode and primer designation
         """
-        self.project = sTable.getProjectID(self.barcode, self.primer)
-        self.sample = sTable.getSampleID(self.barcode, self.primer)
+        self.project = sTable.getProjectID(self.barcode[0], self.primer[0], override_primer)
+        self.sample = sTable.getSampleID(self.barcode[0], self.primer[0], override_primer)
         self.goodRead = self.project is not None
         return 0
 
@@ -315,6 +335,18 @@ class TwoSequenceReadSet:
                 self.goodRead = False
             else:
                 self.goodRead = True
+
+    def getBarcodeBaseSpace(self, bc1_length=8, bc2_length=8):
+        try:
+            self.bc_1 = self.barcode.split('+')[0]
+            self.bc_2 = self.barcode.split('+')[1]
+        except ValueError:
+            sys.stderr.write('ERROR:[TwoSequenceReadSet] unable to exract barocode sequence from the read names, expecting 2 barcodes spit buy +\n')
+            raise
+        if len(self.bc_1) is not bc1_length or len(self.bc_2) is not bc2_length:
+            sys.stderr.write('ERROR:[TwoSequenceReadSet] unable to exract barocode sequence from the read names, barcode lengths did not match expected\n')
+            raise
+        return (self.bc_1, self.bc_2)
 
     def getFastqSRA(self):
         """
@@ -351,6 +383,17 @@ class TwoSequenceReadSet:
             elif len(self.barcode) is (bc1_length + bc2_length):
                 bc1 = self.barcode[:bc1_length]
                 bc2 = self.barcode[bc1_length:]
+            # Samples processes by basespace
+            elif len(self.barcode) is (bc1_length + bc2_length + 1):
+                try:
+                    bc1 = self.barcode.split('+')[0]
+                    bc2 = self.barcode.split('+')[1]
+                except ValueError:
+                    sys.stderr.write('ERROR:[TwoSequenceReadSet] unable to exract barocode sequence from the read names, expecting 2 barcodes spit buy +\n')
+                    raise
+                if len(bc1) is not bc1_length or len(bc2) is not bc2_length:
+                    sys.stderr.write('ERROR:[TwoSequenceReadSet] unable to exract barocode sequence from the read names, barcode lengths did not match expected\n')
+                    raise
             else:
                 raise Exception("string in the barcode is not %s characters" % str(bc1_length + bc2_length))
             r1 = '\n'.join([self.name + ' 1:Y:0:', self.read_1[0:self.trim_left], '+', self.qual_1[0:self.trim_left]])
@@ -463,13 +506,17 @@ class OneSequenceReadSet:
         Initialize a OneSequenceReadSet with name, one read sequences and cooresponding quality sequence.
         A read is initially defined as 'not' a good read and requires processing before being labeled as a good read.
         """
-        self.goodRead = False
-        self.primer = None
+        self.barcode = [None, 0, 0]  # when filled, a vector of length 3 [barcodePairID, editdist1, editdist2]
+        self.primer = [None, None, 0, 0, 0, None, 0, 0, 0]  # when filled, a vector of length 7 [primerPairID,primerID1,editdist1,readendpos1, primerID2,editdist2,readendpos2]
+        self.sample = None
+        self.project = None
+        self.goodRead = True
         # parse the read name for the sample and primer ids
         try:
             split_name = name_1.split(" ")
             self.name = split_name[0]
-            self.sample = split_name[1].split(":")[3]
+            self.barcode = split_name[1].split(":")[3]
+            self.sample = self.barcode
             if (len(split_name) == 4):
                 self.primer = split_name[1].split(":")[4]
         except IndexError:
@@ -480,6 +527,59 @@ class OneSequenceReadSet:
             raise
         self.read_1 = read_1
         self.qual_1 = qual_1
+
+    def assignBarcode(self, bcTable, max_diff):
+        """
+        Given a barcodeTable object and the maximum number of allowed difference (mismatch, insertion, deletions)
+        assign a barcode pair ID from the reads barcodes.
+        """
+        # Barcode One Matching
+        bc1, bc1Mismatch = barcodeDist(bcTable.getI1(), self.bc_1, max_diff)
+
+        # Barcode Two Matching
+        bc2, bc2Mismatch = barcodeDist(bcTable.getI2(), self.bc_2, max_diff)
+
+        # Barcode Pair Matching
+        self.barcode = [bcTable.getMatch(bc1, bc2), bc1Mismatch, bc2Mismatch]
+        self.sample = self.barcode[0]
+        self.goodRead = self.barcode[0] is not None
+        if self.goodRead:
+            return 1
+        else:
+            return 0
+
+    def assignRead(self, sTable, override_primer=False):
+        """
+        Given a samplesTable object, assign a sample ID and project ID using the reads barcode and primer designation
+        """
+        self.project = sTable.getProjectID(self.barcode[0], self.primer[0], override_primer)
+        self.sample = sTable.getSampleID(self.barcode[0], self.primer[0], override_primer)
+        self.goodRead = self.project is not None
+        return 0
+
+    def trimRead(self, minQ, minL):
+        """
+        Trim the read by a minQ score
+        """
+        if (trim_loaded):
+            trim_points = trim.trim(self.qual_1, self.qual_1, minQ)
+            self.trim_left = trim_points["left_trim"]
+            if (self.trim_left < minL):
+                self.goodRead = False
+            else:
+                self.goodRead = True
+
+    def getBarcodeBaseSpace(self, bc1_length=8, bc2_length=8):
+        try:
+            self.bc_1 = self.barcode.split('+')[0]
+            self.bc_2 = self.barcode.split('+')[1]
+        except ValueError:
+            sys.stderr.write('ERROR:[TwoSequenceReadSet] unable to exract barocode sequence from the read names, expecting 2 barcodes spit buy +\n')
+            raise
+        if len(self.bc_1) is not bc1_length or len(self.bc_2) is not bc2_length:
+            sys.stderr.write('ERROR:[TwoSequenceReadSet] unable to exract barocode sequence from the read names, barcode lengths did not match expected\n')
+            raise
+        return (self.bc_1, self.bc_2)
 
     def getFastqSRA(self):
         """
@@ -511,15 +611,3 @@ class OneSequenceReadSet:
             read1_name = "%s|%s:%i" % (name, self.sample, len(self.read_1))
         r1 = '\n'.join([read1_name, self.read_1])
         return [r1]
-
-    def trimRead(self, minQ, minL):
-        """
-        Trim the read by a minQ score
-        """
-        if (trim_loaded):
-            trim_points = trim.trim(self.qual_1, self.qual_1, minQ)
-            self.trim_left = trim_points["left_trim"]
-            if (self.trim_left < minL):
-                self.goodRead = False
-            else:
-                self.goodRead = True
